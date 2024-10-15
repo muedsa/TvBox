@@ -1,0 +1,3 @@
+[submodule "TvBoxPlugin"]
+	path = TvBoxPlugin
+	url = https://github.com/muedsa/TvBoxPlugin.git
