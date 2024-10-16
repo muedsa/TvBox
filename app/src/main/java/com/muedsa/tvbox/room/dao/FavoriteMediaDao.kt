@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface FavoriteMediaDao {
 
-    @Query("SELECT * FROM favorite_media ORDER BY update_at DESC")
-    fun flowAll(): Flow<List<FavoriteMediaModel>>
+    @Query("SELECT * FROM favorite_media WHERE plugin_package = :pluginPackage ORDER BY update_at DESC")
+    fun flowByPluginPackage(pluginPackage: String): Flow<List<FavoriteMediaModel>>
 
     @Query("SELECT * FROM favorite_media WHERE plugin_package = :pluginPackage and media_id = :mediaId")
     suspend fun getOneByPluginPackageAndMediaId(pluginPackage: String, mediaId: String): FavoriteMediaModel?
