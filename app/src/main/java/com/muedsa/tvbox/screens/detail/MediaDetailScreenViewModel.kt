@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -50,14 +51,20 @@ class MediaDetailScreenViewModel @Inject constructor(
     ) { id, url ->
         val plugin = PluginManager.getCurrentPlugin()
         Triple(plugin.pluginInfo, plugin.options, plugin.mediaDetailService.getDetailData(id, url))
-    }
+    }.shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(60_000)
+    )
 
     private val _favoriteFlow = combine(_refreshFavoriteFlow, _mediaDetailFlow) { _, pd ->
         favoriteMediaDao.getOneByPluginPackageAndMediaId(
             pluginPackage = pd.first.packageName,
             mediaId = pd.third.id
         )
-    }
+    }.shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000)
+    )
 
     private val _mediaProgressListFlow =
         combine(_refreshProgressListFlow, _mediaDetailFlow) { _, pd ->
@@ -66,7 +73,10 @@ class MediaDetailScreenViewModel @Inject constructor(
                 pluginPackage = pd.first.packageName,
                 mediaId = pd.third.id
             )
-        }
+        }.shareIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000)
+        )
 
     private val _banBangumiSearchQueryFlow = MutableStateFlow<String?>(null)
 
@@ -85,7 +95,10 @@ class MediaDetailScreenViewModel @Inject constructor(
                 emptyList()
             }
         } else null
-    }
+    }.shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000)
+    )
 
     private val _selectedDanBangumiSearchFlow = MutableStateFlow<BangumiSearch?>(null)
 
@@ -107,7 +120,10 @@ class MediaDetailScreenViewModel @Inject constructor(
                 null
             }
         } else null
-    }
+    }.shareIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000)
+    )
 
     val uiState: StateFlow<MediaDetailScreenUiState> = combine(
         _mediaDetailFlow,
