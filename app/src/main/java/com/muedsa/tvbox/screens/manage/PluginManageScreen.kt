@@ -39,6 +39,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.OutlinedButton
 import androidx.tv.material3.Text
 import androidx.tv.material3.WideClassicCard
+import com.muedsa.compose.tv.conditional
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
 import com.muedsa.compose.tv.useLocalNavHostController
 import com.muedsa.compose.tv.useLocalRightSideDrawerController
@@ -157,13 +158,20 @@ fun PluginManage(
                         }
                     },
                     image = {
-                        AdaptiveIconImage(drawable = it.icon, modifier = Modifier.size(68.dp))
+                        AdaptiveIconImage(
+                            modifier = Modifier.size(68.dp),
+                            drawable = it.icon
+                        )
                     },
                     title = {
-                        Text(text = it.name, maxLines = 1)
+                        Text(
+                            modifier = Modifier.padding(start = 5.dp),
+                            text = it.name,
+                            maxLines = 1
+                        )
                     },
                     subtitle = {
-                        Column {
+                        Column(modifier = Modifier.padding(start = 5.dp)) {
                             Text(
                                 modifier = Modifier.basicMarquee(),
                                 text = it.packageName,
@@ -182,7 +190,10 @@ fun PluginManage(
                                 }
                                 if (it.isExternalPlugin) {
                                     Text(
-                                        modifier = Modifier.padding(start = 5.dp),
+                                        modifier = Modifier
+                                            .conditional(apiVersion != it.apiVersion) {
+                                                padding(start = 5.dp)
+                                            },
                                         text = "外部",
                                         color = Color(0XFF_FB_65_42),
                                         style = style.copy(fontSize = style.fontSize.times(0.8f))
@@ -222,18 +233,24 @@ fun PluginManage(
                         )
                     },
                     title = {
-                        Text(text = it.name, maxLines = 1)
+                        Text(
+                            modifier = Modifier.padding(start = 5.dp),
+                            text = it.name,
+                            maxLines = 1
+                        )
                     },
                     subtitle = {
                         val style = LocalTextStyle.current
                         val s = remember { style.copy(fontSize = style.fontSize.times(0.8f)) }
                         if (it.isDirectory && it.name == "oat") {
                             Text(
+                                modifier = Modifier.padding(start = 5.dp),
                                 text = "OAT文件夹",
                                 style = s
                             )
                         } else {
                             Text(
+                                modifier = Modifier.padding(start = 5.dp),
                                 text = "无效${if(it.isDirectory) "文件夹" else ""}",
                                 style = s
                             )
@@ -263,7 +280,7 @@ fun PluginManage(
                         )
                     },
                     title = {
-                        Text(text = "添加插件")
+                        Text(modifier = Modifier.padding(start = 5.dp), text = "添加插件")
                     },
                 )
             }
