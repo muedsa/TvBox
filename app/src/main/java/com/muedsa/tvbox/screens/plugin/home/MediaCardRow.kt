@@ -19,10 +19,10 @@ fun MediaCardRow(
     onItemClick: (index: Int, item: MediaCard) -> Unit = { _, _ -> },
 ) {
     when (row.cardType) {
-        MediaCardType.STANDARD, MediaCardType.NOT_IMAGE -> StandardImageCardsRow(
+        MediaCardType.STANDARD -> StandardImageCardsRow(
             title = row.title,
             modelList = row.list,
-            imageFn = { _, item -> if (row.cardType == MediaCardType.NOT_IMAGE) "" else item.coverImageUrl },
+            imageFn = { _, item -> item.coverImageUrl },
             imageSize = DpSize(row.cardWidth.dp, row.cardHeight.dp),
             backgroundColorFn = { _, item -> Color(item.backgroundColor) },
             contentFn = { _, item ->
@@ -32,10 +32,10 @@ fun MediaCardRow(
             onItemClick = onItemClick
         )
 
-        MediaCardType.COMPACT -> ImageCardsRow(
+        MediaCardType.COMPACT, MediaCardType.NOT_IMAGE -> ImageCardsRow(
             title = row.title,
             modelList = row.list,
-            imageFn = { _, item -> item.coverImageUrl },
+            imageFn = { _, item -> if (row.cardType == MediaCardType.NOT_IMAGE) "" else item.coverImageUrl },
             imageSize = DpSize(row.cardWidth.dp, row.cardHeight.dp),
             backgroundColorFn = { _, item -> Color(item.backgroundColor) },
             contentFn = { _, item ->
