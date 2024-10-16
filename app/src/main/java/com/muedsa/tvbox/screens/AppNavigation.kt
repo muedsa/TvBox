@@ -82,8 +82,8 @@ fun buildJumpRoute(
 ): String {
     var route = navItem.route
     if (navItem.args.isNotEmpty()) {
-        checkNotNull(pathParams)
-        check(pathParams.size == navItem.args.size)
+        checkNotNull(pathParams) { "route nav failure, $route#$pathParams" }
+        check(pathParams.size == navItem.args.size) { "route nav failure, $route#$pathParams" }
         for (i in 0 until navItem.args.size) {
             route = route.replace("{${navItem.args[i].name}}", pathParams[i])
         }

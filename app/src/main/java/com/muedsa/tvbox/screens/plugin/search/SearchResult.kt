@@ -52,7 +52,7 @@ fun SearchResult(row: MediaCardRow) {
                 onItemClick = {
                     navController.nav(
                         NavigationItems.Detail,
-                        listOf(item.id)
+                        listOf(item.id, item.detailUrl)
                     )
                 }
             )
