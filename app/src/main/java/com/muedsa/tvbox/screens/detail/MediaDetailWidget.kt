@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -103,8 +104,11 @@ fun MediaDetailWidget(
 
     ScreenBackground(backgroundState)
 
-    var selectedPlaySource by remember { mutableStateOf(mediaDetail.playSourceList.firstOrNull()) }
-    val enabledDanmakuState = remember { mutableStateOf(true) }
+    var selectedPlaySourceId by rememberSaveable { mutableStateOf("") }
+    val selectedPlaySource = mediaDetail.playSourceList
+        .find { it.id == selectedPlaySourceId }
+        ?: mediaDetail.playSourceList.firstOrNull()
+    val enabledDanmakuState = rememberSaveable { mutableStateOf(true) }
 
     LazyColumn(
         modifier = Modifier
@@ -165,7 +169,7 @@ fun MediaDetailWidget(
                                             title = { Text(text = it.name) },
                                             onClick = {
                                                 drawerController.close()
-                                                selectedPlaySource = it
+                                                selectedPlaySourceId = it.id
                                             },
                                             interactionSource = interactionSource,
                                             background = {
