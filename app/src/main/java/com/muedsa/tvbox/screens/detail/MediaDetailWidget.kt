@@ -61,6 +61,7 @@ import com.muedsa.tvbox.plugin.PluginInfo
 import com.muedsa.tvbox.room.model.EpisodeProgressModel
 import com.muedsa.tvbox.screens.NavigationItems
 import com.muedsa.tvbox.screens.nav
+import com.muedsa.tvbox.screens.plugin.home.MediaCardRow
 import com.muedsa.tvbox.theme.FavoriteIconColor
 import timber.log.Timber
 
@@ -294,8 +295,21 @@ fun MediaDetailWidget(
                         }
                     }
                 )
-
+                Spacer(Modifier.height(20.dp))
             }
+        }
+
+        // 关联视频
+        items(items = mediaDetail.rows) {
+            MediaCardRow(
+                row = it,
+                onItemClick = { _, mediaCard ->
+                    navController.nav(
+                        NavigationItems.Detail,
+                        listOf(mediaCard.id, mediaCard.detailUrl)
+                    )
+                }
+            )
         }
     }
 }
