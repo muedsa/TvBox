@@ -1,6 +1,5 @@
 package com.muedsa.tvbox.screens.detail
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.muedsa.tvbox.api.data.MediaDetail
@@ -26,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -38,23 +38,25 @@ import javax.inject.Inject
 class MediaDetailScreenViewModel @Inject constructor(
     private val danDanPlayApiService: DanDanPlayApiService,
     private val favoriteMediaDao: FavoriteMediaDao,
-    private val episodeProgressDao: EpisodeProgressDao,
-    savedStateHandle: SavedStateHandle,
+    private val episodeProgressDao: EpisodeProgressDao
 ) : ViewModel() {
 
+    private val _refreshMediaDetailFlow = MutableStateFlow<NavigationItems.Detail?>(null)
     private val _refreshFavoriteFlow = MutableStateFlow(0)
     private val _refreshProgressListFlow = MutableStateFlow(0)
 
-    private val _mediaDetailFlow = combine(
-        savedStateHandle.getStateFlow<String?>(MEDIA_ID_SAVED_STATE_KEY, null).filterNotNull(),
-        savedStateHandle.getStateFlow<String?>(MEDIA_URL_SAVED_STATE_KEY, null).filterNotNull()
-    ) { id, url ->
-        val plugin = PluginManager.getCurrentPlugin()
-        Triple(plugin.pluginInfo, plugin.options, plugin.mediaDetailService.getDetailData(id, url))
-    }.shareIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(60_000)
-    )
+    private val _mediaDetailFlow = _refreshMediaDetailFlow
+        .filterNotNull()
+        .map { navItem ->
+            val plugin = PluginManager.getCurrentPlugin()
+            val detail = withContext(Dispatchers.IO) {
+                plugin.mediaDetailService.getDetailData(navItem.id, navItem.url)
+            }
+            Triple(plugin.pluginInfo, plugin.options, detail)
+        }.shareIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(60_000)
+        )
 
     private val _favoriteFlow = combine(_refreshFavoriteFlow, _mediaDetailFlow) { _, pd ->
         favoriteMediaDao.getOneByPluginPackageAndMediaId(
@@ -148,6 +150,13 @@ class MediaDetailScreenViewModel @Inject constructor(
         initialValue = MediaDetailScreenUiState.Loading
     )
 
+    fun refreshMediaDetail(navItem: NavigationItems.Detail) {
+        viewModelScope.launch {
+            _refreshMediaDetailFlow.emit(navItem)
+        }
+    }
+
+
     fun refreshProgressList() {
         viewModelScope.launch {
             _refreshProgressListFlow.update {
@@ -215,11 +224,6 @@ class MediaDetailScreenViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    companion object {
-        val MEDIA_ID_SAVED_STATE_KEY: String = NavigationItems.Detail.args[0].name
-        val MEDIA_URL_SAVED_STATE_KEY: String = NavigationItems.Detail.args[1].name
     }
 }
 

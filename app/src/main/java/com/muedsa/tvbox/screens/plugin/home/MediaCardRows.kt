@@ -89,10 +89,7 @@ fun MediaCardRows(rows: List<MediaCardRow>) {
                                 backgroundState.url = mediaCard.coverImageUrl
                             },
                             onItemClick = { _, mediaCard ->
-                                navController.nav(
-                                    NavigationItems.Detail,
-                                    listOf(mediaCard.id, mediaCard.detailUrl)
-                                )
+                                navController.nav(NavigationItems.Detail(mediaCard.id, mediaCard.detailUrl))
                             }
                         )
                     }
@@ -109,10 +106,7 @@ fun MediaCardRows(rows: List<MediaCardRow>) {
                         backgroundState.url = mediaCard.coverImageUrl
                     },
                     onItemClick = { _, mediaCard ->
-                        navController.nav(
-                            NavigationItems.Detail,
-                            listOf(mediaCard.id, mediaCard.detailUrl)
-                        )
+                        navController.nav(NavigationItems.Detail(mediaCard.id, mediaCard.detailUrl))
                     }
                 )
             }

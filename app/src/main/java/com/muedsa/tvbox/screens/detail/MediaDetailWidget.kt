@@ -63,6 +63,8 @@ import com.muedsa.tvbox.screens.NavigationItems
 import com.muedsa.tvbox.screens.nav
 import com.muedsa.tvbox.screens.plugin.home.MediaCardRow
 import com.muedsa.tvbox.theme.FavoriteIconColor
+import com.muedsa.tvbox.tool.LenientJson
+import kotlinx.serialization.encodeToString
 import timber.log.Timber
 
 @Composable
@@ -267,22 +269,23 @@ fun MediaDetailWidget(
                     enabled = !episodeClickLoading,
                     onEpisodeClick = { episode, danEpisode ->
                         episodeClickLoading = true
-                        Timber.d("click episode ${mediaDetail.id}-${episode.id}")
+                        Timber.d("click episode ${mediaDetail.id}-${episode.name}")
 
                         mediaDetailScreenViewModel.getEpisodePlayInfo(
                             playSource = episodePlaySource,
                             episode = episode,
                             onSuccess = {
                                 episodeClickLoading = false
+                                Timber.d("episode:${mediaDetail.id}-${episode.name}, url:${it.url}")
                                 navController.nav(
-                                    navItem = NavigationItems.Player,
-                                    pathParams = listOf(
-                                        it.url,
-                                        pluginInfo.packageName,
-                                        mediaDetail.id,
-                                        episode.id,
-                                        if (enabledDanmakuState.value && danEpisode != null)
-                                            danEpisode.episodeId.toString() else "-1"
+                                    NavigationItems.Player(
+                                        url = it.url,
+                                        httpHeadersJson = it.httpHeaders?.let { h -> LenientJson.encodeToString(h) },
+                                        pluginPackage = pluginInfo.packageName,
+                                        mediaId = mediaDetail.id,
+                                        episodeId = episode.id,
+                                        danEpisodeId = if (enabledDanmakuState.value && danEpisode != null)
+                                            danEpisode.episodeId else -1
                                     )
                                 )
                             },
@@ -304,10 +307,7 @@ fun MediaDetailWidget(
             MediaCardRow(
                 row = it,
                 onItemClick = { _, mediaCard ->
-                    navController.nav(
-                        NavigationItems.Detail,
-                        listOf(mediaCard.id, mediaCard.detailUrl)
-                    )
+                    navController.nav(NavigationItems.Detail(mediaCard.id, mediaCard.detailUrl))
                 }
             )
         }

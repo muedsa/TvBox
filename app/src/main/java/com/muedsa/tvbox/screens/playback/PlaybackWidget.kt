@@ -1,5 +1,6 @@
 package com.muedsa.tvbox.screens.playback
 
+import androidx.annotation.OptIn
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -7,11 +8,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.kuaishou.akdanmaku.data.DanmakuItemData
 import com.kuaishou.akdanmaku.ecs.component.filter.DuplicateMergedFilter
 import com.muedsa.compose.tv.useLocalNavHostController
@@ -27,9 +33,11 @@ import kotlin.math.max
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
+@OptIn(UnstableApi::class)
 @Composable
 fun PlaybackWidget(
     url: String,
+    httpHeaders: Map<String, String>?,
     episodeProgress: EpisodeProgressModel,
     danmakuList: List<DanmakuItemData>,
     appSetting: AppSettingModel,
@@ -74,7 +82,7 @@ fun PlaybackWidget(
             }
         }
     }
-
+    val androidContext = LocalContext.current
     DanmakuVideoPlayer(
         danmakuConfigSetting = {
             textSizeScale = appSetting.danmakuSizeScale / 100f
@@ -89,6 +97,19 @@ fun PlaybackWidget(
                     list = list.mergeDanmaku(5000L, 60000L, 30)
                 }
                 updateData(list)
+            }
+        },
+        videoPlayerBuilderSetting = {
+            if (!httpHeaders.isNullOrEmpty()) {
+                setMediaSourceFactory(
+                    DefaultMediaSourceFactory(
+                        DefaultDataSource.Factory(androidContext,
+                            DefaultHttpDataSource.Factory().apply {
+                                setDefaultRequestProperties(httpHeaders)
+                            }
+                        )
+                    )
+                )
             }
         }
     ) {

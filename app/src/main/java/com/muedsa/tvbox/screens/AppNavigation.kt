@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.muedsa.compose.tv.LocalNavHostControllerProvider
 import com.muedsa.compose.tv.LocalRightSideDrawerControllerProvider
 import com.muedsa.compose.tv.widget.FullWidthDialogProperties
@@ -21,53 +22,43 @@ import com.muedsa.tvbox.screens.setting.AppSettingScreen
 fun AppNavigation(navController: NavHostController = rememberNavController())  {
 
     val drawerController =
-        RightSideDrawerWithNavController(navController, NavigationItems.RightSideDrawer.route)
+        RightSideDrawerWithNavController(navController, NavigationItems.RightSideDrawer)
 
     LocalNavHostControllerProvider(navController) {
         LocalRightSideDrawerControllerProvider(drawerController) {
             NavHost(
                 navController = navController,
-                startDestination = NavigationItems.Main.route
+                startDestination = NavigationItems.Main
             ) {
                 // 入口页
-                composable(route = NavigationItems.Main.route) {
+                composable<NavigationItems.Main> {
                     PluginManageScreen()
                 }
 
                 // 当前选择的插件主页
-                composable(route = NavigationItems.PluginHome.route) {
+                composable<NavigationItems.PluginHome> {
                     PluginScreen()
                 }
 
                 // 视频详情页
-                composable(
-                    route = NavigationItems.Detail.route,
-                    arguments = NavigationItems.Detail.args
-                ) {
-                    MediaDetailScreen()
+                composable<NavigationItems.Detail> {
+                    val navItem = it.toRoute<NavigationItems.Detail>()
+                    MediaDetailScreen(navItem = navItem)
                 }
 
                 // 播放页
-                composable(
-                    route = NavigationItems.Player.route,
-                    arguments = NavigationItems.Player.args
-                ) {
-                    PlaybackScreen()
+                composable<NavigationItems.Player> {
+                    val navItem = it.toRoute<NavigationItems.Player>()
+                    PlaybackScreen(navItem = navItem)
                 }
 
                 // 设置 Dialog
-                dialog(
-                    route = NavigationItems.Setting.route,
-                    dialogProperties = FullWidthDialogProperties()
-                ) {
+                dialog<NavigationItems.Setting>(dialogProperties = FullWidthDialogProperties()) {
                     AppSettingScreen()
                 }
 
                 // rightSideDrawer
-                dialog(
-                    route = NavigationItems.RightSideDrawer.route,
-                    dialogProperties = FullWidthDialogProperties()
-                ) {
+                dialog<NavigationItems.RightSideDrawer>(dialogProperties = FullWidthDialogProperties()) {
                     RightSideDrawerWithNavDrawerContent(controller = drawerController)
                 }
             }
@@ -75,27 +66,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController())  {
     }
 }
 
-
-fun buildJumpRoute(
-    navItem: NavigationItems,
-    pathParams: List<String>?
-): String {
-    var route = navItem.route
-    if (navItem.args.isNotEmpty()) {
-        checkNotNull(pathParams) { "route nav failure, $route#$pathParams" }
-        check(pathParams.size == navItem.args.size) { "route nav failure, $route#$pathParams" }
-        for (i in 0 until navItem.args.size) {
-            route = route.replace("{${navItem.args[i].name}}", pathParams[i])
-        }
-    }
-    return route
-}
-
-fun NavHostController.nav(
-    navItem: NavigationItems,
-    pathParams: List<String>? = null
-) {
-    navigate(route = buildJumpRoute(navItem, pathParams)) {
+fun NavHostController.nav(navItem: NavigationItems) {
+    navigate(navItem) {
         launchSingleTop = true
     }
 }

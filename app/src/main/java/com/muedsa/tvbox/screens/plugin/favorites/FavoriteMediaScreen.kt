@@ -119,10 +119,7 @@ fun FavoriteMediaScreen(
                                 }
                                 favoriteMediaScreenViewModel.remove(item)
                             } else {
-                                navController.nav(
-                                    NavigationItems.Detail,
-                                    listOf(item.mediaId, item.mediaDetailUrl)
-                                )
+                                navController.nav(NavigationItems.Detail(item.mediaId, item.mediaDetailUrl))
                             }
                         }
                     )

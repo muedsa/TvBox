@@ -50,10 +50,7 @@ fun SearchResult(row: MediaCardRow) {
                     backgroundState.type = ScreenBackgroundType.BLUR
                 },
                 onItemClick = {
-                    navController.nav(
-                        NavigationItems.Detail,
-                        listOf(item.id, item.detailUrl)
-                    )
+                    navController.nav(NavigationItems.Detail(item.id, item.detailUrl))
                 }
             )
         }

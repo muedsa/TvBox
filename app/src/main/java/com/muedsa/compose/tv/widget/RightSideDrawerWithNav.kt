@@ -63,9 +63,9 @@ fun RightSideDrawerWithNavDrawerContent(
     }
 }
 
-class RightSideDrawerWithNavController(
-    val navController: NavController,
-    val drawerRoute: String,
+class RightSideDrawerWithNavController<T : Any>(
+    private val navController: NavController,
+    private val drawerRoute: T,
 ) : RightSideDrawerController() {
 
     override fun pop(content: @Composable () -> Unit) {

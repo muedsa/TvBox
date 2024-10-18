@@ -1,58 +1,35 @@
 package com.muedsa.tvbox.screens
 
-import androidx.navigation.NamedNavArgument
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
+import kotlinx.serialization.Serializable
 
-sealed class NavigationItems(
-    val route: String,
-    val args: List<NamedNavArgument> = emptyList(),
-) {
-    data object Main : NavigationItems(route ="home")
+@Serializable
+sealed interface NavigationItems {
 
-    data object PluginHome : NavigationItems(route = "plugin_home")
+    @Serializable
+    data object Main : NavigationItems
 
-    data object Detail : NavigationItems(
-        route = "detail?id={id}&url={url}",
-        args = listOf(
-            navArgument("id") {
-                type = NavType.StringType
-                defaultValue = ""
-            },
-            navArgument("url") {
-                type = NavType.StringType
-                defaultValue = ""
-            },
-        )
-    )
+    @Serializable
+    data object PluginHome : NavigationItems
 
-    data object Player : NavigationItems(
-        route = "player?url={url}&pluginPackage={pluginPackage}&mediaId={mediaId}&episodeId={episodeId}&danEpisodeId={danEpisodeId}",
-        args = listOf(
-            navArgument("url") {
-                type = NavType.StringType
-                defaultValue = ""
-            },
-            navArgument("pluginPackage") {
-                type = NavType.StringType
-                defaultValue = ""
-            },
-            navArgument("mediaId") {
-                type = NavType.StringType
-                defaultValue = ""
-            },
-            navArgument("episodeId") {
-                type = NavType.StringType
-                defaultValue = ""
-            },
-            navArgument("danEpisodeId") {
-                type = NavType.LongType
-                defaultValue = -1
-            },
-        )
-    )
+    @Serializable
+    data class Detail(
+        val id: String,
+        val url: String
+    ) : NavigationItems
 
-    data object Setting : NavigationItems(route = "setting")
+    @Serializable
+    data class Player(
+        val url: String,
+        val httpHeadersJson: String? = null,
+        val pluginPackage: String,
+        val mediaId: String,
+        val episodeId: String,
+        val danEpisodeId: Long = -1,
+    ) : NavigationItems
 
-    data object RightSideDrawer : NavigationItems(route = "right_side_drawer")
+    @Serializable
+    data object Setting : NavigationItems
+
+    @Serializable
+    data object RightSideDrawer : NavigationItems
 }
