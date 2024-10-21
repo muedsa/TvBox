@@ -227,10 +227,11 @@ fun MediaDetailWidget(
                     )
                     Text(
                         modifier = Modifier
-                            .widthIn(max = 128.dp)
+                            .widthIn(max = 256.dp)
                             .basicMarquee(),
-                        text = if (enabledDanmakuState.value) danBangumiInfo?.animeTitle
-                            ?: "--" else "关闭",
+                        text = if (enabledDanmakuState.value)
+                            danBangumiInfo?.let { "${it.animeTitle}[Rating ${it.rating}]" } ?: "--"
+                        else "关闭",
                         color = MaterialTheme.colorScheme.onBackground,
                         style = MaterialTheme.typography.titleMedium
                     )
