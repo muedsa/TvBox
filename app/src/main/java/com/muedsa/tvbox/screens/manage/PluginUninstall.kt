@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Button
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.muedsa.compose.tv.widget.RightSideDrawerController
 import com.muedsa.tvbox.plugin.PluginInfo
+import com.muedsa.tvbox.plugin.PluginManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,16 +31,87 @@ fun popUninstallPluginDrawer(
     onSuccess: () -> Unit,
     onFailure: (Throwable?) -> Unit
 ) {
-    popRemoveFileDrawer(
-        file = File(pluginInfo.sourcePath),
-        title = "确定删除插件?",
-        content = "${pluginInfo.name}\n" +
-                "${pluginInfo.packageName}\n" +
-                pluginInfo.sourcePath,
-        drawerController = drawerController,
-        onSuccess = onSuccess,
-        onFailure = onFailure
-    )
+    drawerController.pop {
+        val context = LocalContext.current
+        val scope = rememberCoroutineScope()
+        Column(
+            modifier = Modifier
+                .width(IntrinsicSize.Max)
+                .fillMaxHeight(),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "确定删除插件?",
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                modifier = Modifier
+                    .width(300.dp)
+                    .basicMarquee(),
+                text = pluginInfo.name,
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                modifier = Modifier
+                    .width(300.dp)
+                    .basicMarquee(),
+                text = pluginInfo.packageName,
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                modifier = Modifier
+                    .width(300.dp)
+                    .basicMarquee(),
+                text = pluginInfo.sourcePath,
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.height(100.dp))
+            Row(
+                modifier = Modifier.width(300.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(
+                    onClick = {
+                        scope.launch(Dispatchers.IO) {
+                            try {
+                                if (PluginManager.uninstallPlugin(context, pluginInfo)) {
+                                    withContext(Dispatchers.Main) {
+                                        drawerController.close()
+                                        onSuccess()
+                                    }
+                                } else {
+                                    withContext(Dispatchers.Main) {
+                                        drawerController.close()
+                                        onFailure(null)
+                                    }
+                                }
+                            } catch (throwable: Throwable) {
+                                Timber.e(throwable)
+                                withContext(Dispatchers.Main) {
+                                    drawerController.close()
+                                    onFailure(throwable)
+                                }
+                            }
+                        }
+                    }
+                ) {
+                    Text("确定")
+                }
+                Button(
+                    onClick = {
+                        drawerController.close()
+                    }
+                ) {
+                    Text("取消")
+                }
+            }
+        }
+    }
 }
 
 fun popRemoveFileDrawer(

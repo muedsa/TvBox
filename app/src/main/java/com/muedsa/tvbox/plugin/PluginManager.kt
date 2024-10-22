@@ -35,6 +35,8 @@ object PluginManager {
 //            .resolve("plugins")
 //            .apply { mkdirs() }
 
+    fun getPluginOATDir(context: Context): File = getPluginDir(context).resolve("oat")
+
     private var _tvBoxContext: TvBoxContext? = null
 
     @Synchronized
@@ -180,4 +182,28 @@ object PluginManager {
         val newFile = getPluginDir(context).resolve(info.packageName + PLUGIN_FILE_SUFFIX)
         file.copyTo(newFile, true).setReadOnly()
     }
+
+    suspend fun uninstallPlugin(context: Context, pluginInfo: PluginInfo): Boolean =
+        mutex.withLock {
+            val pluginFile = File(pluginInfo.sourcePath)
+            var flag = false
+            if (pluginFile.exists()) {
+                flag = pluginFile.deleteRecursively()
+                if (flag) Timber.d("delete file ${pluginFile.absolutePath}")
+                val oatDir = getPluginOATDir(context)
+                if (oatDir.exists() && oatDir.isDirectory) {
+                    oatDir.listFiles()
+                        ?.filter { it.isDirectory }
+                        ?.forEach { childDir ->
+                            childDir.listFiles()
+                                ?.filter {
+                                    it.isFile && (it.name == "${pluginInfo.packageName}.odex"
+                                            || it.name == "${pluginInfo.packageName}.vdex")
+                                }
+                                ?.forEach { if (it.deleteRecursively()) Timber.d("delete file ${it.absolutePath}") }
+                        }
+                }
+            }
+            return@withLock flag
+        }
 }
