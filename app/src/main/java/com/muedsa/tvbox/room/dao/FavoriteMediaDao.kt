@@ -21,4 +21,7 @@ interface FavoriteMediaDao {
 
     @Query("DELETE FROM favorite_media WHERE plugin_package = :pluginPackage and media_id = :mediaId")
     suspend fun deleteByPluginPackageAndMediaId(pluginPackage: String, mediaId: String)
+
+    @Query("DELETE FROM favorite_media WHERE plugin_package = :pluginPackage")
+    suspend fun deleteByPluginPackage(pluginPackage: String)
 }

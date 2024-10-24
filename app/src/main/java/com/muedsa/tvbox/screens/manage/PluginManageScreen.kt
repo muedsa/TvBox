@@ -140,6 +140,7 @@ fun PluginManage(
                             } else {
                                 popUninstallPluginDrawer(
                                     pluginInfo = it,
+                                    pluginManageScreenViewModel = pluginManageScreenViewModel,
                                     drawerController = drawerController,
                                     onSuccess = {
                                         pluginManageScreenViewModel.refreshPluginInfoList()
@@ -150,11 +151,15 @@ fun PluginManage(
                                 )
                             }
                         } else {
-                            pluginManageScreenViewModel.launchPlugin(pluginInfo = it, onSuccess = {
-                                navController.nav(NavigationItems.PluginHome)
-                            }, onFailure = {
-                                toastController.error(it)
-                            })
+                            pluginManageScreenViewModel.launchPlugin(
+                                pluginInfo = it,
+                                onSuccess = {
+                                    navController.nav(NavigationItems.PluginHome)
+                                },
+                                onFailure = {
+                                    toastController.error(it)
+                                }
+                            )
                         }
                     },
                     image = {
@@ -211,6 +216,7 @@ fun PluginManage(
                         if (deleteMode) {
                             popRemoveFileDrawer(
                                 file = it,
+                                pluginManageScreenViewModel = pluginManageScreenViewModel,
                                 drawerController = drawerController,
                                 onSuccess = {
                                     pluginManageScreenViewModel.refreshPluginInfoList()

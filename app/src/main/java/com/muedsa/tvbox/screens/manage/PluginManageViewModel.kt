@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.muedsa.tvbox.plugin.LoadedPlugins
 import com.muedsa.tvbox.plugin.PluginInfo
 import com.muedsa.tvbox.plugin.PluginManager
+import com.muedsa.tvbox.room.dao.EpisodeProgressDao
+import com.muedsa.tvbox.room.dao.FavoriteMediaDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +26,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PluginManageScreenViewModel @Inject constructor(
-    @ApplicationContext val context: Context
+    @ApplicationContext val context: Context,
+    private val favoriteMediaDao: FavoriteMediaDao,
+    private val episodeProgressDao: EpisodeProgressDao
 ) : ViewModel() {
 
     private val internalUiState = MutableSharedFlow<PluginManageUiState>()
@@ -101,6 +105,50 @@ class PluginManageScreenViewModel @Inject constructor(
             } catch (throwable: Throwable) {
                 Timber.e(throwable)
                 withContext(Dispatchers.Main) { onFailure(throwable) }
+            }
+        }
+    }
+
+    fun uninstallPlugin(pluginInfo: PluginInfo, onSuccess: () -> Unit, onFailure: (Throwable?) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                if (PluginManager.uninstallPlugin(context, pluginInfo)) {
+                    favoriteMediaDao.deleteByPluginPackage(pluginPackage = pluginInfo.packageName)
+                    episodeProgressDao.deleteByPluginPackage(pluginPackage = pluginInfo.packageName)
+                    withContext(Dispatchers.Main) {
+                        onSuccess()
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        onFailure(null)
+                    }
+                }
+            } catch (throwable: Throwable) {
+                Timber.e(throwable)
+                withContext(Dispatchers.Main) {
+                    onFailure(throwable)
+                }
+            }
+        }
+    }
+
+    fun deleteFile(file: File, onSuccess: () -> Unit, onFailure: (Throwable?) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                if (file.deleteRecursively()) {
+                    withContext(Dispatchers.Main) {
+                        onSuccess()
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        onFailure(null)
+                    }
+                }
+            } catch (throwable: Throwable) {
+                Timber.e(throwable)
+                withContext(Dispatchers.Main) {
+                    onFailure(throwable)
+                }
             }
         }
     }

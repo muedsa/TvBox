@@ -23,4 +23,7 @@ interface EpisodeProgressDao {
 
     @Upsert
     suspend fun upsert(model: EpisodeProgressModel)
+
+    @Query("DELETE FROM episode_progress WHERE plugin_package = :pluginPackage")
+    suspend fun deleteByPluginPackage(pluginPackage: String)
 }
