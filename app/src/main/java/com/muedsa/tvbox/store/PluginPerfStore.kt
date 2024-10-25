@@ -28,5 +28,23 @@ class PluginPerfStore(
         }
     }
 
+    override suspend fun filter(predicate: (String) -> Boolean): Map<String, Any> {
+        val globalStoreMap = pluginDataStore.data.first().asMap()
+        if (globalStoreMap.isEmpty()) {
+            return emptyMap()
+        }
+        val globalKeyPrefix = PluginKeyCache.getGlobalKeyPrefix(pluginPackage)
+        val pluginStoreMap = mutableMapOf<String, Any>()
+        globalStoreMap.forEach {
+            if (it.key.name.startsWith(globalKeyPrefix)) {
+                val pluginKeyName = it.key.name.removePrefix(globalKeyPrefix)
+                if (predicate.invoke(pluginKeyName)) {
+                    pluginStoreMap[pluginKeyName] = it.value
+                }
+            }
+        }
+        return pluginStoreMap
+    }
+
 
 }
