@@ -4,8 +4,11 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import com.muedsa.tvbox.api.plugin.IPlugin
 import com.muedsa.tvbox.api.plugin.TvBoxContext
+import com.muedsa.tvbox.store.PluginPerfStore
 import com.muedsa.util.AppUtil
 import dalvik.system.PathClassLoader
 import kotlinx.coroutines.sync.Mutex
@@ -40,11 +43,16 @@ object PluginManager {
     private var _tvBoxContext: TvBoxContext? = null
 
     @Synchronized
-    private fun getTvBoxContext(context: Context): TvBoxContext {
+    private fun getTvBoxContext(
+        context: Context,
+        pluginInfo: PluginInfo,
+        pluginDataStore: DataStore<Preferences>
+    ): TvBoxContext {
         return _tvBoxContext ?: TvBoxContext(
             screenWidth = context.resources.configuration.screenWidthDp,
             screenHeight = context.resources.configuration.screenHeightDp,
-            debug = AppUtil.debuggable(context)
+            debug = AppUtil.debuggable(context),
+            store = PluginPerfStore(pluginPackage = pluginInfo.packageName, pluginDataStore = pluginDataStore)
         )
     }
 
@@ -155,7 +163,11 @@ object PluginManager {
         )
     }
 
-    suspend fun launchPlugin(context: Context, pluginInfo: PluginInfo) = mutex.withLock {
+    suspend fun launchPlugin(
+        context: Context,
+        pluginInfo: PluginInfo,
+        pluginDataStore: DataStore<Preferences>
+    ) = mutex.withLock {
         _pluginPool.computeIfAbsent(pluginInfo.sourcePath) {
             val pluginFile = File(pluginInfo.sourcePath)
             if (!pluginFile.exists() || !pluginFile.isFile) throw RuntimeException("plugin file not found")
@@ -165,7 +177,11 @@ object PluginManager {
                 Plugin(
                     pluginInfo = pluginInfo,
                     pluginInstance = pluginClz.getDeclaredConstructor(TvBoxContext::class.java)
-                        .newInstance(getTvBoxContext(context)) as IPlugin
+                        .newInstance(getTvBoxContext(
+                            context = context,
+                            pluginInfo = pluginInfo,
+                            pluginDataStore = pluginDataStore
+                        )) as IPlugin
                 )
             } catch (e: Exception) {
                 Timber.e(e)

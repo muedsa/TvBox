@@ -11,6 +11,7 @@ import com.muedsa.tvbox.plugin.PluginInfo
 import com.muedsa.tvbox.plugin.PluginManager
 import com.muedsa.tvbox.room.dao.EpisodeProgressDao
 import com.muedsa.tvbox.room.dao.FavoriteMediaDao
+import com.muedsa.tvbox.store.DataStoreRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +29,8 @@ import javax.inject.Inject
 class PluginManageScreenViewModel @Inject constructor(
     @ApplicationContext val context: Context,
     private val favoriteMediaDao: FavoriteMediaDao,
-    private val episodeProgressDao: EpisodeProgressDao
+    private val episodeProgressDao: EpisodeProgressDao,
+    private val dateStoreRepo: DataStoreRepo,
 ) : ViewModel() {
 
     private val internalUiState = MutableSharedFlow<PluginManageUiState>()
@@ -70,7 +72,11 @@ class PluginManageScreenViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             runCatching {
-                PluginManager.launchPlugin(context, pluginInfo)
+                PluginManager.launchPlugin(
+                    context = context,
+                    pluginInfo = pluginInfo,
+                    pluginDataStore = dateStoreRepo.pluginDataStore
+                )
             }.onSuccess {
                 onSuccess()
             }.onFailure {
