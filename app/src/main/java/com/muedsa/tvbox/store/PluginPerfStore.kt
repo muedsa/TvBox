@@ -21,13 +21,6 @@ class PluginPerfStore(
         return get(key) ?: default
     }
 
-    override suspend fun <T> update(key: PluginPerfKey<T>, value: T) {
-        val globalKey = PluginKeyCache.getGlobalKey(pluginPackage = pluginPackage, key = key)
-        pluginDataStore.edit {
-            it[globalKey] = value
-        }
-    }
-
     override suspend fun filter(predicate: (String) -> Boolean): Map<String, Any> {
         val globalStoreMap = pluginDataStore.data.first().asMap()
         if (globalStoreMap.isEmpty()) {
@@ -46,5 +39,17 @@ class PluginPerfStore(
         return pluginStoreMap
     }
 
+    override suspend fun <T> update(key: PluginPerfKey<T>, value: T) {
+        val globalKey = PluginKeyCache.getGlobalKey(pluginPackage = pluginPackage, key = key)
+        pluginDataStore.edit {
+            it[globalKey] = value
+        }
+    }
 
+    override suspend fun <T> remove(key: PluginPerfKey<T>) {
+        val globalKey = PluginKeyCache.getGlobalKey(pluginPackage = pluginPackage, key = key)
+        pluginDataStore.edit {
+            it.remove(globalKey)
+        }
+    }
 }
