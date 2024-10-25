@@ -176,12 +176,12 @@ object PluginManager {
                 val pluginClz = classLoader.loadClass(pluginInfo.entryPointImpl)
                 Plugin(
                     pluginInfo = pluginInfo,
-                    pluginInstance = pluginClz.getDeclaredConstructor(TvBoxContext::class.java)
+                    pluginInstance = (pluginClz.getDeclaredConstructor(TvBoxContext::class.java)
                         .newInstance(getTvBoxContext(
                             context = context,
                             pluginInfo = pluginInfo,
                             pluginDataStore = pluginDataStore
-                        )) as IPlugin
+                        )) as IPlugin).apply { onInit() }
                 )
             } catch (e: Exception) {
                 Timber.e(e)
