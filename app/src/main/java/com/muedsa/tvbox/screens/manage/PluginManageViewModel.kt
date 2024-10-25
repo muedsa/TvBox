@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Environment
 import androidx.compose.runtime.Immutable
+import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.muedsa.tvbox.plugin.LoadedPlugins
@@ -12,6 +13,7 @@ import com.muedsa.tvbox.plugin.PluginManager
 import com.muedsa.tvbox.room.dao.EpisodeProgressDao
 import com.muedsa.tvbox.room.dao.FavoriteMediaDao
 import com.muedsa.tvbox.store.DataStoreRepo
+import com.muedsa.tvbox.store.PluginKeyCache
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -121,6 +123,14 @@ class PluginManageScreenViewModel @Inject constructor(
                 if (PluginManager.uninstallPlugin(context, pluginInfo)) {
                     favoriteMediaDao.deleteByPluginPackage(pluginPackage = pluginInfo.packageName)
                     episodeProgressDao.deleteByPluginPackage(pluginPackage = pluginInfo.packageName)
+                    dateStoreRepo.pluginDataStore.edit { prefs ->
+                        val keys = prefs.asMap().keys
+                        keys.forEach { key ->
+                            if (key.name.startsWith(PluginKeyCache.getGlobalKeyPrefix(pluginPackage = pluginInfo.packageName))) {
+                                prefs.remove(key)
+                            }
+                        }
+                    }
                     withContext(Dispatchers.Main) {
                         onSuccess()
                     }

@@ -8,10 +8,12 @@ object PluginKeyCache {
 
     private const val GLOBAL_KEY_NAME_SEPARATOR = ":"
 
+    fun getGlobalKeyPrefix(pluginPackage: String): String = "$pluginPackage$GLOBAL_KEY_NAME_SEPARATOR"
+
     @Synchronized
     @Suppress("UNCHECKED_CAST")
     fun <T> getGlobalKey(pluginPackage: String, key: PluginPerfKey<T>): Preferences.Key<T> {
-        val name = "$pluginPackage$GLOBAL_KEY_NAME_SEPARATOR${key.name}"
+        val name = "${getGlobalKeyPrefix(pluginPackage)}${key.name}"
         return cache.computeIfAbsent(name) {
             key.getAndroidKey(name)
         } as Preferences.Key<T>
