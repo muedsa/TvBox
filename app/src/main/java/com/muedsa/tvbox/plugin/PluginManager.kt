@@ -11,6 +11,7 @@ import com.muedsa.tvbox.api.plugin.TvBoxContext
 import com.muedsa.tvbox.store.PluginPerfStore
 import com.muedsa.util.AppUtil
 import dalvik.system.PathClassLoader
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
@@ -174,14 +175,20 @@ object PluginManager {
             val classLoader = PathClassLoader(pluginFile.path, context.classLoader)
             try {
                 val pluginClz = classLoader.loadClass(pluginInfo.entryPointImpl)
-                Plugin(
-                    pluginInfo = pluginInfo,
-                    pluginInstance = (pluginClz.getDeclaredConstructor(TvBoxContext::class.java)
-                        .newInstance(getTvBoxContext(
+                val pluginInstance = pluginClz.getDeclaredConstructor(TvBoxContext::class.java)
+                    .newInstance(
+                        getTvBoxContext(
                             context = context,
                             pluginInfo = pluginInfo,
                             pluginDataStore = pluginDataStore
-                        )) as IPlugin).apply { onInit() }
+                        )
+                    ) as IPlugin
+                runBlocking {
+                    pluginInstance.onInit()
+                }
+                Plugin(
+                    pluginInfo = pluginInfo,
+                    pluginInstance = pluginInstance
                 )
             } catch (e: Exception) {
                 Timber.e(e)
@@ -189,6 +196,7 @@ object PluginManager {
             }
         }.let {
             _currentPlugin = it
+            it.pluginInstance.onLaunched()
         }
     }
 
