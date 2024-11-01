@@ -290,7 +290,10 @@ fun MediaDetailWidget(
                                     )
                                 )
                             },
-                            onFailure = { toastController.error(it) },
+                            onFailure = {
+                                episodeClickLoading = false
+                                toastController.error(it)
+                            },
                         )
                     },
                     onChangeEpisodeRelation = {
