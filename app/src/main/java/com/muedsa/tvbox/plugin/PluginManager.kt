@@ -1,5 +1,6 @@
 package com.muedsa.tvbox.plugin
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -9,6 +10,7 @@ import androidx.datastore.preferences.core.Preferences
 import com.muedsa.tvbox.api.plugin.IPlugin
 import com.muedsa.tvbox.api.plugin.TvBoxContext
 import com.muedsa.tvbox.store.PluginPerfStore
+import com.muedsa.tvbox.tool.NetworkUtils
 import com.muedsa.util.AppUtil
 import dalvik.system.PathClassLoader
 import kotlinx.coroutines.runBlocking
@@ -23,7 +25,6 @@ object PluginManager {
     private val mutex = Mutex()
 
     private var _pluginInfoMap: Map<String, PluginInfo>? = null
-    fun getPluginInfoList(): List<PluginInfo>? = _pluginInfoMap?.values?.toList()
 
     private val _pluginPool: MutableMap<String, Plugin> = mutableMapOf()
     private var _currentPlugin: Plugin? = null
@@ -49,14 +50,19 @@ object PluginManager {
         pluginInfo: PluginInfo,
         pluginDataStore: DataStore<Preferences>
     ): TvBoxContext {
-        return _tvBoxContext ?: TvBoxContext(
-            screenWidth = context.resources.configuration.screenWidthDp,
-            screenHeight = context.resources.configuration.screenHeightDp,
-            debug = AppUtil.debuggable(context),
-            store = PluginPerfStore(pluginPackage = pluginInfo.packageName, pluginDataStore = pluginDataStore)
-        )
+        if (_tvBoxContext == null) {
+            _tvBoxContext = TvBoxContext(
+                screenWidth = context.resources.configuration.screenWidthDp,
+                screenHeight = context.resources.configuration.screenHeightDp,
+                debug = AppUtil.debuggable(context),
+                store = PluginPerfStore(pluginPackage = pluginInfo.packageName, pluginDataStore = pluginDataStore),
+                iPv6Status = NetworkUtils.checkIPv6Support()
+            )
+        }
+        return _tvBoxContext!!
     }
 
+    @SuppressLint("QueryPermissionsNeeded")
     suspend fun loadPlugins(context: Context): LoadedPlugins = mutex.withLock {
         val packageManager = context.packageManager
         _pluginInfoMap = null
@@ -93,7 +99,7 @@ object PluginManager {
                             pluginMap[it.packageName] = it
                         }
                 }.onFailure {
-                    Timber.e("加载插件失败 ${pluginFile.absolutePath}", it)
+                    Timber.e(it, "加载插件失败 ${pluginFile.absolutePath}")
                 }
             }
 
@@ -110,7 +116,7 @@ object PluginManager {
                             pluginMap[it.packageName] = it
                         }
                     }.onFailure {
-                        Timber.e("加载外部插件失败 ${info.packageName}", it)
+                        Timber.e(it, "加载外部插件失败 ${info.packageName}")
                     }
                 }
         }

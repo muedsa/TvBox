@@ -51,7 +51,7 @@ class PluginManageScreenViewModel @Inject constructor(
                     apiVersion = getAppApiVersion()
                 )
             } catch (throwable: Throwable) {
-                Timber.e("加载插件列表失败", throwable)
+                Timber.e(throwable, "加载插件列表失败")
                 PluginManageUiState.Error(throwable.message ?: "加载插件列表失败", throwable)
             }
             withContext(Dispatchers.Main) {
@@ -72,7 +72,7 @@ class PluginManageScreenViewModel @Inject constructor(
         onSuccess: () -> Unit,
         onFailure: (e: Throwable) -> Unit
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             runCatching {
                 PluginManager.launchPlugin(
                     context = context,
@@ -80,9 +80,13 @@ class PluginManageScreenViewModel @Inject constructor(
                     pluginDataStore = dateStoreRepo.pluginDataStore
                 )
             }.onSuccess {
-                onSuccess()
+                withContext(Dispatchers.Main) {
+                    onSuccess()
+                }
             }.onFailure {
-                onFailure(it)
+                withContext(Dispatchers.Main) {
+                    onFailure(it)
+                }
             }
         }
     }
