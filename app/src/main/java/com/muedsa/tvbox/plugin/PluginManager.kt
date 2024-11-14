@@ -10,7 +10,7 @@ import androidx.datastore.preferences.core.Preferences
 import com.muedsa.tvbox.api.plugin.IPlugin
 import com.muedsa.tvbox.api.plugin.TvBoxContext
 import com.muedsa.tvbox.store.PluginPerfStore
-import com.muedsa.tvbox.tool.NetworkUtils
+import com.muedsa.tvbox.tool.IPv6Checker
 import com.muedsa.util.AppUtil
 import dalvik.system.PathClassLoader
 import kotlinx.coroutines.runBlocking
@@ -56,7 +56,7 @@ object PluginManager {
                 screenHeight = context.resources.configuration.screenHeightDp,
                 debug = AppUtil.debuggable(context),
                 store = PluginPerfStore(pluginPackage = pluginInfo.packageName, pluginDataStore = pluginDataStore),
-                iPv6Status = NetworkUtils.checkIPv6Support()
+                iPv6Status = IPv6Checker.checkIPv6Support()
             )
         }
         return _tvBoxContext!!
