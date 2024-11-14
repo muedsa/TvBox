@@ -31,6 +31,7 @@ class PluginHomeViewModel @Inject constructor(
 
     fun refreshRowsData() {
         viewModelScope.launch(Dispatchers.IO) {
+            internalUiState.emit(PluginHomeUiState.Loading)
             val state = try {
                 PluginManager.getCurrentPlugin()
                     .mainScreenService
