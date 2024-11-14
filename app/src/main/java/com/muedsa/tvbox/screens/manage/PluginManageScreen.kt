@@ -128,7 +128,8 @@ fun PluginManage(
         LazyVerticalGrid(
             modifier = Modifier
                 .padding(start = 0.dp, top = 20.dp, end = 20.dp, bottom = 20.dp)
-                .weight(1f), columns = GridCells.Fixed(3)
+                .weight(1f),
+            columns = GridCells.Fixed(3)
         ) {
             items(loadedPlugins.plugins) {
                 WideClassicCard(
@@ -188,7 +189,7 @@ fun PluginManage(
                                 val s = remember { style.copy(fontSize = style.fontSize.times(0.8f)) }
                                 if (apiVersion != it.apiVersion) {
                                     Text(
-                                        text = "API版本不一致(${it.apiVersion} != $apiVersion)",
+                                        text = "API版本不一致(API:${it.apiVersion})",
                                         color = Color(0XFF_FB_65_42),
                                         style = s
                                     )
@@ -303,7 +304,7 @@ fun PluginManage(
                     .padding(top = 16.dp)
                     .align(Alignment.CenterEnd)
                     .graphicsLayer { alpha = 0.6f },
-                text = "APP版本: ${AppUtil.getVersionInfo(context)}${if (AppUtil.debuggable(context)) " DEBUG" else ""}",
+                text = "APP版本: ${AppUtil.getVersionInfo(context)} API:$apiVersion${if (AppUtil.debuggable(context)) " DEBUG" else ""}",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelSmall
             )
