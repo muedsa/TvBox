@@ -1,13 +1,10 @@
 package com.muedsa.tvbox.screens.plugin.search
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.muedsa.compose.tv.theme.ScreenPaddingLeft
 import com.muedsa.compose.tv.useLocalToastMsgBoxController
 import com.muedsa.compose.tv.widget.ErrorScreen
 import com.muedsa.compose.tv.widget.LoadingScreen
@@ -20,7 +17,7 @@ fun SearchScreen(
     val toastController = useLocalToastMsgBoxController()
     val uiState by searchScreenViewModel.uiState.collectAsStateWithLifecycle()
 
-    Column(modifier = Modifier.padding(start = ScreenPaddingLeft)) {
+    Column {
         SearchInput(searching = uiState is SearchScreenUiState.Searching) {
             searchScreenViewModel.searchMedia(it)
         }

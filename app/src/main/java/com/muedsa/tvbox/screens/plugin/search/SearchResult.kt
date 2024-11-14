@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.muedsa.compose.tv.model.ContentModel
 import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
+import com.muedsa.compose.tv.theme.ScreenPaddingLeft
 import com.muedsa.compose.tv.useLocalNavHostController
 import com.muedsa.compose.tv.widget.ImageContentCard
 import com.muedsa.compose.tv.widget.ScreenBackgroundType
@@ -29,6 +30,7 @@ fun SearchResult(row: MediaCardRow) {
     val navController = useLocalNavHostController()
 
     LazyVerticalGrid(
+        modifier = Modifier.padding(start = ScreenPaddingLeft),
         columns = GridCells.Adaptive(row.cardWidth.dp + ImageCardRowCardPadding),
         contentPadding = PaddingValues(
             top = ImageCardRowCardPadding,
