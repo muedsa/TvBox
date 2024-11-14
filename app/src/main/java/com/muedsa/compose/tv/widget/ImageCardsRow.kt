@@ -48,7 +48,7 @@ fun <T> ImageCardsRow(
     onItemClick: (index: Int, item: T) -> Unit = { _, _ -> }
 ) {
 
-    val (rowFR, firstItemFR) = remember { FocusRequester.createRefs() }
+    val firstItemFR = remember { FocusRequester() }
 
     Column(modifier) {
         Text(
@@ -61,10 +61,7 @@ fun <T> ImageCardsRow(
         Spacer(modifier = Modifier.height(ImageCardRowCardPadding))
         LazyRow(
             modifier = Modifier
-                .focusRequester(rowFR)
-                .focusRestorer {
-                    firstItemFR
-                },
+                .focusRestorer { firstItemFR },
             state = state,
             contentPadding = PaddingValues(
                 start = ImageCardRowCardPadding,
@@ -112,8 +109,7 @@ fun <T> StandardImageCardsRow(
     onItemFocus: (index: Int, item: T) -> Unit = { _, _ -> },
     onItemClick: (index: Int, item: T) -> Unit = { _, _ -> }
 ) {
-    val (rowFR, firstItemFR) = remember { FocusRequester.createRefs() }
-
+    val firstItemFR = remember { FocusRequester() }
     val rowBottomPadding =
         if (modelList.isNotEmpty() && modelList.anyMatchWithIndex { index, item ->
                 contentFn(index, item) != null
@@ -131,10 +127,7 @@ fun <T> StandardImageCardsRow(
         Spacer(modifier = Modifier.height(10.dp))
         LazyRow(
             modifier = Modifier
-                .focusRequester(rowFR)
-                .focusRestorer {
-                    firstItemFR
-                },
+                .focusRestorer { firstItemFR },
             state = state,
             contentPadding = PaddingValues(
                 start = ImageCardRowCardPadding,
