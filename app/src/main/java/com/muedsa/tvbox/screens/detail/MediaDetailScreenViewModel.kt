@@ -73,21 +73,23 @@ class MediaDetailScreenViewModel @Inject constructor(
 
     private val _favoriteFlow = combine(_refreshFavoriteFlow, _mediaDetailFlow) { _, wrapper ->
         if (wrapper.data != null) {
-            favoriteMediaDao.getOneByPluginPackageAndMediaId(
+            val favoriteMedia = favoriteMediaDao.getOneByPluginPackageAndMediaId(
                 pluginPackage = wrapper.data.first.packageName,
                 mediaId = wrapper.data.third.id
             )
-        } else null
+            Pair(wrapper.data, favoriteMedia)
+        } else Pair(wrapper.data, null)
     }
 
     private val _mediaProgressFlow = combine(_refreshProgressFlow, _mediaDetailFlow) { _, wrapper ->
         if (wrapper.data != null) {
-            episodeProgressDao.getListByPluginPackageAndMediaId(
+            val progressMap = episodeProgressDao.getListByPluginPackageAndMediaId(
                 pluginPackage = wrapper.data.first.packageName,
                 mediaId = wrapper.data.third.id
             ).associateBy({ it.episodeId }, { it })
+            Pair(wrapper.data, progressMap)
         } else {
-            emptyMap()
+            Pair(wrapper.data, emptyMap())
         }
     }
 
@@ -95,22 +97,22 @@ class MediaDetailScreenViewModel @Inject constructor(
 
     private val _danBangumiListFlow =
         combine(_mediaDetailFlow, _banBangumiSearchQueryFlow) { wrapper, searchQuery ->
-            Timber.tag("flow").d("_danBangumiListFlow")
             if (wrapper.data != null && wrapper.data.second.enableDanDanPlaySearch) {
                 try {
                     val resp =
                         danDanPlayApiService.searchAnime(searchQuery ?: wrapper.data.third.title)
-                    if (resp.errorCode == 0) {
+                    val list = if (resp.errorCode == 0) {
                         resp.animes ?: emptyList()
                     } else {
                         Timber.d("danDanPlayApiService.searchAnime(${wrapper.data.third.title}) ${resp.errorMessage}")
                         emptyList()
                     }
+                    Pair(wrapper.data, list)
                 } catch (throwable: Throwable) {
                     Timber.e(throwable)
-                    emptyList()
+                    Pair(wrapper.data, emptyList())
                 }
-            } else null
+            } else Pair(wrapper.data, null)
         }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000)
@@ -118,11 +120,15 @@ class MediaDetailScreenViewModel @Inject constructor(
 
     private val _selectedDanBangumiSearchFlow = MutableStateFlow<BangumiSearch?>(null)
 
-    private val _danBangumiDetailFlow = combine(_danBangumiListFlow, _selectedDanBangumiSearchFlow) { list, selected ->
-        val anime = if (!list.isNullOrEmpty()){
-            selected?.let { list.find { it.animeId == selected.animeId } } ?: list.firstOrNull()
+    private val _danBangumiDetailFlow = combine(
+        _danBangumiListFlow,
+        _selectedDanBangumiSearchFlow
+    ) { danBangumiListPair, selected ->
+        val list = danBangumiListPair.second
+        val anime = if (list.isNullOrEmpty()) {
+            selected?.let { list?.find { it.animeId == selected.animeId } } ?: list?.firstOrNull()
         } else null
-        if (anime != null) {
+        val danBangumiDetail = if (anime != null) {
             try {
                 val resp = danDanPlayApiService.getAnime(anime.animeId)
                 if (resp.errorCode == 0) {
@@ -136,6 +142,7 @@ class MediaDetailScreenViewModel @Inject constructor(
                 null
             }
         } else null
+        Pair(danBangumiListPair.first, danBangumiDetail)
     }
 
     fun refreshMediaDetail(navItem: NavigationItems.Detail) {
@@ -228,25 +235,27 @@ class MediaDetailScreenViewModel @Inject constructor(
                 _mediaProgressFlow,
                 _danBangumiListFlow,
                 _danBangumiDetailFlow
-            ) { wrapper, favorite, progressMap, danBangumiList, danBangumiInfo ->
-                if (wrapper.data != null) {
-                    MediaDetailScreenUiState.Ready(
-                        pluginInfo = wrapper.data.first,
-                        mediaDetail = wrapper.data.third,
-                        favorite = favorite != null,
-                        progressMap = progressMap,
-                        danBangumiList = danBangumiList,
-                        danBangumiInfo = danBangumiInfo
-                    )
-                } else {
+            ) { wrapper, favoritePair, progressMapPair, danBangumiListPair, danBangumiInfoPair ->
+                if (progressMapPair.first == null) {
                     Timber.e(wrapper.error, wrapper.error?.message ?: "error")
                     MediaDetailScreenUiState.Error(
                         error = wrapper.error?.message ?: "error",
                         exception = wrapper.error
                     )
-                }
-            }.collect {
-                Timber.tag("flow").d("push uiStatus")
+                } else if (wrapper.data != null && favoritePair.first == wrapper.data
+                    && progressMapPair.first == wrapper.data && danBangumiListPair.first == wrapper.data
+                    && danBangumiInfoPair.first == wrapper.data
+                ) {
+                    MediaDetailScreenUiState.Ready(
+                        pluginInfo = wrapper.data.first,
+                        mediaDetail = wrapper.data.third,
+                        favorite = favoritePair.second != null,
+                        progressMap = progressMapPair.second,
+                        danBangumiList = danBangumiListPair.second,
+                        danBangumiInfo = danBangumiInfoPair.second
+                    )
+                } else null
+            }.filterNotNull().collect {
                 _uiState.emit(it)
             }
         }
