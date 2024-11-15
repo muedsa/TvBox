@@ -7,6 +7,7 @@ import com.muedsa.tvbox.api.data.MediaEpisode
 import com.muedsa.tvbox.api.data.MediaHttpSource
 import com.muedsa.tvbox.api.data.MediaPlaySource
 import com.muedsa.tvbox.api.data.SavedMediaCard
+import com.muedsa.tvbox.api.plugin.PluginOptions
 import com.muedsa.tvbox.model.dandanplay.BangumiInfo
 import com.muedsa.tvbox.model.dandanplay.BangumiSearch
 import com.muedsa.tvbox.plugin.PluginInfo
@@ -22,7 +23,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
@@ -41,66 +41,80 @@ class MediaDetailScreenViewModel @Inject constructor(
     private val episodeProgressDao: EpisodeProgressDao
 ) : ViewModel() {
 
+    private val _uiState: MutableStateFlow<MediaDetailScreenUiState> =
+        MutableStateFlow(MediaDetailScreenUiState.Loading)
+    val uiState: StateFlow<MediaDetailScreenUiState> = _uiState.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(60_000),
+        initialValue = MediaDetailScreenUiState.Loading
+    )
+
     private val _refreshMediaDetailFlow = MutableStateFlow<NavigationItems.Detail?>(null)
     private val _refreshFavoriteFlow = MutableStateFlow(0)
-    private val _refreshProgressListFlow = MutableStateFlow(0)
+    private val _refreshProgressFlow = MutableStateFlow(0)
 
     private val _mediaDetailFlow = _refreshMediaDetailFlow
         .filterNotNull()
         .map { navItem ->
-            val plugin = PluginManager.getCurrentPlugin()
-            val detail = withContext(Dispatchers.IO) {
-                plugin.mediaDetailService.getDetailData(navItem.id, navItem.url)
+            try {
+                val plugin = PluginManager.getCurrentPlugin()
+                val detail = withContext(Dispatchers.IO) {
+                    plugin.mediaDetailService.getDetailData(navItem.id, navItem.url)
+                }
+                DataWrapper.success(Triple(plugin.pluginInfo, plugin.options, detail))
+            } catch (throwable: Throwable) {
+                DataWrapper.error<Triple<PluginInfo, PluginOptions, MediaDetail>>(throwable)
             }
-            Triple(plugin.pluginInfo, plugin.options, detail)
-        }.shareIn(
+        }
+        .shareIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(60_000)
         )
 
-    private val _favoriteFlow = combine(_refreshFavoriteFlow, _mediaDetailFlow) { _, pd ->
-        favoriteMediaDao.getOneByPluginPackageAndMediaId(
-            pluginPackage = pd.first.packageName,
-            mediaId = pd.third.id
-        )
-    }.shareIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000)
-    )
-
-    private val _mediaProgressListFlow =
-        combine(_refreshProgressListFlow, _mediaDetailFlow) { _, pd ->
-            Timber.d("load media progress <${pd.first.packageName}> ${pd.third.id}")
-            episodeProgressDao.getListByPluginPackageAndMediaId(
-                pluginPackage = pd.first.packageName,
-                mediaId = pd.third.id
+    private val _favoriteFlow = combine(_refreshFavoriteFlow, _mediaDetailFlow) { _, wrapper ->
+        if (wrapper.data != null) {
+            favoriteMediaDao.getOneByPluginPackageAndMediaId(
+                pluginPackage = wrapper.data.first.packageName,
+                mediaId = wrapper.data.third.id
             )
+        } else null
+    }
+
+    private val _mediaProgressFlow = combine(_refreshProgressFlow, _mediaDetailFlow) { _, wrapper ->
+        if (wrapper.data != null) {
+            episodeProgressDao.getListByPluginPackageAndMediaId(
+                pluginPackage = wrapper.data.first.packageName,
+                mediaId = wrapper.data.third.id
+            ).associateBy({ it.episodeId }, { it })
+        } else {
+            emptyMap()
+        }
+    }
+
+    private val _banBangumiSearchQueryFlow = MutableStateFlow<String?>(null)
+
+    private val _danBangumiListFlow =
+        combine(_mediaDetailFlow, _banBangumiSearchQueryFlow) { wrapper, searchQuery ->
+            Timber.tag("flow").d("_danBangumiListFlow")
+            if (wrapper.data != null && wrapper.data.second.enableDanDanPlaySearch) {
+                try {
+                    val resp =
+                        danDanPlayApiService.searchAnime(searchQuery ?: wrapper.data.third.title)
+                    if (resp.errorCode == 0) {
+                        resp.animes ?: emptyList()
+                    } else {
+                        Timber.d("danDanPlayApiService.searchAnime(${wrapper.data.third.title}) ${resp.errorMessage}")
+                        emptyList()
+                    }
+                } catch (throwable: Throwable) {
+                    Timber.e(throwable)
+                    emptyList()
+                }
+            } else null
         }.shareIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000)
         )
-
-    private val _banBangumiSearchQueryFlow = MutableStateFlow<String?>(null)
-
-    private val _danBangumiListFlow = combine(_mediaDetailFlow, _banBangumiSearchQueryFlow) { pd, searchQuery ->
-        if (pd.second.enableDanDanPlaySearch) {
-            try {
-                val resp = danDanPlayApiService.searchAnime(searchQuery ?: pd.third.title)
-                if (resp.errorCode == 0) {
-                    resp.animes ?: emptyList()
-                } else {
-                    Timber.d("danDanPlayApiService.searchAnime(${pd.third.title}) ${resp.errorMessage}")
-                    emptyList()
-                }
-            } catch (throwable: Throwable) {
-                Timber.e(throwable)
-                emptyList()
-            }
-        } else null
-    }.shareIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000)
-    )
 
     private val _selectedDanBangumiSearchFlow = MutableStateFlow<BangumiSearch?>(null)
 
@@ -122,45 +136,15 @@ class MediaDetailScreenViewModel @Inject constructor(
                 null
             }
         } else null
-    }.shareIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000)
-    )
-
-    val uiState: StateFlow<MediaDetailScreenUiState> = combine(
-        _mediaDetailFlow,
-        _favoriteFlow,
-        _mediaProgressListFlow,
-        _danBangumiListFlow,
-        _danBangumiDetailFlow
-    ) { pd, favorite, progressList, danBangumiList, danBangumiInfo ->
-        MediaDetailScreenUiState.Ready(
-            pluginInfo = pd.first,
-            mediaDetail = pd.third,
-            favorite = favorite != null,
-            progressMap = progressList.associateBy({ it.episodeId }, { it }),
-            danBangumiList = danBangumiList,
-            danBangumiInfo = danBangumiInfo
-        )
-    }.catch {
-        MediaDetailScreenUiState.Error(error = it.message ?: "error", exception = it)
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(60_000),
-        initialValue = MediaDetailScreenUiState.Loading
-    )
+    }
 
     fun refreshMediaDetail(navItem: NavigationItems.Detail) {
         viewModelScope.launch {
-            _refreshMediaDetailFlow.emit(navItem)
-        }
-    }
-
-
-    fun refreshProgressList() {
-        viewModelScope.launch {
-            _refreshProgressListFlow.update {
-                it + 1
+            if (_refreshMediaDetailFlow.value == navItem) {
+                _refreshProgressFlow.update { it + 1 }
+            } else {
+                _uiState.emit(MediaDetailScreenUiState.Loading)
+                _refreshMediaDetailFlow.emit(navItem)
             }
         }
     }
@@ -225,6 +209,38 @@ class MediaDetailScreenViewModel @Inject constructor(
             }
         }
     }
+
+    init {
+        viewModelScope.launch {
+            combine(
+                _mediaDetailFlow,
+                _favoriteFlow,
+                _mediaProgressFlow,
+                _danBangumiListFlow,
+                _danBangumiDetailFlow
+            ) { wrapper, favorite, progressMap, danBangumiList, danBangumiInfo ->
+                if (wrapper.data != null) {
+                    MediaDetailScreenUiState.Ready(
+                        pluginInfo = wrapper.data.first,
+                        mediaDetail = wrapper.data.third,
+                        favorite = favorite != null,
+                        progressMap = progressMap,
+                        danBangumiList = danBangumiList,
+                        danBangumiInfo = danBangumiInfo
+                    )
+                } else {
+                    Timber.e(wrapper.error, wrapper.error?.message ?: "error")
+                    MediaDetailScreenUiState.Error(
+                        error = wrapper.error?.message ?: "error",
+                        exception = wrapper.error
+                    )
+                }
+            }.collect {
+                Timber.tag("flow").d("push uiStatus")
+                _uiState.emit(it)
+            }
+        }
+    }
 }
 
 sealed interface MediaDetailScreenUiState {
@@ -237,6 +253,15 @@ sealed interface MediaDetailScreenUiState {
         val progressMap: Map<String, EpisodeProgressModel>,
         val danBangumiList: List<BangumiSearch>?, // 为null表示插件不支持dandanplay
         val danBangumiInfo: BangumiInfo?,
-    ) :
-        MediaDetailScreenUiState
+    ) : MediaDetailScreenUiState
+}
+
+data class DataWrapper<T>(
+    val data: T? = null,
+    val error: Throwable? = null
+) {
+    companion object {
+        fun <T> success(data: T): DataWrapper<T> = DataWrapper<T>(data = data)
+        fun <T> error(error: Throwable): DataWrapper<T> = DataWrapper<T>(error = error)
+    }
 }
