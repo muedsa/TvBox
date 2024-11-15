@@ -6,13 +6,13 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
@@ -127,111 +127,136 @@ fun MediaDetailWidget(
 
         // 按钮列表
         item {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            LazyRow(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(25.dp),
+                contentPadding = PaddingValues(end = 25.dp)
+            ) {
                 // 切换播放源
                 if (mediaDetail.playSourceList.isNotEmpty()) {
-                    Text(
-                        text = "播放源: ${selectedPlaySource?.name ?: ""}",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    OutlinedIconButton(onClick = {
-                        drawerController.pop {
-                            Column {
-                                Text(
-                                    modifier = Modifier
-                                        .padding(start = 8.dp, end = 15.dp),
-                                    text = "选择播放源",
-                                    style = MaterialTheme.typography.titleLarge
-                                )
-                                LazyColumn(
-                                    contentPadding = PaddingValues(vertical = 20.dp)
-                                ) {
-                                    items(items = mediaDetail.playSourceList) {
-                                        val interactionSource =
-                                            remember { MutableInteractionSource() }
-                                        TwoSideWideButton(
-                                            title = { Text(text = it.name) },
-                                            onClick = {
-                                                drawerController.close()
-                                                selectedPlaySourceId = it.id
-                                            },
-                                            interactionSource = interactionSource,
-                                            background = {
-                                                WideButtonDefaults.NoBackground(
+                    item {
+                        Text(
+                            text = "播放源: ${selectedPlaySource?.name ?: ""}",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        OutlinedIconButton(onClick = {
+                            drawerController.pop {
+                                Column {
+                                    Text(
+                                        modifier = Modifier
+                                            .padding(start = 8.dp, end = 15.dp),
+                                        text = "选择播放源",
+                                        style = MaterialTheme.typography.titleLarge
+                                    )
+                                    LazyColumn(
+                                        contentPadding = PaddingValues(vertical = 20.dp)
+                                    ) {
+                                        items(items = mediaDetail.playSourceList) {
+                                            val interactionSource =
+                                                remember { MutableInteractionSource() }
+                                            TwoSideWideButton(
+                                                title = { Text(text = it.name) },
+                                                onClick = {
+                                                    drawerController.close()
+                                                    selectedPlaySourceId = it.id
+                                                },
+                                                interactionSource = interactionSource,
+                                                background = {
+                                                    WideButtonDefaults.NoBackground(
+                                                        interactionSource = interactionSource
+                                                    )
+                                                }
+                                            ) {
+                                                RadioButton(
+                                                    selected = selectedPlaySource == it,
+                                                    onClick = { },
                                                     interactionSource = interactionSource
                                                 )
                                             }
-                                        ) {
-                                            RadioButton(
-                                                selected = selectedPlaySource == it,
-                                                onClick = { },
-                                                interactionSource = interactionSource
-                                            )
                                         }
                                     }
                                 }
                             }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Edit,
+                                contentDescription = "修改播放源"
+                            )
                         }
+                    }
+                }
+
+                item {
+                    // 收藏按钮
+                    OutlinedButton(onClick = {
+                        mediaDetailScreenViewModel.favorite(
+                            pluginInfo = pluginInfo,
+                            favoriteMediaCard = mediaDetail.favoritedMediaCard,
+                            favorite = !favorite
+                        )
                     }) {
+                        Text(text = if (favorite) "已追" else "追番")
+                        Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
                         Icon(
-                            imageVector = Icons.Outlined.Edit,
-                            contentDescription = "修改播放源"
+                            imageVector = Icons.Outlined.Favorite,
+                            contentDescription = "收藏",
+                            tint = if (favorite) FavoriteIconColor else LocalContentColor.current
                         )
                     }
                 }
 
-                // 收藏按钮
-                Spacer(modifier = Modifier.width(25.dp))
-                OutlinedButton(onClick = {
-                    mediaDetailScreenViewModel.favorite(
-                        pluginInfo = pluginInfo,
-                        favoriteMediaCard = mediaDetail.favoritedMediaCard,
-                        favorite = !favorite
-                    )
-                }) {
-                    Text(text = if (favorite) "已追" else "追番")
-                    Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                    Icon(
-                        imageVector = Icons.Outlined.Favorite,
-                        contentDescription = "收藏",
-                        tint = if (favorite) FavoriteIconColor else LocalContentColor.current
-                    )
-                }
-
                 // 切换弹弹Play匹配剧集
                 if (danBangumiList != null) {
-                    Spacer(modifier = Modifier.width(25.dp))
-                    Text(
-                        text = "弹弹Play匹配剧集: ",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        modifier = Modifier
-                            .widthIn(max = 256.dp)
-                            .basicMarquee(),
-                        text = if (enabledDanmakuState.value)
-                            danBangumiInfo?.let { "${it.animeTitle}[Rating ${it.rating}]" } ?: "--"
-                        else "关闭",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    AnimeDanmakuSelectBtnWidget(
-                        enabledDanmakuState = enabledDanmakuState,
-                        mediaDetailScreenViewModel = mediaDetailScreenViewModel
-                    )
+                    item {
+                        Text(
+                            text = "弹弹Play匹配剧集: ",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            modifier = Modifier
+                                .widthIn(max = 256.dp)
+                                .basicMarquee(),
+                            text = if (enabledDanmakuState.value)
+                                danBangumiInfo?.let { "${it.animeTitle}[Rating ${it.rating}]" } ?: "--"
+                            else "关闭",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        AnimeDanmakuSelectBtnWidget(
+                            enabledDanmakuState = enabledDanmakuState,
+                            mediaDetailScreenViewModel = mediaDetailScreenViewModel
+                        )
+                    }
+                }
+
+                // 清除视频进度
+                if (progressMap.isNotEmpty()) {
+                    item {
+                        OutlinedButton(
+                            onClick = {
+                                mediaDetailScreenViewModel.clearProgress(
+                                    pluginInfo = pluginInfo,
+                                    mediaDetail = mediaDetail
+                                )
+                            }
+                        ) {
+                            Text(text = "清除播放进度")
+                        }
+                    }
                 }
 
                 // 设置按钮
-                Spacer(modifier = Modifier.width(25.dp))
-                OutlinedButton(
-                    onClick = {
-                        navController.nav(NavigationItems.Setting)
+                item {
+                    OutlinedButton(
+                        onClick = {
+                            navController.nav(NavigationItems.Setting)
+                        }
+                    ) {
+                        Text(text = "设置")
                     }
-                ) {
-                    Text(text = "设置")
                 }
             }
             Spacer(modifier = Modifier.height(20.dp))

@@ -26,4 +26,7 @@ interface EpisodeProgressDao {
 
     @Query("DELETE FROM episode_progress WHERE plugin_package = :pluginPackage")
     suspend fun deleteByPluginPackage(pluginPackage: String)
+
+    @Query("DELETE FROM episode_progress WHERE plugin_package = :pluginPackage and media_id = :mediaId")
+    suspend fun deleteByPluginPackageAndMediaId(pluginPackage: String, mediaId: String)
 }

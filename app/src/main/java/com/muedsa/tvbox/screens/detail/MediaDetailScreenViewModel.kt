@@ -187,6 +187,16 @@ class MediaDetailScreenViewModel @Inject constructor(
         }
     }
 
+    fun clearProgress(pluginInfo: PluginInfo, mediaDetail: MediaDetail) {
+        viewModelScope.launch {
+            episodeProgressDao.deleteByPluginPackageAndMediaId(
+                pluginPackage = pluginInfo.packageName,
+                mediaId = mediaDetail.id
+            )
+            _refreshProgressFlow.update { it + 1 }
+        }
+    }
+
     fun getEpisodePlayInfo(
         playSource: MediaPlaySource,
         episode: MediaEpisode,
