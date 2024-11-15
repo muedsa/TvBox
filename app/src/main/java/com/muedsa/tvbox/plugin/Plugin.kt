@@ -6,8 +6,8 @@ class Plugin(
     val pluginInfo: PluginInfo,
     val pluginInstance: IPlugin
 ) {
-    val mainScreenService = pluginInstance.provideMainScreenService()
-    val mediaDetailService = pluginInstance.provideMediaDetailService()
-    val mediaSearchService = pluginInstance.provideMediaSearchService()
-    val options = pluginInstance.options
+    val mainScreenService by lazy { pluginInstance.provideMainScreenService() }
+    val mediaDetailService by lazy { pluginInstance.provideMediaDetailService() }
+    val mediaSearchService by lazy { pluginInstance.provideMediaSearchService() }
+    val options  by lazy { pluginInstance.options }
 }
