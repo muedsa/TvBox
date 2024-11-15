@@ -124,7 +124,7 @@ class PluginManageScreenViewModel @Inject constructor(
     fun uninstallPlugin(pluginInfo: PluginInfo, onSuccess: () -> Unit, onFailure: (Throwable?) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                if (PluginManager.uninstallPlugin(context, pluginInfo)) {
+                if (PluginManager.uninstallPlugin(pluginInfo)) {
                     favoriteMediaDao.deleteByPluginPackage(pluginPackage = pluginInfo.packageName)
                     episodeProgressDao.deleteByPluginPackage(pluginPackage = pluginInfo.packageName)
                     dateStoreRepo.pluginDataStore.edit { prefs ->

@@ -22,45 +22,42 @@ import java.io.File
 
 object PluginManager {
 
+    const val PLUGIN_FILE_SUFFIX = ".tbp"
+    private lateinit var pluginDir: File
+    private lateinit var pluginOATDir: File
+    private lateinit var sharedTvBoxContext: SharedTvBoxContext
+
     private val mutex = Mutex()
-
     private var _pluginInfoMap: Map<String, PluginInfo>? = null
-
     private val _pluginPool: MutableMap<String, Plugin> = mutableMapOf()
     private var _currentPlugin: Plugin? = null
     fun getCurrentPlugin(): Plugin =
         _currentPlugin ?: throw RuntimeException("插件还未初始化")
 
-    const val PLUGIN_FILE_SUFFIX = ".tbp"
 
-    fun getPluginDir(context: Context): File =
-        context.getExternalFilesDir("plugins")!!
-//        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+    @Synchronized
+    fun init(context: Context) {
+        if (!isInit()) {
+            pluginDir = context.getExternalFilesDir("plugins")!!
+//        pluginDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
 //            .resolve("com.muedsa.tvbox")
 //            .resolve("plugins")
 //            .apply { mkdirs() }
-
-    fun getPluginOATDir(context: Context): File = getPluginDir(context).resolve("oat")
-
-    private var _tvBoxContext: TvBoxContext? = null
-
-    @Synchronized
-    private fun getTvBoxContext(
-        context: Context,
-        pluginInfo: PluginInfo,
-        pluginDataStore: DataStore<Preferences>
-    ): TvBoxContext {
-        if (_tvBoxContext == null) {
-            _tvBoxContext = TvBoxContext(
+            pluginOATDir = pluginDir.resolve("oat")
+            sharedTvBoxContext = SharedTvBoxContext(
                 screenWidth = context.resources.configuration.screenWidthDp,
                 screenHeight = context.resources.configuration.screenHeightDp,
                 debug = AppUtil.debuggable(context),
-                store = PluginPerfStore(pluginPackage = pluginInfo.packageName, pluginDataStore = pluginDataStore),
                 iPv6Status = IPv6Checker.checkIPv6Support()
             )
         }
-        return _tvBoxContext!!
     }
+
+    fun isInit(): Boolean = PluginManager::pluginDir.isInitialized
+            && PluginManager::pluginOATDir.isInitialized
+            && PluginManager::sharedTvBoxContext.isInitialized
+
+    fun getPluginDir() = pluginDir
 
     @SuppressLint("QueryPermissionsNeeded")
     suspend fun loadPlugins(context: Context): LoadedPlugins = mutex.withLock {
@@ -70,7 +67,6 @@ object PluginManager {
         _pluginPool.clear()
 
         val pluginMap = mutableMapOf<String, PluginInfo>()
-        val pluginDir = getPluginDir(context)
         Timber.d("插件目录: ${pluginDir.absolutePath}")
         val invalidFiles = mutableListOf<File>()
         pluginDir.listFiles()
@@ -183,10 +179,11 @@ object PluginManager {
                 val pluginClz = classLoader.loadClass(pluginInfo.entryPointImpl)
                 val pluginInstance = pluginClz.getDeclaredConstructor(TvBoxContext::class.java)
                     .newInstance(
-                        getTvBoxContext(
-                            context = context,
-                            pluginInfo = pluginInfo,
-                            pluginDataStore = pluginDataStore
+                        sharedTvBoxContext.createTvBoxContext(
+                            store = PluginPerfStore(
+                                pluginPackage = pluginInfo.packageName,
+                                pluginDataStore = pluginDataStore
+                            )
                         )
                     ) as IPlugin
                 runBlocking {
@@ -209,20 +206,19 @@ object PluginManager {
     suspend fun installPlugin(context: Context, file: File) = mutex.withLock {
         val packageManager = context.packageManager
         val info = parsePluginInfo(packageManager, file.absolutePath)
-        val newFile = getPluginDir(context).resolve(info.packageName + PLUGIN_FILE_SUFFIX)
+        val newFile = pluginDir.resolve(info.packageName + PLUGIN_FILE_SUFFIX)
         file.copyTo(newFile, true).setReadOnly()
     }
 
-    suspend fun uninstallPlugin(context: Context, pluginInfo: PluginInfo): Boolean =
+    suspend fun uninstallPlugin(pluginInfo: PluginInfo): Boolean =
         mutex.withLock {
             val pluginFile = File(pluginInfo.sourcePath)
             var flag = false
             if (pluginFile.exists()) {
                 flag = pluginFile.deleteRecursively()
                 if (flag) Timber.d("delete file ${pluginFile.absolutePath}")
-                val oatDir = getPluginOATDir(context)
-                if (oatDir.exists() && oatDir.isDirectory) {
-                    oatDir.listFiles()
+                if (pluginOATDir.exists() && pluginOATDir.isDirectory) {
+                    pluginOATDir.listFiles()
                         ?.filter { it.isDirectory }
                         ?.forEach { childDir ->
                             childDir.listFiles()

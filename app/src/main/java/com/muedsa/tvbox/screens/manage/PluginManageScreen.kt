@@ -106,7 +106,7 @@ fun PluginManage(
                     .padding(start = 10.dp)
                     .alignByBaseline()
                     .basicMarquee(),
-                text = "内部插件目录: ${PluginManager.getPluginDir(context).absolutePath}",
+                text = "内部插件目录: ${PluginManager.getPluginDir().absolutePath}",
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
                 style = MaterialTheme.typography.labelSmall
             )
