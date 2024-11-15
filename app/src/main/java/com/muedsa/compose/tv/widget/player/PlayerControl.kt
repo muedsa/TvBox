@@ -29,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,8 +52,11 @@ import com.muedsa.compose.tv.widget.OutlinedIconBox
 import kotlinx.coroutines.delay
 import java.util.Date
 import java.util.Locale
-import kotlin.time.Duration.Companion.microseconds
-import kotlin.time.Duration.Companion.seconds
+import kotlin.math.absoluteValue
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.sign
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -68,11 +72,23 @@ fun PlayerControl(
     var playBtnPressed by remember { mutableStateOf(false) }
     var videoInfo by remember { mutableStateOf("") }
 
+    var seekMs by remember { mutableLongStateOf(0) }
+
     LaunchedEffect(key1 = Unit) {
         while (true) {
-            delay(1.seconds)
-            if (state.value > 0) {
+            delay(200.milliseconds)
+            if (state.value > 0 && !leftArrowBtnPressed && !rightArrowBtnPressed) {
                 state.value--
+            }
+            if (player.isCurrentMediaItemSeekable) {
+                if (leftArrowBtnPressed) {
+                    if (seekMs > 0) seekMs = 0
+                    seekMs -= 5000
+                }
+                if (rightArrowBtnPressed) {
+                    if (seekMs < 0) seekMs = 0
+                    seekMs += 5000
+                }
             }
         }
     }
@@ -83,7 +99,7 @@ fun PlayerControl(
             .focusable()
             .focusOnInitial()
             .onPreviewKeyEvent {
-                if (it.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
+                if (it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
                     if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_UP
                         || it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT
                         || it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT
@@ -95,7 +111,7 @@ fun PlayerControl(
                         || it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_MEDIA_PLAY
                         || it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE
                     ) {
-                        state.value = 5
+                        state.value = 25
                     }
                 }
                 if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
@@ -103,14 +119,24 @@ fun PlayerControl(
                         leftArrowBtnPressed = true
                     } else if (it.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
                         leftArrowBtnPressed = false
-                        player.seekBack()
+                        if (seekMs < 0) {
+                            player.seekTo(max(0, player.currentPosition + seekMs))
+                        } else {
+                            player.seekBack()
+                        }
+                        seekMs = 0
                     }
                 } else if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                     if (it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
                         rightArrowBtnPressed = true
                     } else if (it.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
                         rightArrowBtnPressed = false
-                        player.seekForward()
+                        if (seekMs > 0) {
+                            player.seekTo(min(player.duration, player.currentPosition + seekMs))
+                        } else {
+                            player.seekForward()
+                        }
+                        seekMs = 0
                     }
                 } else if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
                     if (it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
@@ -122,6 +148,7 @@ fun PlayerControl(
                         } else {
                             player.play()
                         }
+                        seekMs = 0
                     }
                 } else if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_MEDIA_PLAY) {
                     if (it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
@@ -176,7 +203,7 @@ fun PlayerControl(
                     .padding(20.dp),
                 verticalArrangement = Arrangement.Bottom,
             ) {
-                PlayerProgressIndicator(player)
+                PlayerProgressIndicator(player = player, seekMs = seekMs)
                 Spacer(modifier = Modifier.height(20.dp))
                 Row(
                     modifier = Modifier
@@ -240,7 +267,7 @@ fun PlayerControl(
 }
 
 @Composable
-fun PlayerProgressIndicator(player: Player) {
+fun PlayerProgressIndicator(player: Player, seekMs: Long) {
     val dateTimeFormat = remember { SimpleDateFormat.getDateTimeInstance() }
     var systemStr by remember { mutableStateOf("--/--/-- --:--:--") }
     var currentStr by remember { mutableStateOf("--:--:--") }
@@ -250,8 +277,11 @@ fun PlayerProgressIndicator(player: Player) {
     ) {
         if (player.duration > 0L) {
             LinearProgressIndicator(
-                progress = { player.currentPosition.toFloat() / player.duration },
+                progress = { (player.currentPosition.toFloat() + seekMs) / player.duration },
                 modifier = Modifier.fillMaxWidth(),
+                color = if (seekMs == 0L) MaterialTheme.colorScheme.primary else Color.Green.copy(
+                    alpha = 0.7f
+                ),
                 gapSize = 0.dp
             ) { }
         } else {
@@ -267,13 +297,19 @@ fun PlayerProgressIndicator(player: Player) {
         )
     }
 
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = player, key2 = seekMs) {
         while (true) {
             systemStr = dateTimeFormat.format(Date())
             currentStr =
-                if (player.duration > 0L) durationToString(player.currentPosition) else "--:--:--"
+                if (player.duration > 0L) {
+                    if (seekMs != 0L) {
+                        "${durationToString(player.currentPosition)} (${if (seekMs.sign > 0) "+" else "-"}${seekMs.absoluteValue / 1000}s)"
+                    } else {
+                        durationToString(player.currentPosition)
+                    }
+                } else "--:--:--"
             totalStr = if (player.duration > 0L) durationToString(player.duration) else "--:--:--"
-            delay(100.microseconds)
+            delay(300.milliseconds)
         }
     }
 }
