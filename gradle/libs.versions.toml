@@ -18,7 +18,7 @@ akdanmaku = "1.0.3"
 datastore = "1.1.1"
 room = "2.7.0-alpha11"
 googleServices = "4.4.2"
-firebaseBom = "33.5.1"
+firebaseBom = "33.6.0"
 firebaseCrashlytics = "3.0.2"
 
 [libraries]
