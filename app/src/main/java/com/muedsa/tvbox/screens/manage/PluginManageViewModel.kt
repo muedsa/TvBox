@@ -17,6 +17,7 @@ import com.muedsa.tvbox.store.PluginKeyCache
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,6 +27,7 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class PluginManageScreenViewModel @Inject constructor(
@@ -174,7 +176,16 @@ class PluginManageScreenViewModel @Inject constructor(
     }
 
     init {
-        refreshPluginInfoList()
+        viewModelScope.launch {
+            for (i in 0 .. 5 * 120) {
+                delay(200.milliseconds)
+                if (PluginManager.isInit()) {
+                    refreshPluginInfoList()
+                    break
+                }
+            }
+            internalUiState.emit(PluginManageUiState.Error("初始化插件管理器超时"))
+        }
     }
 }
 

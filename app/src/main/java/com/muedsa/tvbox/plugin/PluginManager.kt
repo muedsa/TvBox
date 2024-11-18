@@ -21,44 +21,42 @@ import java.io.File
 
 
 object PluginManager {
+    private val mutex = Mutex()
 
     const val PLUGIN_FILE_SUFFIX = ".tbp"
     private lateinit var pluginDir: File
     private lateinit var pluginOATDir: File
     private lateinit var sharedTvBoxContext: SharedTvBoxContext
+    private var initialized: Boolean = false
 
-    private val mutex = Mutex()
     private var _pluginInfoMap: Map<String, PluginInfo>? = null
     private val _pluginPool: MutableMap<String, Plugin> = mutableMapOf()
     private var _currentPlugin: Plugin? = null
     fun getCurrentPlugin(): Plugin =
         _currentPlugin ?: throw RuntimeException("插件还未初始化")
 
-
-    @Synchronized
-    fun init(context: Context) {
+    suspend fun init(context: Context, iPv6Status: IPv6Checker.IPv6Status) = mutex.withLock {
         if (!isInit()) {
             pluginDir = context.getExternalFilesDir("plugins")!!
 //        pluginDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
 //            .resolve("com.muedsa.tvbox")
 //            .resolve("plugins")
 //            .apply { mkdirs() }
+            Timber.i("init PluginManager pluginDir:${pluginDir.absolutePath}")
             pluginOATDir = pluginDir.resolve("oat")
+            Timber.i("init PluginManager pluginOATDir:${pluginOATDir.absolutePath}")
             sharedTvBoxContext = SharedTvBoxContext(
                 screenWidth = context.resources.configuration.screenWidthDp,
                 screenHeight = context.resources.configuration.screenHeightDp,
                 debug = AppUtil.debuggable(context),
-                iPv6Status = IPv6Checker.checkIPv6Support()
+                iPv6Status = iPv6Status
             )
-            Timber.i("init PluginManager pluginDir:${pluginDir.absolutePath}")
-            Timber.i("init PluginManager pluginOATDir:${pluginOATDir.absolutePath}")
             Timber.i("init PluginManager $sharedTvBoxContext")
+            initialized = true
         }
     }
 
-    fun isInit(): Boolean = PluginManager::pluginDir.isInitialized
-            && PluginManager::pluginOATDir.isInitialized
-            && PluginManager::sharedTvBoxContext.isInitialized
+    fun isInit(): Boolean = initialized
 
     fun getPluginDir() = pluginDir
 
@@ -213,26 +211,25 @@ object PluginManager {
         file.copyTo(newFile, true).setReadOnly()
     }
 
-    suspend fun uninstallPlugin(pluginInfo: PluginInfo): Boolean =
-        mutex.withLock {
-            val pluginFile = File(pluginInfo.sourcePath)
-            var flag = false
-            if (pluginFile.exists()) {
-                flag = pluginFile.deleteRecursively()
-                if (flag) Timber.d("delete file ${pluginFile.absolutePath}")
-                if (pluginOATDir.exists() && pluginOATDir.isDirectory) {
-                    pluginOATDir.listFiles()
-                        ?.filter { it.isDirectory }
-                        ?.forEach { childDir ->
-                            childDir.listFiles()
-                                ?.filter {
-                                    it.isFile && (it.name == "${pluginInfo.packageName}.odex"
-                                            || it.name == "${pluginInfo.packageName}.vdex")
-                                }
-                                ?.forEach { if (it.deleteRecursively()) Timber.d("delete file ${it.absolutePath}") }
-                        }
-                }
+    suspend fun uninstallPlugin(pluginInfo: PluginInfo): Boolean = mutex.withLock {
+        val pluginFile = File(pluginInfo.sourcePath)
+        var flag = false
+        if (pluginFile.exists()) {
+            flag = pluginFile.deleteRecursively()
+            if (flag) Timber.d("delete file ${pluginFile.absolutePath}")
+            if (pluginOATDir.exists() && pluginOATDir.isDirectory) {
+                pluginOATDir.listFiles()
+                    ?.filter { it.isDirectory }
+                    ?.forEach { childDir ->
+                        childDir.listFiles()
+                            ?.filter {
+                                it.isFile && (it.name == "${pluginInfo.packageName}.odex"
+                                        || it.name == "${pluginInfo.packageName}.vdex")
+                            }
+                            ?.forEach { if (it.deleteRecursively()) Timber.d("delete file ${it.absolutePath}") }
+                    }
             }
-            return@withLock flag
         }
+        return@withLock flag
+    }
 }

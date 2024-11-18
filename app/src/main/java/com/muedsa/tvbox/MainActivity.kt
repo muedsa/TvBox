@@ -10,24 +10,26 @@ import com.muedsa.compose.tv.theme.TvTheme
 import com.muedsa.compose.tv.widget.Scaffold
 import com.muedsa.tvbox.plugin.PluginManager
 import com.muedsa.tvbox.screens.AppNavigation
+import com.muedsa.tvbox.tool.IPv6Checker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        var splashScreen = installSplashScreen()
-        super.onCreate(savedInstanceState)
-        splashScreen.setKeepOnScreenCondition { PluginManager.isInit() }
-        lifecycleScope.launch(Dispatchers.IO) {
+        installSplashScreen().apply {
+            setKeepOnScreenCondition { !PluginManager.isInit() }
+        }
+        lifecycleScope.launch {
             try {
-                Timber.i("init PluginManager")
-                PluginManager.init(applicationContext)
+                val iPv6Status = withContext(Dispatchers.IO) {
+                    IPv6Checker.checkIPv6Support()
+                }
+                PluginManager.init(context = applicationContext, iPv6Status = iPv6Status)
             } catch (throwable: Throwable) {
                 Timber.e(throwable, "init PluginManager error")
                 withContext(Dispatchers.Main) {
@@ -39,6 +41,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        super.onCreate(savedInstanceState)
         setContent {
             TvTheme {
                 Scaffold {
