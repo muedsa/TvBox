@@ -9,6 +9,8 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.room)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 val keystorePropertiesFile: File = rootProject.file("keystore.properties")
@@ -118,6 +120,10 @@ dependencies {
     implementation(libs.room.ktx)
 
     implementation(project(":api"))
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.analytics)
 }
 
 ksp {

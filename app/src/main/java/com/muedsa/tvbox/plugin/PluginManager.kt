@@ -50,6 +50,9 @@ object PluginManager {
                 debug = AppUtil.debuggable(context),
                 iPv6Status = IPv6Checker.checkIPv6Support()
             )
+            Timber.i("init PluginManager pluginDir:${pluginDir.absolutePath}")
+            Timber.i("init PluginManager pluginOATDir:${pluginOATDir.absolutePath}")
+            Timber.i("init PluginManager $sharedTvBoxContext")
         }
     }
 
