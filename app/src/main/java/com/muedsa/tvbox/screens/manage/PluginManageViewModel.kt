@@ -177,14 +177,18 @@ class PluginManageScreenViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            for (i in 0 .. 5 * 120) {
+            var i = 0
+            while (i < 5 * 120) {
                 delay(200.milliseconds)
                 if (PluginManager.isInit()) {
                     refreshPluginInfoList()
                     break
                 }
+                i++
             }
-            internalUiState.emit(PluginManageUiState.Error("初始化插件管理器超时"))
+            if (i == 5 * 120) {
+                internalUiState.emit(PluginManageUiState.Error("初始化插件管理器超时"))
+            }
         }
     }
 }
