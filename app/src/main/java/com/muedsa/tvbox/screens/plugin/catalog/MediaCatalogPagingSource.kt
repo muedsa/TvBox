@@ -6,6 +6,8 @@ import com.muedsa.tvbox.api.data.MediaCard
 import com.muedsa.tvbox.api.data.MediaCatalogConfig
 import com.muedsa.tvbox.api.data.MediaCatalogOption
 import com.muedsa.tvbox.api.service.IMediaCatalogService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class MediaCatalogPagingSource(
@@ -19,9 +21,9 @@ class MediaCatalogPagingSource(
     override suspend fun load(params: LoadParams<String>): LoadResult<String, MediaCard> {
         val loadKey = params.key ?: config.initKey
         return try {
-            Timber.d("options=$options\nloadKey=$loadKey\nloadSize=${params.loadSize}\n")
-            val result = service.catalog(options = options, loadKey = loadKey, params.loadSize)
-            Timber.d("prevKey=${result.prevKey}\nnextKey=${result.nextKey}\nresultSize=${result.list.size}")
+            val result = withContext(Dispatchers.IO) {
+                service.catalog(options = options, loadKey = loadKey, params.loadSize)
+            }
             keyCache.put(loadKey, result.prevKey to result.nextKey)
             LoadResult.Page(
                 data = result.list,
