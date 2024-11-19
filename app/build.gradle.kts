@@ -119,6 +119,9 @@ dependencies {
     ksp(libs.room.compiler)
     implementation(libs.room.ktx)
 
+    implementation(libs.paging)
+    implementation(libs.paging.compose)
+
     implementation(project(":api"))
 
     implementation(platform(libs.firebase.bom))

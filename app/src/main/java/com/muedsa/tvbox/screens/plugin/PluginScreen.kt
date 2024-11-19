@@ -29,6 +29,7 @@ import com.muedsa.compose.tv.widget.ScreenBackground
 import com.muedsa.compose.tv.widget.ScreenBackgroundState
 import com.muedsa.compose.tv.widget.ScreenBackgroundType
 import com.muedsa.compose.tv.widget.rememberScreenBackgroundState
+import com.muedsa.tvbox.screens.plugin.catalog.CatalogScreen
 import com.muedsa.tvbox.screens.plugin.favorites.FavoriteMediaScreen
 import com.muedsa.tvbox.screens.plugin.home.PluginHomeScreen
 import com.muedsa.tvbox.screens.plugin.search.SearchScreen
@@ -134,5 +135,6 @@ fun HomeContent(
         PluginScreenNavTab.Main -> PluginHomeScreen()
         PluginScreenNavTab.Search -> SearchScreen()
         PluginScreenNavTab.Favorites -> FavoriteMediaScreen()
+        PluginScreenNavTab.Catalog -> CatalogScreen()
     }
 }

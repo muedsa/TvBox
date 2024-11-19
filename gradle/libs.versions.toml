@@ -17,6 +17,7 @@ media3 = "1.4.1"
 akdanmaku = "1.0.3"
 datastore = "1.1.1"
 room = "2.7.0-alpha11"
+paging = "3.3.2"
 googleServices = "4.4.2"
 firebaseBom = "33.6.0"
 firebaseCrashlytics = "3.0.2"
@@ -53,6 +54,8 @@ datastore-preferences = { group = "androidx.datastore", name = "datastore-prefer
 room = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+paging = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
+paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }

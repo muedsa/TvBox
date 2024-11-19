@@ -9,5 +9,6 @@ class Plugin(
     val mainScreenService by lazy { pluginInstance.provideMainScreenService() }
     val mediaDetailService by lazy { pluginInstance.provideMediaDetailService() }
     val mediaSearchService by lazy { pluginInstance.provideMediaSearchService() }
+    val mediaCatalogService by lazy { pluginInstance.provideMediaCatalogService() }
     val options  by lazy { pluginInstance.options }
 }
