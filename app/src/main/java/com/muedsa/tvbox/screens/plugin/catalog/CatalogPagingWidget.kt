@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -45,12 +46,12 @@ import kotlin.math.min
 @Composable
 fun CatalogPagingWidget(
     config: MediaCatalogConfig,
-    pager: Pager<String, MediaCard>
+    pagerState: State<Pager<String, MediaCard>>
 ) {
     val navController = useLocalNavHostController()
     val toastController = useLocalToastMsgBoxController()
     val backgroundState = useLocalHomeScreenBackgroundState()
-    val lazyPagingItems = pager.flow.collectAsLazyPagingItems()
+    val lazyPagingItems = pagerState.value.flow.collectAsLazyPagingItems()
     val cardSize = remember { DpSize(config.cardWidth.dp, config.cardHeight.dp) }
     val circularSize = remember {
         val minSize = min(config.cardWidth, config.cardHeight).dp

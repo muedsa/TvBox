@@ -44,10 +44,12 @@ fun CatalogWidget(
     var optionsExpand by remember {
         mutableStateOf(false)
     }
-    var pager = remember { catalogScreenViewModel.newPager(config, selectedOptionsState) }
+    var pagerState = remember { mutableStateOf(
+        catalogScreenViewModel.newPager(config, selectedOptionsState)
+    ) }
     LaunchedEffect(optionsExpand) {
         if (!optionsExpand) {
-            pager = catalogScreenViewModel.newPager(config, selectedOptionsState)
+            pagerState.value = catalogScreenViewModel.newPager(config, selectedOptionsState)
         }
     }
     BackHandler(enabled = optionsExpand) {
@@ -76,7 +78,7 @@ fun CatalogWidget(
             OutlinedIconButton(onClick = {
                 selectedOptionsState.clear()
                 selectedOptionsState.addAll(MediaCatalogOption.getDefault(config.catalogOptions))
-                // catalogScreenViewModel.newPager(config, selectedOptionsState)
+                pagerState.value = catalogScreenViewModel.newPager(config, selectedOptionsState)
             }) {
                 Icon(
                     modifier = Modifier.size(ButtonDefaults.IconSize),
@@ -94,7 +96,7 @@ fun CatalogWidget(
         } else {
             CatalogPagingWidget(
                 config = config,
-                pager = pager
+                pagerState = pagerState
             )
         }
     }
