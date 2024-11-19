@@ -4,10 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -42,6 +40,7 @@ import com.muedsa.tvbox.screens.nav
 import com.muedsa.tvbox.screens.plugin.useLocalHomeScreenBackgroundState
 import com.muedsa.tvbox.toCardType
 import kotlinx.coroutines.launch
+import kotlin.math.min
 
 @Composable
 fun CatalogPagingWidget(
@@ -53,6 +52,10 @@ fun CatalogPagingWidget(
     val backgroundState = useLocalHomeScreenBackgroundState()
     val lazyPagingItems = pager.flow.collectAsLazyPagingItems()
     val cardSize = remember { DpSize(config.cardWidth.dp, config.cardHeight.dp) }
+    val circularSize = remember {
+        val minSize = min(config.cardWidth, config.cardHeight).dp
+        DpSize(minSize, minSize)
+    }
     val gridState = rememberLazyGridState()
     val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(lazyPagingItems.loadState) {
@@ -97,8 +100,7 @@ fun CatalogPagingWidget(
                     modifier = Modifier.size(cardSize)
                 ) {
                     CircularProgressIndicator(
-                        modifier = Modifier.fillMaxWidth()
-                            .wrapContentHeight(Alignment.CenterVertically)
+                        modifier = Modifier.align(Alignment.Center).size(circularSize)
                     )
                 }
             }
@@ -150,8 +152,7 @@ fun CatalogPagingWidget(
                     modifier = Modifier.size(cardSize)
                 ) {
                     CircularProgressIndicator(
-                        modifier = Modifier.fillMaxWidth()
-                            .wrapContentHeight(Alignment.CenterVertically)
+                        modifier = Modifier.align(Alignment.Center).size(circularSize)
                     )
                 }
             }
