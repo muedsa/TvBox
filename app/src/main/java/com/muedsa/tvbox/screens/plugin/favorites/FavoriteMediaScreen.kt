@@ -64,7 +64,7 @@ fun FavoriteMediaScreen(
     Column(modifier = Modifier.padding(start = ScreenPaddingLeft)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = if (deleteMode) "删除模式" else "最近追番",
+                text = if (deleteMode) "删除模式" else "我的收藏",
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.headlineMedium
             )

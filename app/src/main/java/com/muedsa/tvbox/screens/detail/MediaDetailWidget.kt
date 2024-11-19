@@ -197,7 +197,7 @@ fun MediaDetailWidget(
                             favorite = !favorite
                         )
                     }) {
-                        Text(text = if (favorite) "已追" else "追番")
+                        Text(text = if (favorite) "已收藏" else "收藏")
                         Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
                         Icon(
                             imageVector = Icons.Outlined.Favorite,
