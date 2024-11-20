@@ -13,8 +13,9 @@ sealed interface NavigationItems {
 
     @Serializable
     data class Detail(
+        val pluginPackage: String,
         val id: String,
-        val url: String
+        val url: String,
     ) : NavigationItems
 
     @Serializable

@@ -27,12 +27,16 @@ import com.muedsa.compose.tv.widget.FillTextScreen
 import com.muedsa.compose.tv.widget.ImmersiveList
 import com.muedsa.compose.tv.widget.ScreenBackgroundType
 import com.muedsa.tvbox.api.data.MediaCardRow
+import com.muedsa.tvbox.plugin.PluginInfo
 import com.muedsa.tvbox.screens.NavigationItems
 import com.muedsa.tvbox.screens.nav
 import com.muedsa.tvbox.screens.plugin.useLocalHomeScreenBackgroundState
 
 @Composable
-fun MediaCardRows(rows: List<MediaCardRow>) {
+fun MediaCardRows(
+    pluginInfo: PluginInfo,
+    rows: List<MediaCardRow>
+) {
     if (rows.isNotEmpty()) {
         val configuration = LocalConfiguration.current
         val backgroundState = useLocalHomeScreenBackgroundState()
@@ -89,7 +93,13 @@ fun MediaCardRows(rows: List<MediaCardRow>) {
                                 backgroundState.url = mediaCard.coverImageUrl
                             },
                             onItemClick = { _, mediaCard ->
-                                navController.nav(NavigationItems.Detail(mediaCard.id, mediaCard.detailUrl))
+                                navController.nav(
+                                    NavigationItems.Detail(
+                                        pluginPackage = pluginInfo.packageName,
+                                        id = mediaCard.id,
+                                        url = mediaCard.detailUrl,
+                                    )
+                                )
                             }
                         )
                     }
@@ -106,7 +116,13 @@ fun MediaCardRows(rows: List<MediaCardRow>) {
                         backgroundState.url = mediaCard.coverImageUrl
                     },
                     onItemClick = { _, mediaCard ->
-                        navController.nav(NavigationItems.Detail(mediaCard.id, mediaCard.detailUrl))
+                        navController.nav(
+                            NavigationItems.Detail(
+                                pluginPackage = pluginInfo.packageName,
+                                id = mediaCard.id,
+                                url = mediaCard.detailUrl,
+                            )
+                        )
                     }
                 )
             }

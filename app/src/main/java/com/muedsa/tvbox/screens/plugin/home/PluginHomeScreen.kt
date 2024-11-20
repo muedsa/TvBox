@@ -1,7 +1,6 @@
 package com.muedsa.tvbox.screens.plugin.home
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -16,10 +15,6 @@ fun PluginHomeScreen(
     val toastController = useLocalToastMsgBoxController()
     val uiState by pluginHomeViewModel.uiState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        pluginHomeViewModel.refreshRowsData()
-    }
-
     when (val s = uiState) {
         is PluginHomeUiState.Loading -> LoadingScreen()
 
@@ -30,7 +25,7 @@ fun PluginHomeScreen(
             onRefresh = { pluginHomeViewModel.refreshRowsData() }
         )
 
-        is PluginHomeUiState.Ready -> MediaCardRows(s.rows)
+        is PluginHomeUiState.Ready -> MediaCardRows(pluginInfo = s.pluginInfo, rows = s.rows)
     }
 }
 

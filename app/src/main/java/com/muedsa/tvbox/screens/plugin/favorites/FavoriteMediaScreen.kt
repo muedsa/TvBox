@@ -26,7 +26,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
@@ -45,7 +44,7 @@ import com.muedsa.tvbox.screens.plugin.useLocalHomeScreenBackgroundState
 
 @Composable
 fun FavoriteMediaScreen(
-    favoriteMediaScreenViewModel: FavoriteMediaScreenViewModel = hiltViewModel()
+    favoriteMediaScreenViewModel: FavoriteMediaScreenViewModel
 ) {
     val navController = useLocalNavHostController()
     val backgroundState = useLocalHomeScreenBackgroundState()
@@ -119,7 +118,13 @@ fun FavoriteMediaScreen(
                                 }
                                 favoriteMediaScreenViewModel.remove(item)
                             } else {
-                                navController.nav(NavigationItems.Detail(item.mediaId, item.mediaDetailUrl))
+                                navController.nav(
+                                    NavigationItems.Detail(
+                                        pluginPackage = item.pluginPackage,
+                                        id = item.mediaId,
+                                        url = item.mediaDetailUrl,
+                                    )
+                                )
                             }
                         }
                     )

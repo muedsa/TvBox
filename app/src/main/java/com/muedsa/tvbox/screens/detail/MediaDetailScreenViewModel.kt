@@ -27,7 +27,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -43,11 +42,7 @@ class MediaDetailScreenViewModel @Inject constructor(
 
     private val _uiState: MutableStateFlow<MediaDetailScreenUiState> =
         MutableStateFlow(MediaDetailScreenUiState.Loading)
-    val uiState: StateFlow<MediaDetailScreenUiState> = _uiState.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(60_000),
-        initialValue = MediaDetailScreenUiState.Loading
-    )
+    val uiState: StateFlow<MediaDetailScreenUiState> = _uiState
 
     private val _refreshMediaDetailFlow = MutableStateFlow<NavigationItems.Detail?>(null)
     private val _refreshFavoriteFlow = MutableStateFlow(0)

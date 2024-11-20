@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -20,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
-import androidx.paging.Pager
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import com.muedsa.compose.tv.conditional
@@ -33,9 +31,9 @@ import com.muedsa.compose.tv.useLocalToastMsgBoxController
 import com.muedsa.compose.tv.widget.ImageContentCard
 import com.muedsa.compose.tv.widget.ScreenBackgroundType
 import com.muedsa.compose.tv.widget.ToastMessageBoxController
-import com.muedsa.tvbox.api.data.MediaCard
 import com.muedsa.tvbox.api.data.MediaCardType
 import com.muedsa.tvbox.api.data.MediaCatalogConfig
+import com.muedsa.tvbox.plugin.Plugin
 import com.muedsa.tvbox.screens.NavigationItems
 import com.muedsa.tvbox.screens.nav
 import com.muedsa.tvbox.screens.plugin.useLocalHomeScreenBackgroundState
@@ -45,13 +43,14 @@ import kotlin.math.min
 
 @Composable
 fun CatalogPagingWidget(
+    plugin: Plugin,
     config: MediaCatalogConfig,
-    pagerState: State<Pager<String, MediaCard>>
+    catalogScreenViewModel: CatalogScreenViewModel
 ) {
     val navController = useLocalNavHostController()
     val toastController = useLocalToastMsgBoxController()
     val backgroundState = useLocalHomeScreenBackgroundState()
-    val lazyPagingItems = pagerState.value.flow.collectAsLazyPagingItems()
+    val lazyPagingItems = catalogScreenViewModel.pageDataFlow.collectAsLazyPagingItems()
     val cardSize = remember { DpSize(config.cardWidth.dp, config.cardHeight.dp) }
     val circularSize = remember {
         val minSize = min(config.cardWidth, config.cardHeight).dp
@@ -101,7 +100,9 @@ fun CatalogPagingWidget(
                     modifier = Modifier.size(cardSize)
                 ) {
                     CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center).size(circularSize)
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(circularSize)
                     )
                 }
             }
@@ -129,7 +130,13 @@ fun CatalogPagingWidget(
                         backgroundState.url = mediaCard.coverImageUrl
                     },
                     onItemClick = {
-                        navController.nav(NavigationItems.Detail(mediaCard.id, mediaCard.detailUrl))
+                        navController.nav(
+                            NavigationItems.Detail(
+                                pluginPackage = plugin.pluginInfo.packageName,
+                                id = mediaCard.id,
+                                url = mediaCard.detailUrl
+                            )
+                        )
                     }
                 )
             } else {
@@ -153,7 +160,9 @@ fun CatalogPagingWidget(
                     modifier = Modifier.size(cardSize)
                 ) {
                     CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center).size(circularSize)
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(circularSize)
                     )
                 }
             }

@@ -19,13 +19,17 @@ import com.muedsa.compose.tv.widget.ImageContentCard
 import com.muedsa.compose.tv.widget.ScreenBackgroundType
 import com.muedsa.tvbox.api.data.MediaCardRow
 import com.muedsa.tvbox.api.data.MediaCardType
+import com.muedsa.tvbox.plugin.PluginInfo
 import com.muedsa.tvbox.screens.NavigationItems
 import com.muedsa.tvbox.screens.nav
 import com.muedsa.tvbox.screens.plugin.useLocalHomeScreenBackgroundState
 import com.muedsa.tvbox.toCardType
 
 @Composable
-fun SearchResult(row: MediaCardRow) {
+fun SearchResult(
+    pluginInfo: PluginInfo,
+    row: MediaCardRow,
+) {
     val backgroundState = useLocalHomeScreenBackgroundState()
     val navController = useLocalNavHostController()
 
@@ -52,7 +56,13 @@ fun SearchResult(row: MediaCardRow) {
                     backgroundState.type = ScreenBackgroundType.BLUR
                 },
                 onItemClick = {
-                    navController.nav(NavigationItems.Detail(item.id, item.detailUrl))
+                    navController.nav(
+                        NavigationItems.Detail(
+                            pluginPackage = pluginInfo.packageName,
+                            id = item.id,
+                            url = item.detailUrl,
+                        )
+                    )
                 }
             )
         }

@@ -14,7 +14,7 @@ import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -30,29 +30,24 @@ import androidx.tv.material3.OutlinedIconButton
 import androidx.tv.material3.Text
 import com.muedsa.tvbox.api.data.MediaCatalogConfig
 import com.muedsa.tvbox.api.data.MediaCatalogOption
+import com.muedsa.tvbox.plugin.Plugin
 
 @Composable
 fun CatalogWidget(
+    plugin: Plugin,
     config: MediaCatalogConfig,
     catalogScreenViewModel: CatalogScreenViewModel
 ) {
-    val selectedOptionsState = remember {
-        mutableStateListOf<MediaCatalogOption>().apply {
-            addAll(MediaCatalogOption.getDefault(config.catalogOptions))
-        }
+    val selectedOptions by catalogScreenViewModel.selectedOptionsFlow.collectAsState()
+    val selectedOptionsAtWidget = remember {
+        mutableStateListOf<MediaCatalogOption>().apply { addAll(selectedOptions) }
     }
     var optionsExpand by remember {
         mutableStateOf(false)
     }
-    var pagerState = remember { mutableStateOf(
-        catalogScreenViewModel.newPager(config, selectedOptionsState)
-    ) }
-    LaunchedEffect(optionsExpand) {
-        if (!optionsExpand) {
-            pagerState.value = catalogScreenViewModel.newPager(config, selectedOptionsState)
-        }
-    }
+
     BackHandler(enabled = optionsExpand) {
+        catalogScreenViewModel.changeSelectedOptions(selectedOptions = selectedOptionsAtWidget)
         optionsExpand = false
     }
     Column {
@@ -76,9 +71,9 @@ fun CatalogWidget(
             }
             Spacer(modifier = Modifier.width(16.dp))
             OutlinedIconButton(onClick = {
-                selectedOptionsState.clear()
-                selectedOptionsState.addAll(MediaCatalogOption.getDefault(config.catalogOptions))
-                pagerState.value = catalogScreenViewModel.newPager(config, selectedOptionsState)
+                catalogScreenViewModel.changeSelectedOptions(
+                    selectedOptions = MediaCatalogOption.getDefault(config.catalogOptions)
+                )
             }) {
                 Icon(
                     modifier = Modifier.size(ButtonDefaults.IconSize),
@@ -91,12 +86,13 @@ fun CatalogWidget(
         if (optionsExpand) {
             CatalogOptionsWidget(
                 options = config.catalogOptions,
-                selectedOptions = selectedOptionsState
+                selectedOptions = selectedOptionsAtWidget
             )
         } else {
             CatalogPagingWidget(
+                plugin = plugin,
                 config = config,
-                pagerState = pagerState
+                catalogScreenViewModel = catalogScreenViewModel
             )
         }
     }

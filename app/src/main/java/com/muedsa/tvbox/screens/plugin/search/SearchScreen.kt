@@ -27,7 +27,7 @@ fun SearchScreen(
 
             is SearchScreenUiState.Error -> ErrorScreen(onError = { toastController.error(s.error) })
 
-            is SearchScreenUiState.Done -> SearchResult(s.row)
+            is SearchScreenUiState.Done -> SearchResult(pluginInfo = s.pluginInfo, row = s.row)
         }
     }
 }

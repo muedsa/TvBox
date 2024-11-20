@@ -38,6 +38,7 @@ import androidx.tv.material3.OutlinedIconButton
 import androidx.tv.material3.RadioButton
 import androidx.tv.material3.Text
 import androidx.tv.material3.WideButtonDefaults
+import com.muedsa.compose.tv.focusOnInitial
 import com.muedsa.compose.tv.model.ContentModel
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
 import com.muedsa.compose.tv.useLocalNavHostController
@@ -104,7 +105,7 @@ fun MediaDetailWidget(
         // top space
         item {
             // 占位锚点 使之可以通过Dpad返回页面的顶部
-            Spacer(modifier = Modifier.focusable())
+            Spacer(modifier = Modifier.focusable().focusOnInitial())
         }
 
         // 介绍
@@ -319,7 +320,13 @@ fun MediaDetailWidget(
             MediaCardRow(
                 row = it,
                 onItemClick = { _, mediaCard ->
-                    navController.nav(NavigationItems.Detail(mediaCard.id, mediaCard.detailUrl))
+                    navController.nav(
+                        NavigationItems.Detail(
+                            pluginPackage = pluginInfo.packageName,
+                            id = mediaCard.id,
+                            url = mediaCard.detailUrl
+                        )
+                    )
                 }
             )
         }

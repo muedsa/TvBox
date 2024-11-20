@@ -13,6 +13,8 @@ import com.muedsa.tvbox.store.PluginPerfStore
 import com.muedsa.tvbox.tool.IPv6Checker
 import com.muedsa.util.AppUtil
 import dalvik.system.PathClassLoader
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -31,9 +33,10 @@ object PluginManager {
 
     private var _pluginInfoMap: Map<String, PluginInfo>? = null
     private val _pluginPool: MutableMap<String, Plugin> = mutableMapOf()
-    private var _currentPlugin: Plugin? = null
+    private val _pluginFlow: MutableStateFlow<Plugin?> = MutableStateFlow(null)
+    val pluginFlow: StateFlow<Plugin?> = _pluginFlow
     fun getCurrentPlugin(): Plugin =
-        _currentPlugin ?: throw RuntimeException("插件还未初始化")
+        pluginFlow.value ?: throw RuntimeException("插件还未初始化")
 
     suspend fun init(context: Context, iPv6Status: IPv6Checker.IPv6Status) = mutex.withLock {
         if (!isInit()) {
@@ -64,7 +67,6 @@ object PluginManager {
     suspend fun loadPlugins(context: Context): LoadedPlugins = mutex.withLock {
         val packageManager = context.packageManager
         _pluginInfoMap = null
-        _currentPlugin = null
         _pluginPool.clear()
 
         val pluginMap = mutableMapOf<String, PluginInfo>()
@@ -199,7 +201,7 @@ object PluginManager {
                 throw RuntimeException("初始化插件失败")
             }
         }.let {
-            _currentPlugin = it
+            _pluginFlow.emit(it)
             it.pluginInstance.onLaunched()
         }
     }

@@ -9,7 +9,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -19,6 +18,7 @@ import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Tab
 import androidx.tv.material3.TabDefaults
@@ -30,9 +30,13 @@ import com.muedsa.compose.tv.widget.ScreenBackgroundState
 import com.muedsa.compose.tv.widget.ScreenBackgroundType
 import com.muedsa.compose.tv.widget.rememberScreenBackgroundState
 import com.muedsa.tvbox.screens.plugin.catalog.CatalogScreen
+import com.muedsa.tvbox.screens.plugin.catalog.CatalogScreenViewModel
 import com.muedsa.tvbox.screens.plugin.favorites.FavoriteMediaScreen
+import com.muedsa.tvbox.screens.plugin.favorites.FavoriteMediaScreenViewModel
 import com.muedsa.tvbox.screens.plugin.home.PluginHomeScreen
+import com.muedsa.tvbox.screens.plugin.home.PluginHomeViewModel
 import com.muedsa.tvbox.screens.plugin.search.SearchScreen
+import com.muedsa.tvbox.screens.plugin.search.SearchScreenViewModel
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -60,14 +64,19 @@ val tabs: Array<PluginScreenNavTab> = PluginScreenNavTab.entries.toTypedArray()
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun PluginScreen() {
+fun PluginScreen(
+    pluginHomeViewModel: PluginHomeViewModel = hiltViewModel(),
+    searchScreenViewModel: SearchScreenViewModel = hiltViewModel(),
+    favoriteMediaScreenViewModel: FavoriteMediaScreenViewModel = hiltViewModel(),
+    catalogScreenViewModel: CatalogScreenViewModel = hiltViewModel(),
+) {
     val backgroundState = rememberScreenBackgroundState()
     ScreenBackground(state = backgroundState)
     LocalHomeScreenBackgroundStateProvider(backgroundState) {
         var focusedTabIndex by rememberSaveable { mutableIntStateOf(0) }
         var selectedTabIndex by rememberSaveable { mutableIntStateOf(focusedTabIndex) }
 
-        var tabPanelIndex by remember { mutableIntStateOf(selectedTabIndex) }
+        var tabPanelIndex by rememberSaveable { mutableIntStateOf(selectedTabIndex) }
 
         LaunchedEffect(selectedTabIndex) {
             delay(150.milliseconds)
@@ -121,20 +130,38 @@ fun PluginScreen() {
                     }
                 }
             }
-            HomeContent(tabIndex = tabPanelIndex)
+            HomeContent(
+                tabIndex = tabPanelIndex,
+                pluginHomeViewModel = pluginHomeViewModel,
+                searchScreenViewModel = searchScreenViewModel,
+                favoriteMediaScreenViewModel = favoriteMediaScreenViewModel,
+                catalogScreenViewModel = catalogScreenViewModel,
+            )
         }
     }
 }
 
 @Composable
 fun HomeContent(
-    tabIndex: Int
+    tabIndex: Int,
+    pluginHomeViewModel: PluginHomeViewModel,
+    searchScreenViewModel: SearchScreenViewModel,
+    favoriteMediaScreenViewModel: FavoriteMediaScreenViewModel,
+    catalogScreenViewModel: CatalogScreenViewModel,
 ) {
     val tab = tabs[tabIndex]
     when (tab) {
-        PluginScreenNavTab.Main -> PluginHomeScreen()
-        PluginScreenNavTab.Search -> SearchScreen()
-        PluginScreenNavTab.Favorites -> FavoriteMediaScreen()
-        PluginScreenNavTab.Catalog -> CatalogScreen()
+        PluginScreenNavTab.Main -> PluginHomeScreen(
+            pluginHomeViewModel = pluginHomeViewModel
+        )
+        PluginScreenNavTab.Search -> SearchScreen(
+            searchScreenViewModel = searchScreenViewModel
+        )
+        PluginScreenNavTab.Favorites -> FavoriteMediaScreen(
+            favoriteMediaScreenViewModel = favoriteMediaScreenViewModel
+        )
+        PluginScreenNavTab.Catalog -> CatalogScreen(
+            catalogScreenViewModel = catalogScreenViewModel
+        )
     }
 }
