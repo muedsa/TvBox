@@ -59,6 +59,9 @@ fun CatalogWidget(
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedButton(onClick = {
+                if (optionsExpand) {
+                    catalogScreenViewModel.changeSelectedOptions(selectedOptions = selectedOptionsAtWidget)
+                }
                 optionsExpand = !optionsExpand
             }) {
                 Text(text = "筛选项")
@@ -71,9 +74,10 @@ fun CatalogWidget(
             }
             Spacer(modifier = Modifier.width(16.dp))
             OutlinedIconButton(onClick = {
-                catalogScreenViewModel.changeSelectedOptions(
-                    selectedOptions = MediaCatalogOption.getDefault(config.catalogOptions)
-                )
+                val options = MediaCatalogOption.getDefault(config.catalogOptions)
+                selectedOptionsAtWidget.clear()
+                selectedOptionsAtWidget.addAll(options)
+                catalogScreenViewModel.changeSelectedOptions(selectedOptions = options)
             }) {
                 Icon(
                     modifier = Modifier.size(ButtonDefaults.IconSize),
