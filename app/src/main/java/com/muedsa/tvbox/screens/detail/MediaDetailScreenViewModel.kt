@@ -210,6 +210,9 @@ class MediaDetailScreenViewModel @Inject constructor(
                 val info = PluginManager.getCurrentPlugin()
                     .mediaDetailService
                     .getEpisodePlayInfo(playSource = playSource, episode = episode)
+                if (info.url.isBlank()) {
+                    throw RuntimeException("获取视频地址失败, 返回视频地址为空")
+                }
                 withContext(Dispatchers.Main) {
                     onSuccess(info)
                 }
