@@ -1,7 +1,6 @@
 package com.muedsa.tvbox.screens.manage
 
 import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Environment
 import androidx.compose.runtime.Immutable
 import androidx.datastore.preferences.core.edit
@@ -50,7 +49,7 @@ class PluginManageScreenViewModel @Inject constructor(
                 val loadedPlugins = PluginManager.loadPlugins(context)
                 PluginManageUiState.Ready(
                     loadedPlugins = loadedPlugins,
-                    apiVersion = getAppApiVersion()
+                    apiVersion = PluginManager.getAppApiVersion(context)
                 )
             } catch (throwable: Throwable) {
                 Timber.e(throwable, "加载插件列表失败")
@@ -60,13 +59,6 @@ class PluginManageScreenViewModel @Inject constructor(
                 internalUiState.emit(state)
             }
         }
-    }
-
-    private fun getAppApiVersion(): Int {
-        return context.packageManager.getApplicationInfo(
-            context.applicationInfo.packageName,
-            PackageManager.GET_META_DATA
-        ).metaData.getInt("tv_box_plugin_api_version", -1)
     }
 
     fun launchPlugin(

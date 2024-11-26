@@ -21,9 +21,13 @@ import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
 import java.io.File
 
-
 object PluginManager {
     private val mutex = Mutex()
+
+    const val PLUGIN_META_KEY = "tv_box_plugin_key"
+    const val PLUGIN_META_API_VERSION_KEY = "tv_box_plugin_api_version"
+    const val PLUGIN_META_ENTRY_POINT_KEY = "tv_box_plugin_entry_point_impl"
+    const val PLUGIN_META_KEY_VALUE = "com.muedsa.tvbox"
 
     const val PLUGIN_FILE_SUFFIX = ".tbp"
     private lateinit var pluginDir: File
@@ -104,8 +108,8 @@ object PluginManager {
 
         if (AppUtil.debuggable(context)) {
             packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-                .filter { it.packageName != "com.muedsa.tvbox" && it.packageName != "com.muedsa.debug" }
-                .filter { it.metaData?.getString("tv_box_plugin_key") == "com.muedsa.tvbox" }
+                .filter { it.packageName != "com.muedsa.tvbox" && it.packageName != "com.muedsa.tvbox.debug" }
+                .filter { it.metaData?.getString(PLUGIN_META_KEY) == PLUGIN_META_KEY_VALUE }
                 .forEach { info ->
                     val path = info.sourceDir
                     Timber.d("尝试加载外部插件 $path")
@@ -149,13 +153,13 @@ object PluginManager {
         pluginPackageInfo: PackageInfo
     ): PluginInfo {
         val pluginApplicationInfo = pluginPackageInfo.applicationInfo!!
-        val apiVersion = pluginApplicationInfo.metaData.getInt("tv_box_plugin_api_version", -1)
+        val apiVersion = pluginApplicationInfo.metaData.getInt(PLUGIN_META_API_VERSION_KEY, -1)
         if (apiVersion < 1) {
-            throw RuntimeException("tv_box_plugin_api_version not found")
+            throw RuntimeException("$PLUGIN_META_API_VERSION_KEY not found")
         }
         val entryPointImpl =
-            pluginApplicationInfo.metaData.getString("tv_box_plugin_entry_point_impl")
-                ?: throw RuntimeException("tv_box_plugin_entry_point_impl not found")
+            pluginApplicationInfo.metaData.getString(PLUGIN_META_ENTRY_POINT_KEY)
+                ?: throw RuntimeException("$PLUGIN_META_ENTRY_POINT_KEY not found")
         return PluginInfo(
             apiVersion = apiVersion,
             entryPointImpl = entryPointImpl,
@@ -233,5 +237,12 @@ object PluginManager {
             }
         }
         return@withLock flag
+    }
+
+    fun getAppApiVersion(context: Context): Int {
+        return context.packageManager.getApplicationInfo(
+            context.applicationInfo.packageName,
+            PackageManager.GET_META_DATA
+        ).metaData.getInt(PLUGIN_META_API_VERSION_KEY, -1)
     }
 }
