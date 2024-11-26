@@ -24,6 +24,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -279,7 +280,7 @@ fun PlayerProgressIndicator(player: Player, seekMs: Long) {
             LinearProgressIndicator(
                 progress = { (player.currentPosition.toFloat() + seekMs) / player.duration },
                 modifier = Modifier.fillMaxWidth(),
-                color = if (seekMs == 0L) MaterialTheme.colorScheme.primary else Color.Green.copy(
+                color = if (seekMs == 0L) ProgressIndicatorDefaults.linearColor else Color.Green.copy(
                     alpha = 0.7f
                 ),
                 gapSize = 0.dp
