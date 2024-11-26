@@ -21,6 +21,7 @@ import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.SurfaceDefaults
@@ -42,7 +43,7 @@ import kotlin.time.toDuration
 @OptIn(UnstableApi::class)
 @Composable
 fun PlaybackWidget(
-    url: String,
+    urls: List<String>,
     httpHeaders: Map<String, String>?,
     episodeProgress: EpisodeProgressModel,
     danmakuList: List<DanmakuItemData>,
@@ -89,6 +90,17 @@ fun PlaybackWidget(
         }
     }
     val androidContext = LocalContext.current
+    val mediaSourceFactory = remember {
+        DefaultMediaSourceFactory(
+            DefaultDataSource.Factory(androidContext,
+                DefaultHttpDataSource.Factory().apply {
+                    if (!httpHeaders.isNullOrEmpty()) {
+                        setDefaultRequestProperties(httpHeaders)
+                    }
+                }
+            )
+        )
+    }
     Surface(
         modifier = Modifier
             .fillMaxSize(),
@@ -114,17 +126,7 @@ fun PlaybackWidget(
                 }
             },
             videoPlayerBuilderSetting = {
-                if (!httpHeaders.isNullOrEmpty()) {
-                    setMediaSourceFactory(
-                        DefaultMediaSourceFactory(
-                            DefaultDataSource.Factory(androidContext,
-                                DefaultHttpDataSource.Factory().apply {
-                                    setDefaultRequestProperties(httpHeaders)
-                                }
-                            )
-                        )
-                    )
-                }
+                setMediaSourceFactory(mediaSourceFactory)
             }
         ) {
             addListener(object : Player.Listener {
@@ -132,7 +134,7 @@ fun PlaybackWidget(
                 override fun onPlayerErrorChanged(error: PlaybackException?) {
                     toastController.error(error, SnackbarDuration.Long)
                     error?.let {
-                        Timber.i(it, "exoplayer mediaUrl: $url")
+                        Timber.i(it, "exoplayer mediaUrl: $urls")
                     }
                 }
 
@@ -177,11 +179,14 @@ fun PlaybackWidget(
                 }
             })
             playWhenReady = true
-            val mediaItemBuilder = MediaItem.Builder().setUri(url)
-            if (url.endsWith(".m3u8", ignoreCase = true)) {
-                mediaItemBuilder.setMimeType(MimeTypes.APPLICATION_M3U8)
-            }
-            setMediaItem(mediaItemBuilder.build())
+            val mediaSources = urls.map { url ->
+                val mediaItemBuilder = MediaItem.Builder().setUri(url)
+                if (url.endsWith(".m3u8", ignoreCase = true)) {
+                    mediaItemBuilder.setMimeType(MimeTypes.APPLICATION_M3U8)
+                }
+                mediaSourceFactory.createMediaSource(mediaItemBuilder.build())
+            }.toTypedArray()
+            setMediaSource(MergingMediaSource(*mediaSources))
             prepare()
         }
     }

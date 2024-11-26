@@ -20,7 +20,7 @@ sealed interface NavigationItems {
 
     @Serializable
     data class Player(
-        val url: String,
+        val urls: List<String>,
         val httpHeadersJson: String? = null,
         val pluginPackage: String,
         val mediaId: String,

@@ -83,7 +83,7 @@ class PlaybackScreenViewModel @Inject constructor(
         dateStoreRepo.dataStore.data.map { AppSettingModel.fromPreferences(it) },
     ) { param, episodeProgress, danmakuList, appSetting ->
         PlayBackScreenUiState.Ready(
-            url = param.url,
+            urls = param.urls,
             httpHeaders = param.httpHeadersJson?.let {
                 LenientJson.decodeFromString<Map<String, String>>(
                     it
@@ -119,7 +119,7 @@ sealed interface PlayBackScreenUiState {
     data object Loading : PlayBackScreenUiState
     data class Error(val error: String, val exception: Throwable? = null) : PlayBackScreenUiState
     data class Ready(
-        val url: String,
+        val urls: List<String>,
         val httpHeaders: Map<String, String>?,
         val episodeProgress: EpisodeProgressModel,
         val danmakuList: List<DanmakuItemData>,

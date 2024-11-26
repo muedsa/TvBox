@@ -52,6 +52,7 @@ import com.muedsa.compose.tv.widget.ScreenBackgroundType
 import com.muedsa.compose.tv.widget.TwoSideWideButton
 import com.muedsa.compose.tv.widget.rememberScreenBackgroundState
 import com.muedsa.tvbox.api.data.MediaDetail
+import com.muedsa.tvbox.api.data.MediaMergingHttpSource
 import com.muedsa.tvbox.model.dandanplay.BangumiInfo
 import com.muedsa.tvbox.model.dandanplay.BangumiSearch
 import com.muedsa.tvbox.plugin.PluginInfo
@@ -289,7 +290,7 @@ fun MediaDetailWidget(
                                 Timber.d("episode:${mediaDetail.id}-${episode.name}, url:${it.url}")
                                 navController.nav(
                                     NavigationItems.Player(
-                                        url = it.url,
+                                        urls = if (it is MediaMergingHttpSource ) it.urls else listOf(it.url),
                                         httpHeadersJson = it.httpHeaders?.let { h -> LenientJson.encodeToString(h) },
                                         pluginPackage = pluginInfo.packageName,
                                         mediaId = mediaDetail.id,

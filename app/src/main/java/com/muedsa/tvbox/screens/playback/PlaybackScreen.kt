@@ -32,7 +32,7 @@ fun PlaybackScreen(
         )
 
         is PlayBackScreenUiState.Ready -> PlaybackWidget(
-            url = s.url,
+            urls = s.urls,
             httpHeaders = s.httpHeaders,
             episodeProgress = s.episodeProgress,
             danmakuList = s.danmakuList,
