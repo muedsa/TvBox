@@ -98,7 +98,6 @@ fun EpisodeListWidget(
                     LazyRow {
                         itemsIndexed(
                             items = currentPartEpisodeList,
-                            key = { _, item -> item.id }
                         ) { episodePartIndex, episode ->
                             val interactionSource = remember { MutableInteractionSource() }
                             val focusedState = interactionSource.collectIsFocusedAsState()
@@ -241,7 +240,6 @@ fun EpisodeListWidget(
                     LazyRow {
                         itemsIndexed(
                             items = danEpisodeList,
-                            key = { _, item -> item.episodeId }
                         ) { danEpisodePartIndex, danEpisode ->
                             val interactionSource = remember { MutableInteractionSource() }
                             WideButton(
