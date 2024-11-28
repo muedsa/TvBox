@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 
@@ -32,6 +33,7 @@ class SearchScreenViewModel  @Inject constructor(
     fun searchMedia(query: String) {
         if (query.isNotBlank()) {
             viewModelScope.launch(Dispatchers.IO) {
+                _queryFlow.emit("")
                 _queryFlow.emit(query)
             }
         }
@@ -53,6 +55,7 @@ class SearchScreenViewModel  @Inject constructor(
                         row = row
                     )
                 } catch (throwable: Throwable) {
+                    Timber.e(throwable)
                     SearchScreenUiState.Error(throwable.message ?: "error", throwable)
                 }
             }.catch {
