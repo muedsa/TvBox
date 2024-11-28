@@ -1,7 +1,7 @@
 [versions]
 agp = "8.7.2"
 kotlin = "2.1.0"
-ksp = "2.0.21-1.0.28"
+ksp = "2.1.0-1.0.29"
 coreKtx = "1.15.0"
 coreSplashscreen = "1.0.1"
 lifecycle = "2.8.7"
