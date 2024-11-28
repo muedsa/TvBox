@@ -109,8 +109,10 @@ class PlaybackScreenViewModel @Inject constructor(
 
     fun saveEpisodeProgress(model: EpisodeProgressModel) {
         viewModelScope.launch(Dispatchers.IO) {
-            Timber.d("save episode progress: ${model.progress}/${model.duration}")
-            episodeProgressDao.upsert(model)
+            if (model.duration > 0L && model.progress > 15_000L && model.progress < model.duration) {
+                Timber.d("save episode progress: ${model.progress}/${model.duration}")
+                episodeProgressDao.upsert(model)
+            }
         }
     }
 }
