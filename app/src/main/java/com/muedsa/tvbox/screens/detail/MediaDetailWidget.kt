@@ -302,7 +302,10 @@ fun MediaDetailWidget(
                                         episodeId = episode.id,
                                         danEpisodeId = if (enabledDanmakuState.value && danEpisode != null)
                                             danEpisode.episodeId else -1,
-                                        disableEpisodeProgression = mediaDetail.disableEpisodeProgression
+                                        disableEpisodeProgression = mediaDetail.disableEpisodeProgression,
+                                        enableCustomDanmakuList = mediaDetail.enableCustomDanmakuList,
+                                        enableCustomDanmakuFlow = mediaDetail.enableCustomDanmakuFlow,
+                                        episodeInfoJson = LenientJson.encodeToString(episode),
                                     )
                                 )
                             },

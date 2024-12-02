@@ -3,7 +3,10 @@ package com.muedsa.tvbox.screens.playback
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kuaishou.akdanmaku.data.DanmakuItemData
+import com.muedsa.tvbox.api.data.DanmakuDataFlow
+import com.muedsa.tvbox.api.data.MediaEpisode
 import com.muedsa.tvbox.model.AppSettingModel
+import com.muedsa.tvbox.plugin.PluginManager
 import com.muedsa.tvbox.room.dao.EpisodeProgressDao
 import com.muedsa.tvbox.room.model.EpisodeProgressModel
 import com.muedsa.tvbox.screens.NavigationItems
@@ -44,9 +47,27 @@ class PlaybackScreenViewModel @Inject constructor(
             } else EpisodeProgressModel(it.pluginPackage, it.mediaId, it.episodeId, 0, 0, 0)
         }
 
-    private val _danmakuListFlow = navItemFlow
+    private val _danmakuPairFlow = navItemFlow
         .map { it ->
-            if (it.danEpisodeId > 0) {
+            val plugin = PluginManager.getCurrentPlugin()
+            if (plugin.pluginInfo.packageName == it.pluginPackage) {
+                val mediaEpisode = LenientJson.decodeFromString<MediaEpisode>(it.episodeInfoJson)
+                val danmakuList = if (it.enableCustomDanmakuList) {
+                    plugin.mediaDetailService
+                        .getEpisodeDanmakuDataList(mediaEpisode)
+                        .map { data ->
+                            DanmakuItemData(
+                                danmakuId = data.danmakuId,
+                                position = data.position,
+                                content = data.content,
+                                mode = data.mode,
+                                textSize = 25,
+                                textColor = data.textColor,
+                                score = data.score,
+                                danmakuStyle = data.danmakuStyle
+                            )
+                        }
+                } else if (it.danEpisodeId > 0) {
                     danDanPlayApiService.getComment(
                         episodeId = it.danEpisodeId,
                         from = 0,
@@ -76,14 +97,20 @@ class PlaybackScreenViewModel @Inject constructor(
                         )
                     }
                 } else emptyList()
+                val danmakuDataFlow = if (it.enableCustomDanmakuFlow) {
+                    plugin.mediaDetailService.getEpisodeDanmakuDataFlow(mediaEpisode)
+                } else null
+                Pair(danmakuList, danmakuDataFlow)
+            } else {
+                Pair(emptyList(), null)
             }
-
+        }
     val uiState = combine(
         navItemFlow,
         episodeProgressFlow,
-        _danmakuListFlow,
+        _danmakuPairFlow,
         dateStoreRepo.dataStore.data.map { AppSettingModel.fromPreferences(it) },
-    ) { param, episodeProgress, danmakuList, appSetting ->
+    ) { param, episodeProgress, danmakuPair, appSetting ->
         PlayBackScreenUiState.Ready(
             urls = param.urls,
             httpHeaders = param.httpHeadersJson?.let {
@@ -92,7 +119,8 @@ class PlaybackScreenViewModel @Inject constructor(
                 )
             },
             episodeProgress = episodeProgress,
-            danmakuList = danmakuList,
+            danmakuList = danmakuPair.first,
+            danmakuDataFlow = danmakuPair.second,
             appSetting = appSetting,
             disableEpisodeProgression = param.disableEpisodeProgression,
         )
@@ -127,7 +155,8 @@ sealed interface PlayBackScreenUiState {
         val urls: List<String>,
         val httpHeaders: Map<String, String>?,
         val episodeProgress: EpisodeProgressModel,
-        val danmakuList: List<DanmakuItemData>,
+        val danmakuList: List<DanmakuItemData>,         // 初始弹幕列表
+        val danmakuDataFlow: DanmakuDataFlow? = null,   // 实时弹幕
         val appSetting: AppSettingModel,
         val disableEpisodeProgression: Boolean,
     ) : PlayBackScreenUiState

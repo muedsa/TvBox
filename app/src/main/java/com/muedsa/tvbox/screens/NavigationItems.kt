@@ -27,6 +27,9 @@ sealed interface NavigationItems {
         val episodeId: String,
         val danEpisodeId: Long = -1,
         val disableEpisodeProgression: Boolean,
+        val enableCustomDanmakuList: Boolean,
+        val enableCustomDanmakuFlow: Boolean,
+        val episodeInfoJson: String,
     ) : NavigationItems
 
     @Serializable

@@ -36,6 +36,7 @@ fun PlaybackScreen(
             httpHeaders = s.httpHeaders,
             episodeProgress = s.episodeProgress,
             danmakuList = s.danmakuList,
+            danmakuDataFlow = s.danmakuDataFlow,
             appSetting = s.appSetting,
             disableEpisodeProgression = s.disableEpisodeProgression,
             playbackScreenViewModel = playbackScreenViewModel

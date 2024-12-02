@@ -4,6 +4,7 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,11 +28,13 @@ import androidx.tv.material3.Surface
 import androidx.tv.material3.SurfaceDefaults
 import com.kuaishou.akdanmaku.data.DanmakuItemData
 import com.kuaishou.akdanmaku.ecs.component.filter.DuplicateMergedFilter
+import com.kuaishou.akdanmaku.ui.DanmakuPlayer
 import com.muedsa.compose.tv.useLocalNavHostController
 import com.muedsa.compose.tv.useLocalToastMsgBoxController
 import com.muedsa.compose.tv.widget.AppBackHandler
 import com.muedsa.compose.tv.widget.player.DanmakuVideoPlayer
 import com.muedsa.compose.tv.widget.player.mergeDanmaku
+import com.muedsa.tvbox.api.data.DanmakuDataFlow
 import com.muedsa.tvbox.model.AppSettingModel
 import com.muedsa.tvbox.room.model.EpisodeProgressModel
 import kotlinx.coroutines.delay
@@ -47,6 +50,7 @@ fun PlaybackWidget(
     httpHeaders: Map<String, String>?,
     episodeProgress: EpisodeProgressModel,
     danmakuList: List<DanmakuItemData>,
+    danmakuDataFlow: DanmakuDataFlow?,
     appSetting: AppSettingModel,
     disableEpisodeProgression: Boolean,
     playbackScreenViewModel: PlaybackScreenViewModel
@@ -54,6 +58,7 @@ fun PlaybackWidget(
     val navController = useLocalNavHostController()
     val toastController = useLocalToastMsgBoxController()
     var exoplayerHolder by remember { mutableStateOf<ExoPlayer?>(null) }
+    var danmakuPlayerHolder by remember { mutableStateOf<DanmakuPlayer?>(null) }
     var playerEnd by remember { mutableStateOf(false) }
 
     AppBackHandler {
@@ -125,6 +130,7 @@ fun PlaybackWidget(
                     }
                     updateData(list)
                 }
+                danmakuPlayerHolder = this
             },
             videoPlayerBuilderSetting = {
                 setMediaSourceFactory(mediaSourceFactory)
@@ -189,6 +195,34 @@ fun PlaybackWidget(
             }.toTypedArray()
             setMediaSource(MergingMediaSource(*mediaSources))
             prepare()
+        }
+    }
+
+    LaunchedEffect(danmakuDataFlow) {
+        danmakuDataFlow?.flow?.collect { data ->
+            danmakuPlayerHolder?.let { danmakuPlayer ->
+                if (!danmakuPlayer.isReleased) {
+                    danmakuPlayer.send(
+                        DanmakuItemData(
+                            danmakuId = data.danmakuId,
+                            position = if (data.position < 0)
+                                danmakuPlayer.getCurrentTimeMs() + 500 else data.position,
+                            content = data.content,
+                            mode = data.mode,
+                            textSize = 25,
+                            textColor = data.textColor,
+                            score = data.score,
+                            danmakuStyle = data.danmakuStyle
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    DisposableEffect(danmakuDataFlow) {
+        onDispose {
+            danmakuDataFlow?.close()
         }
     }
 }
