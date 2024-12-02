@@ -93,7 +93,8 @@ class PlaybackScreenViewModel @Inject constructor(
             },
             episodeProgress = episodeProgress,
             danmakuList = danmakuList,
-            appSetting = appSetting
+            appSetting = appSetting,
+            disableEpisodeProgression = param.disableEpisodeProgression,
         )
     }.catch {
         PlayBackScreenUiState.Error(error = it.message ?: "error", it)
@@ -127,6 +128,7 @@ sealed interface PlayBackScreenUiState {
         val httpHeaders: Map<String, String>?,
         val episodeProgress: EpisodeProgressModel,
         val danmakuList: List<DanmakuItemData>,
-        val appSetting: AppSettingModel
+        val appSetting: AppSettingModel,
+        val disableEpisodeProgression: Boolean,
     ) : PlayBackScreenUiState
 }

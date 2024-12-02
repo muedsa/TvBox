@@ -37,6 +37,7 @@ fun PlaybackScreen(
             episodeProgress = s.episodeProgress,
             danmakuList = s.danmakuList,
             appSetting = s.appSetting,
+            disableEpisodeProgression = s.disableEpisodeProgression,
             playbackScreenViewModel = playbackScreenViewModel
         )
     }
