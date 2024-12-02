@@ -1,5 +1,7 @@
 package com.muedsa.compose.tv.widget
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.FocusRequester.Companion.FocusRequesterFactory.component1
+import androidx.compose.ui.focus.FocusRequester.Companion.FocusRequesterFactory.component2
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.graphics.Color
@@ -48,9 +52,8 @@ fun <T> ImageCardsRow(
     onItemClick: (index: Int, item: T) -> Unit = { _, _ -> }
 ) {
 
-    val firstItemFR = remember { FocusRequester() }
-
-    Column(modifier) {
+    val (lazyRowFR, firstItemFR) = remember { FocusRequester.createRefs() }
+    Column(modifier.focusGroup()) {
         Text(
             modifier = Modifier.padding(start = ImageCardRowCardPadding),
             text = title,
@@ -59,39 +62,45 @@ fun <T> ImageCardsRow(
             maxLines = 1
         )
         Spacer(modifier = Modifier.height(ImageCardRowCardPadding))
-        LazyRow(
-            modifier = Modifier
-                .focusRestorer { firstItemFR },
-            state = state,
-            contentPadding = PaddingValues(
-                start = ImageCardRowCardPadding,
-                bottom = ImageCardRowCardPadding,
-                end = 100.dp
-            )
-        ) {
-            modelList.forEachIndexed { index, it ->
-                var itemModifier = Modifier.padding(end = ImageCardRowCardPadding)
-                if (index == 0) {
-                    itemModifier = itemModifier.focusRequester(firstItemFR)
-                }
-                item(key = if (it is KeyModel) it.key else null) {
-                    ImageContentCard(
-                        modifier = itemModifier,
-                        url = imageFn(index, it),
-                        imageSize = imageSize,
-                        backgroundColor = backgroundColorFn(index, it),
-                        type = CardType.COMPACT,
-                        model = contentFn(index, it),
-                        onItemFocus = { onItemFocus(index, it) },
-                        onItemClick = { onItemClick(index, it) }
-                    )
+        AnimatedContent(
+            targetState = modelList,
+            label = "",
+        ) {modelState ->
+            LazyRow(
+                modifier = Modifier
+                    .focusRequester(lazyRowFR)
+                    .focusRestorer { firstItemFR },
+                state = state,
+                contentPadding = PaddingValues(
+                    start = ImageCardRowCardPadding,
+                    bottom = ImageCardRowCardPadding,
+                    end = 100.dp
+                )
+            ) {
+                modelState.forEachIndexed { index, it ->
+                    var itemModifier = Modifier.padding(end = ImageCardRowCardPadding)
+                    if (index == 0) {
+                        itemModifier = itemModifier.focusRequester(firstItemFR)
+                    }
+                    item(key = if (it is KeyModel) it.key else null) {
+                        ImageContentCard(
+                            modifier = itemModifier,
+                            url = imageFn(index, it),
+                            imageSize = imageSize,
+                            backgroundColor = backgroundColorFn(index, it),
+                            type = CardType.COMPACT,
+                            model = contentFn(index, it),
+                            onItemFocus = { onItemFocus(index, it) },
+                            onItemClick = {
+                                lazyRowFR.saveFocusedChild()
+                                onItemClick(index, it)
+                            }
+                        )
+                    }
                 }
             }
         }
-    }
 
-    LaunchedEffect(key1 = Unit) {
-        state.scrollToItem(state.firstVisibleItemIndex)
     }
 }
 
@@ -109,14 +118,17 @@ fun <T> StandardImageCardsRow(
     onItemFocus: (index: Int, item: T) -> Unit = { _, _ -> },
     onItemClick: (index: Int, item: T) -> Unit = { _, _ -> }
 ) {
-    val firstItemFR = remember { FocusRequester() }
-    val rowBottomPadding =
-        if (modelList.isNotEmpty() && modelList.anyMatchWithIndex { index, item ->
+    val (lazyRowFR, firstItemFR) = remember { FocusRequester.createRefs() }
+    var rowBottomPadding = remember { ImageCardRowCardPadding }
+
+    LaunchedEffect(modelList) {
+        rowBottomPadding = if (modelList.isNotEmpty() && modelList.anyMatchWithIndex { index, item ->
                 contentFn(index, item) != null
             }) ImageCardRowCardPadding - CardContentPadding
         else ImageCardRowCardPadding
+    }
 
-    Column(modifier) {
+    Column(modifier.focusGroup()) {
         Text(
             modifier = Modifier.padding(start = ImageCardRowCardPadding),
             text = title,
@@ -125,39 +137,44 @@ fun <T> StandardImageCardsRow(
             maxLines = 1
         )
         Spacer(modifier = Modifier.height(10.dp))
-        LazyRow(
-            modifier = Modifier
-                .focusRestorer { firstItemFR },
-            state = state,
-            contentPadding = PaddingValues(
-                start = ImageCardRowCardPadding,
-                bottom = rowBottomPadding,
-                end = 100.dp
-            )
-        ) {
-            modelList.forEachIndexed { index, it ->
-                item(key = if (it is KeyModel) it.key else null) {
-                    var itemModifier = Modifier.padding(end = ImageCardRowCardPadding)
-                    if (index == 0) {
-                        itemModifier = itemModifier.focusRequester(firstItemFR)
+        AnimatedContent(
+            targetState = modelList,
+            label = "",
+        ) { modelState ->
+            LazyRow(
+                modifier = Modifier
+                    .focusRequester(lazyRowFR)
+                    .focusRestorer { firstItemFR },
+                state = state,
+                contentPadding = PaddingValues(
+                    start = ImageCardRowCardPadding,
+                    bottom = rowBottomPadding,
+                    end = 100.dp
+                )
+            ) {
+                modelState.forEachIndexed { index, it ->
+                    item(key = if (it is KeyModel) it.key else null) {
+                        var itemModifier = Modifier.padding(end = ImageCardRowCardPadding)
+                        if (index == 0) {
+                            itemModifier = itemModifier.focusRequester(firstItemFR)
+                        }
+                        ImageContentCard(
+                            modifier = itemModifier,
+                            url = imageFn(index, it),
+                            imageSize = imageSize,
+                            backgroundColor = backgroundColorFn(index, it),
+                            type = CardType.STANDARD,
+                            model = contentFn(index, it),
+                            onItemFocus = { onItemFocus(index, it) },
+                            onItemClick = {
+                                lazyRowFR.saveFocusedChild()
+                                onItemClick(index, it)
+                            }
+                        )
                     }
-                    ImageContentCard(
-                        modifier = itemModifier,
-                        url = imageFn(index, it),
-                        imageSize = imageSize,
-                        backgroundColor = backgroundColorFn(index, it),
-                        type = CardType.STANDARD,
-                        model = contentFn(index, it),
-                        onItemFocus = { onItemFocus(index, it) },
-                        onItemClick = { onItemClick(index, it) }
-                    )
                 }
             }
         }
-    }
-
-    LaunchedEffect(key1 = Unit) {
-        state.scrollToItem(state.firstVisibleItemIndex)
     }
 }
 
