@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -38,7 +39,7 @@ class PlaybackScreenViewModel @Inject constructor(
     private val episodeProgressFlow = navItemFlow
         .map {
             if (!it.disableEpisodeProgression) {
-                Timber.d("loading episode progress <${it.pluginPackage}> $${it.mediaId} -> $${it.episodeId}")
+                Timber.d("loading episode progress <${it.pluginPackage}> ${it.mediaId} -> ${it.episodeId}")
                 episodeProgressDao.getOneByPluginPackageAndMediaIdAndEpisodeId(
                     pluginPackage = it.pluginPackage,
                     mediaId = it.mediaId,
@@ -49,60 +50,67 @@ class PlaybackScreenViewModel @Inject constructor(
 
     private val _danmakuPairFlow = navItemFlow
         .map { it ->
-            val plugin = PluginManager.getCurrentPlugin()
-            if (plugin.pluginInfo.packageName == it.pluginPackage) {
-                val mediaEpisode = LenientJson.decodeFromString<MediaEpisode>(it.episodeInfoJson)
-                val danmakuList = if (it.enableCustomDanmakuList) {
-                    plugin.mediaDetailService
-                        .getEpisodeDanmakuDataList(mediaEpisode)
-                        .map { data ->
-                            DanmakuItemData(
-                                danmakuId = data.danmakuId,
-                                position = data.position,
-                                content = data.content,
-                                mode = data.mode,
-                                textSize = 25,
-                                textColor = data.textColor,
-                                score = data.score,
-                                danmakuStyle = data.danmakuStyle
-                            )
-                        }
-                } else if (it.danEpisodeId > 0) {
-                    danDanPlayApiService.getComment(
-                        episodeId = it.danEpisodeId,
-                        from = 0,
-                        withRelated = true,
-                        chConvert = 1
-                    ).comments.map {
-                        val propArr = it.p.split(",")
-                        val pos = (propArr[0].toFloat() * 1000).toLong()
-                        val mode = if (propArr[1] == "1")
-                            DanmakuItemData.DANMAKU_MODE_ROLLING
-                        else if (propArr[1] == "4")
-                            DanmakuItemData.DANMAKU_MODE_CENTER_BOTTOM
-                        else if (propArr[1] == "5")
-                            DanmakuItemData.DANMAKU_MODE_CENTER_TOP
-                        else
-                            DanmakuItemData.DANMAKU_MODE_ROLLING
-                        val colorInt = propArr[2].toInt()
-                        DanmakuItemData(
-                            danmakuId = it.cid,
-                            position = pos,
-                            content = it.m,
-                            mode = mode,
-                            textSize = 25,
-                            textColor = colorInt,
-                            score = 9,
-                            danmakuStyle = DanmakuItemData.DANMAKU_STYLE_NONE
-                        )
+            withContext(Dispatchers.IO) {
+                try {
+                    val plugin = PluginManager.getCurrentPlugin()
+                    if (plugin.pluginInfo.packageName == it.pluginPackage) {
+                        val mediaEpisode = LenientJson.decodeFromString<MediaEpisode>(it.episodeInfoJson)
+                        val danmakuList = if (it.enableCustomDanmakuList) {
+                            plugin.mediaDetailService
+                                .getEpisodeDanmakuDataList(mediaEpisode)
+                                .map { data ->
+                                    DanmakuItemData(
+                                        danmakuId = data.danmakuId,
+                                        position = data.position,
+                                        content = data.content,
+                                        mode = data.mode,
+                                        textSize = 25,
+                                        textColor = data.textColor,
+                                        score = data.score,
+                                        danmakuStyle = data.danmakuStyle
+                                    )
+                                }
+                        } else if (it.danEpisodeId > 0) {
+                            danDanPlayApiService.getComment(
+                                episodeId = it.danEpisodeId,
+                                from = 0,
+                                withRelated = true,
+                                chConvert = 1
+                            ).comments.map {
+                                val propArr = it.p.split(",")
+                                val pos = (propArr[0].toFloat() * 1000).toLong()
+                                val mode = if (propArr[1] == "1")
+                                    DanmakuItemData.DANMAKU_MODE_ROLLING
+                                else if (propArr[1] == "4")
+                                    DanmakuItemData.DANMAKU_MODE_CENTER_BOTTOM
+                                else if (propArr[1] == "5")
+                                    DanmakuItemData.DANMAKU_MODE_CENTER_TOP
+                                else
+                                    DanmakuItemData.DANMAKU_MODE_ROLLING
+                                val colorInt = propArr[2].toInt()
+                                DanmakuItemData(
+                                    danmakuId = it.cid,
+                                    position = pos,
+                                    content = it.m,
+                                    mode = mode,
+                                    textSize = 25,
+                                    textColor = colorInt,
+                                    score = 9,
+                                    danmakuStyle = DanmakuItemData.DANMAKU_STYLE_NONE
+                                )
+                            }
+                        } else emptyList()
+                        val danmakuDataFlow = if (it.enableCustomDanmakuFlow) {
+                            plugin.mediaDetailService.getEpisodeDanmakuDataFlow(mediaEpisode)
+                        } else null
+                        Pair(danmakuList, danmakuDataFlow)
+                    } else {
+                        Pair(emptyList(), null)
                     }
-                } else emptyList()
-                val danmakuDataFlow = if (it.enableCustomDanmakuFlow) {
-                    plugin.mediaDetailService.getEpisodeDanmakuDataFlow(mediaEpisode)
-                } else null
-                Pair(danmakuList, danmakuDataFlow)
-            } else {
-                Pair(emptyList(), null)
+                } catch (throwable: Throwable) {
+                    Timber.e(throwable)
+                    Pair(emptyList(), null)
+                }
             }
         }
     val uiState = combine(
