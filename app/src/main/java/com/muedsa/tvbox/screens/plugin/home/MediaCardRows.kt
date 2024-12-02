@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,31 +41,29 @@ fun MediaCardRows(
         val configuration = LocalConfiguration.current
         val backgroundState = useLocalHomeScreenBackgroundState()
         val navController = useLocalNavHostController()
-        val firstRow = rows.first()
-        val firstRowHeight =
-            (MaterialTheme.typography.titleLarge.fontSize.value * configuration.fontScale + 0.5f).dp +
-                    ImageCardRowCardPadding * 3 + firstRow.cardHeight.dp
-        val tabHeight =
-            (MaterialTheme.typography.labelLarge.fontSize.value * configuration.fontScale + 0.5f).dp +
-                    24.dp * 2 +
-                    6.dp * 2
+        val titleHeight= (MaterialTheme.typography.titleLarge.fontSize.value * configuration.fontScale + 0.5f).dp
+        val labelHeight= (MaterialTheme.typography.labelLarge.fontSize.value * configuration.fontScale + 0.5f).dp
+        var firstRow = remember { rows.first() }
+        val firstRowHeight = titleHeight + ImageCardRowCardPadding * 3 + firstRow.cardHeight.dp
+        val tabHeight = remember { labelHeight + 24.dp * 2 + 6.dp * 2 }
         val screenHeight = configuration.screenHeightDp.dp
         val screenWidth = configuration.screenWidthDp.dp
         var title by remember { mutableStateOf("") }
         var subTitle by remember { mutableStateOf<String?>(null) }
+        LaunchedEffect(key1 = rows) {
+            firstRow = rows.first()
+            firstRow.list.firstOrNull()?.let {
+                title = it.title
+                subTitle = it.subTitle
+                backgroundState.url = it.coverImageUrl
+                backgroundState.type = ScreenBackgroundType.SCRIM
+            }
+        }
         LazyColumn(
             modifier = Modifier
                 .padding(start = ScreenPaddingLeft - ImageCardRowCardPadding)
         ) {
-            item {
-                LaunchedEffect(key1 = firstRow) {
-                    firstRow.list.firstOrNull()?.let {
-                        title = it.title
-                        subTitle = it.subTitle
-                        backgroundState.url = it.coverImageUrl
-                        backgroundState.type = ScreenBackgroundType.SCRIM
-                    }
-                }
+            item(contentType = "MEDIA_CARD_ROW_IMMERSIVE_LIST") {
                 ImmersiveList(
                     background = {
                         ContentBlock(
@@ -106,9 +104,12 @@ fun MediaCardRows(
                 }
             }
 
-            items(rows.subList(1, rows.size)) {
+            itemsIndexed(
+                items = rows.subList(1, rows.size),
+                contentType = { index, _ -> "MEDIA_CARD_ROW_OTHER_$index" }
+            ) { _, item ->
                 MediaCardRow(
-                    row = it,
+                    row = item,
                     onItemFocus = { _, mediaCard ->
                         title = mediaCard.title
                         subTitle = mediaCard.subTitle

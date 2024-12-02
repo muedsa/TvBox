@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Favorite
@@ -104,13 +105,13 @@ fun MediaDetailWidget(
         contentPadding = PaddingValues(bottom = 100.dp)
     ) {
         // top space
-        item {
+        item(contentType = "MEDIA_TOP") {
             // 占位锚点 使之可以通过Dpad返回页面的顶部
             Spacer(modifier = Modifier.focusable().focusOnInitial())
         }
 
         // 介绍
-        item {
+        item(contentType = "MEDIA_CONTENT_BLOCK") {
             ContentBlock(
                 modifier = Modifier
                     .padding(top = screenHeight * 0.2f)
@@ -128,7 +129,7 @@ fun MediaDetailWidget(
         }
 
         // 按钮列表
-        item {
+        item(contentType = "MEDIA_BUTTON_ROW") {
             LazyRow(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(25.dp),
@@ -268,7 +269,7 @@ fun MediaDetailWidget(
         val episodePlaySource = selectedPlaySource
         val episodeList = episodePlaySource?.episodeList ?: emptyList()
         if (episodePlaySource != null && episodeList.isNotEmpty()) {
-            item {
+            item(contentType = "MEDIA_EPISODES") {
                 val episodeRelationMap = remember { mutableStateMapOf<String, Long>() }
                 var episodeClickLoading by remember { mutableStateOf(false) }
 
@@ -317,9 +318,12 @@ fun MediaDetailWidget(
         }
 
         // 关联视频
-        items(items = mediaDetail.rows) {
+        itemsIndexed(
+            items = mediaDetail.rows,
+            contentType = { index, _ -> "MEDIA_RELATION_ROW_$index" }
+        ) { _, item ->
             MediaCardRow(
-                row = it,
+                row = item,
                 onItemClick = { _, mediaCard ->
                     navController.nav(
                         NavigationItems.Detail(
