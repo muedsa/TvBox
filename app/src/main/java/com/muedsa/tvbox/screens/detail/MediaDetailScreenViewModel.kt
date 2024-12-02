@@ -92,7 +92,11 @@ class MediaDetailScreenViewModel @Inject constructor(
 
     private val _danBangumiListFlow =
         combine(_mediaDetailFlow, _banBangumiSearchQueryFlow) { wrapper, searchQuery ->
-            if (wrapper.data != null && wrapper.data.second.enableDanDanPlaySearch) {
+            if (wrapper.data != null
+                && wrapper.data.second.enableDanDanPlaySearch
+                && !wrapper.data.third.enableCustomDanmakuList
+                && !wrapper.data.third.enableCustomDanmakuFlow
+            ) {
                 try {
                     val resp =
                         danDanPlayApiService.searchAnime(searchQuery ?: wrapper.data.third.title)
