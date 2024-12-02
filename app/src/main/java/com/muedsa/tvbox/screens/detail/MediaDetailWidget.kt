@@ -297,7 +297,8 @@ fun MediaDetailWidget(
                                         mediaId = mediaDetail.id,
                                         episodeId = episode.id,
                                         danEpisodeId = if (enabledDanmakuState.value && danEpisode != null)
-                                            danEpisode.episodeId else -1
+                                            danEpisode.episodeId else -1,
+                                        disableEpisodeProgression = mediaDetail.disableEpisodeProgression
                                     )
                                 )
                             },
