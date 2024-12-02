@@ -59,32 +59,34 @@ fun CatalogWidget(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedButton(onClick = {
-                if (optionsExpand) {
-                    catalogScreenViewModel.changeSelectedOptions(selectedOptions = selectedOptionsAtWidget)
+            if (config.catalogOptions.isNotEmpty()) {
+                OutlinedButton(onClick = {
+                    if (optionsExpand) {
+                        catalogScreenViewModel.changeSelectedOptions(selectedOptions = selectedOptionsAtWidget)
+                    }
+                    optionsExpand = !optionsExpand
+                }) {
+                    Text(text = "筛选项")
+                    Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
+                    Icon(
+                        modifier = Modifier.size(ButtonDefaults.IconSize),
+                        imageVector = if (optionsExpand) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.ArrowDropDown,
+                        contentDescription = "展开筛选项"
+                    )
                 }
-                optionsExpand = !optionsExpand
-            }) {
-                Text(text = "筛选项")
-                Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                Icon(
-                    modifier = Modifier.size(ButtonDefaults.IconSize),
-                    imageVector = if (optionsExpand) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.ArrowDropDown,
-                    contentDescription = "展开筛选项"
-                )
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            OutlinedIconButton(onClick = {
-                val options = MediaCatalogOption.getDefault(config.catalogOptions)
-                selectedOptionsAtWidget.clear()
-                selectedOptionsAtWidget.addAll(options)
-                catalogScreenViewModel.changeSelectedOptions(selectedOptions = options)
-            }) {
-                Icon(
-                    modifier = Modifier.size(ButtonDefaults.IconSize),
-                    imageVector = Icons.Outlined.Refresh,
-                    contentDescription = "重置筛选项"
-                )
+                Spacer(modifier = Modifier.width(16.dp))
+                OutlinedIconButton(onClick = {
+                    val options = MediaCatalogOption.getDefault(config.catalogOptions)
+                    selectedOptionsAtWidget.clear()
+                    selectedOptionsAtWidget.addAll(options)
+                    catalogScreenViewModel.changeSelectedOptions(selectedOptions = options)
+                }) {
+                    Icon(
+                        modifier = Modifier.size(ButtonDefaults.IconSize),
+                        imageVector = Icons.Outlined.Refresh,
+                        contentDescription = "重置筛选项"
+                    )
+                }
             }
         }
 
