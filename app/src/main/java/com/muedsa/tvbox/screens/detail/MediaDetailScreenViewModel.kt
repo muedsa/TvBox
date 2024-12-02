@@ -77,7 +77,7 @@ class MediaDetailScreenViewModel @Inject constructor(
     }
 
     private val _mediaProgressFlow = combine(_refreshProgressFlow, _mediaDetailFlow) { _, wrapper ->
-        if (wrapper.data != null) {
+        if (wrapper.data != null && !wrapper.data.third.disableEpisodeProgression) {
             val progressMap = episodeProgressDao.getListByPluginPackageAndMediaId(
                 pluginPackage = wrapper.data.first.packageName,
                 mediaId = wrapper.data.third.id

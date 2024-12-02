@@ -26,6 +26,7 @@ sealed interface NavigationItems {
         val mediaId: String,
         val episodeId: String,
         val danEpisodeId: Long = -1,
+        val disableEpisodeProgression: Boolean,
     ) : NavigationItems
 
     @Serializable

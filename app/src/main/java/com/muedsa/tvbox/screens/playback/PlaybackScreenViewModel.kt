@@ -34,12 +34,14 @@ class PlaybackScreenViewModel @Inject constructor(
     private val navItemFlow = initFlow.filterNotNull()
     private val episodeProgressFlow = navItemFlow
         .map {
-            Timber.d("loading episode progress <${it.pluginPackage}> $${it.mediaId} -> $${it.episodeId}")
-            episodeProgressDao.getOneByPluginPackageAndMediaIdAndEpisodeId(
-                pluginPackage = it.pluginPackage,
-                mediaId = it.mediaId,
-                episodeId = it.episodeId
-            ) ?: EpisodeProgressModel(it.pluginPackage, it.mediaId, it.episodeId, 0, 0, 0)
+            if (!it.disableEpisodeProgression) {
+                Timber.d("loading episode progress <${it.pluginPackage}> $${it.mediaId} -> $${it.episodeId}")
+                episodeProgressDao.getOneByPluginPackageAndMediaIdAndEpisodeId(
+                    pluginPackage = it.pluginPackage,
+                    mediaId = it.mediaId,
+                    episodeId = it.episodeId
+                ) ?: EpisodeProgressModel(it.pluginPackage, it.mediaId, it.episodeId, 0, 0, 0)
+            } else EpisodeProgressModel(it.pluginPackage, it.mediaId, it.episodeId, 0, 0, 0)
         }
 
     private val _danmakuListFlow = navItemFlow

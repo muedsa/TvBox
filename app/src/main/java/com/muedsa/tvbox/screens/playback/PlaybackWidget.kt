@@ -48,6 +48,7 @@ fun PlaybackWidget(
     episodeProgress: EpisodeProgressModel,
     danmakuList: List<DanmakuItemData>,
     appSetting: AppSettingModel,
+    disableEpisodeProgression: Boolean,
     playbackScreenViewModel: PlaybackScreenViewModel
 ) {
     val navController = useLocalNavHostController()
@@ -61,7 +62,7 @@ fun PlaybackWidget(
 
     LaunchedEffect(key1 = playerEnd) {
         if (playerEnd) {
-            if (exoplayerHolder != null) {
+            if (exoplayerHolder != null && !disableEpisodeProgression) {
                 val exoPlayer = exoplayerHolder!!
                 episodeProgress.progress = exoPlayer.duration
                 episodeProgress.duration = exoPlayer.duration
@@ -75,7 +76,7 @@ fun PlaybackWidget(
     }
 
     LaunchedEffect(key1 = exoplayerHolder) {
-        if (exoplayerHolder != null) {
+        if (exoplayerHolder != null && !disableEpisodeProgression) {
             val exoPlayer = exoplayerHolder!!
             while (exoplayerHolder != null) {
                 delay(10_000)
