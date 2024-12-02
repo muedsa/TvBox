@@ -1,6 +1,7 @@
 package com.muedsa.tvbox.screens.plugin.home
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -8,6 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -17,7 +20,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
+import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
+import androidx.tv.material3.OutlinedIconButton
 import com.muedsa.compose.tv.model.ContentModel
 import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
@@ -35,7 +40,8 @@ import com.muedsa.tvbox.screens.plugin.useLocalHomeScreenBackgroundState
 @Composable
 fun MediaCardRows(
     pluginInfo: PluginInfo,
-    rows: List<MediaCardRow>
+    rows: List<MediaCardRow>,
+    onRefresh: () -> Unit,
 ) {
     if (rows.isNotEmpty()) {
         val configuration = LocalConfiguration.current
@@ -126,6 +132,19 @@ fun MediaCardRows(
                         )
                     }
                 )
+            }
+
+            item(contentType = "MEDIA_CARD_ROWS_OTHER_BUTTON_ROW") {
+                Row(
+                    modifier = Modifier.padding(
+                        start = ImageCardRowCardPadding,
+                        bottom = ImageCardRowCardPadding
+                    )
+                ) {
+                    OutlinedIconButton(onClick = { onRefresh() }) {
+                        Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Refresh")
+                    }
+                }
             }
         }
     } else {

@@ -25,7 +25,11 @@ fun PluginHomeScreen(
             onRefresh = { pluginHomeViewModel.refreshRowsData() }
         )
 
-        is PluginHomeUiState.Ready -> MediaCardRows(pluginInfo = s.pluginInfo, rows = s.rows)
+        is PluginHomeUiState.Ready -> MediaCardRows(
+            pluginInfo = s.pluginInfo,
+            rows = s.rows,
+            onRefresh = { pluginHomeViewModel.refreshRowsData() },
+        )
     }
 }
 
