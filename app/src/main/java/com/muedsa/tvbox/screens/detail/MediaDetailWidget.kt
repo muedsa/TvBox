@@ -191,22 +191,26 @@ fun MediaDetailWidget(
                     }
                 }
 
-                item {
-                    // 收藏按钮
-                    OutlinedButton(onClick = {
-                        mediaDetailScreenViewModel.favorite(
-                            pluginInfo = pluginInfo,
-                            favoriteMediaCard = mediaDetail.favoritedMediaCard,
-                            favorite = !favorite
-                        )
-                    }) {
-                        Text(text = if (favorite) "已收藏" else "收藏")
-                        Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
-                        Icon(
-                            imageVector = Icons.Outlined.Favorite,
-                            contentDescription = "收藏",
-                            tint = if (favorite) FavoriteIconColor else LocalContentColor.current
-                        )
+                if (mediaDetail.favoritedMediaCard != null) {
+                    item {
+                        // 收藏按钮
+                        OutlinedButton(onClick = {
+                            mediaDetail.favoritedMediaCard?.let {
+                                mediaDetailScreenViewModel.favorite(
+                                    pluginInfo = pluginInfo,
+                                    favoriteMediaCard = it,
+                                    favorite = !favorite
+                                )
+                            }
+                        }) {
+                            Text(text = if (favorite) "已收藏" else "收藏")
+                            Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
+                            Icon(
+                                imageVector = Icons.Outlined.Favorite,
+                                contentDescription = "收藏",
+                                tint = if (favorite) FavoriteIconColor else LocalContentColor.current
+                            )
+                        }
                     }
                 }
 
