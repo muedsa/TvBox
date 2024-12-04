@@ -46,7 +46,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
-import androidx.media3.common.Format
 import androidx.media3.common.Player
 import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
@@ -76,7 +75,6 @@ fun PlayerControl(
     var leftArrowBtnPressed by remember { mutableStateOf(false) }
     var rightArrowBtnPressed by remember { mutableStateOf(false) }
     var playBtnPressed by remember { mutableStateOf(false) }
-    var videoInfo by remember { mutableStateOf("") }
 
     BackHandler(enabled = state.tick > 0L) {
         state.tick = 0L
@@ -205,7 +203,7 @@ fun PlayerControl(
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(
-                    text = videoInfo,
+                    text = state.videoInfo,
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -253,29 +251,6 @@ fun PlayerControl(
                 }
             }
         }
-    }
-
-    LaunchedEffect(key1 = player) {
-        player.addListener(object : Player.Listener {
-            override fun onTracksChanged(tracks: Tracks) {
-                var newVideoInfo = ""
-                for (trackGroup in tracks.groups) {
-                    if (trackGroup.isSelected) {
-                        var groupInfo = "group [ type=${groupTypeToString(trackGroup)}\n"
-                        for (i in 0 until trackGroup.length) {
-                            val isSelected = trackGroup.isTrackSelected(i)
-                            if (isSelected) {
-                                val trackFormat = trackGroup.getTrackFormat(i)
-                                groupInfo += "    Track ${Format.toLogString(trackFormat)}\n"
-                            }
-                        }
-                        groupInfo += "]\n"
-                        newVideoInfo += groupInfo
-                    }
-                }
-                videoInfo = newVideoInfo
-            }
-        })
     }
 }
 
@@ -365,6 +340,7 @@ class PlayerControlState(
     initMaxDisplayTicks: Int = 25,
     initOnceSeekMs: Long = 5000L,
     initDebugMode: Boolean = false,
+    initVideoInfo: String = "",
 ) {
     var loopDelay by mutableStateOf(initLoopDelayMs.milliseconds)
     var tick by mutableLongStateOf(0L)
@@ -372,28 +348,32 @@ class PlayerControlState(
     var seekMs by mutableLongStateOf(0L)
     var onceSeekMs by mutableLongStateOf(initOnceSeekMs)
     var debugMode by mutableStateOf(initDebugMode)
+    var videoInfo by mutableStateOf(initVideoInfo)
 
     companion object {
         const val LOOP_DELAY_KEY = "LOOP_DELAY"
         const val MAX_DISPLAY_TICKS_KEY = "MAX_DISPLAY_TICKS"
-        const val ONCE_SEEK_MS = "ONCE_SEEK_MS"
-        const val DEBUG_MODE = "DEBUG_MODE"
+        const val ONCE_SEEK_MS_KEY = "ONCE_SEEK_MS"
+        const val DEBUG_MODE_KEY = "DEBUG_MODE"
+        const val VIDEO_INFO_KEY = "DEBUG_MODE"
 
         val Saver: Saver<PlayerControlState, *> = mapSaver(
             save = {
                 mutableMapOf<String, Any?>().apply {
                     put(LOOP_DELAY_KEY, it.loopDelay.inWholeMilliseconds)
                     put(MAX_DISPLAY_TICKS_KEY, it.maxDisplayTicks)
-                    put(ONCE_SEEK_MS, it.onceSeekMs)
-                    put(DEBUG_MODE, it.debugMode)
+                    put(ONCE_SEEK_MS_KEY, it.onceSeekMs)
+                    put(DEBUG_MODE_KEY, it.debugMode)
+                    put(VIDEO_INFO_KEY, it.videoInfo)
                 }
             },
             restore = {
                 PlayerControlState(
                     initLoopDelayMs = it[LOOP_DELAY_KEY] as Long? ?: 200L,
                     initMaxDisplayTicks = it[MAX_DISPLAY_TICKS_KEY] as Int? ?: 25,
-                    initOnceSeekMs = it[ONCE_SEEK_MS] as Long? ?: 5000L,
-                    initDebugMode = it[DEBUG_MODE] as Boolean? == true,
+                    initOnceSeekMs = it[ONCE_SEEK_MS_KEY] as Long? ?: 5000L,
+                    initDebugMode = it[DEBUG_MODE_KEY] as Boolean? == true,
+                    initVideoInfo = it[VIDEO_INFO_KEY] as String? ?: "",
                 )
             }
         )
@@ -406,6 +386,7 @@ fun rememberPlayerControlState(
     initMaxDisplayTicks: Int = 25,
     initOnceSeekMs: Long = 5000L,
     initDebugMode: Boolean = AppUtil.debuggable(LocalContext.current),
+    initVideoInfo: String = "",
 ): PlayerControlState {
     return rememberSaveable(saver = PlayerControlState.Saver) {
         PlayerControlState(
@@ -413,6 +394,7 @@ fun rememberPlayerControlState(
             initMaxDisplayTicks = initMaxDisplayTicks,
             initOnceSeekMs = initOnceSeekMs,
             initDebugMode = initDebugMode,
+            initVideoInfo = initVideoInfo,
         )
     }
 }

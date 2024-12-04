@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.Player
+import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
@@ -60,6 +61,10 @@ fun DanmakuVideoPlayer(
                         } else {
                             danmakuPlayer.pause()
                         }
+                    }
+
+                    override fun onTracksChanged(tracks: Tracks) {
+                        playerControlState.videoInfo = buildTracksInfo(tracks)
                     }
                 })
                 it.videoPlayerInit()
