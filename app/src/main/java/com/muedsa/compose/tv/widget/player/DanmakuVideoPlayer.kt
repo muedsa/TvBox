@@ -3,11 +3,9 @@ package com.muedsa.compose.tv.widget.player
 import android.annotation.SuppressLint
 import android.view.Gravity
 import android.widget.FrameLayout
-import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -23,14 +21,13 @@ import com.kuaishou.akdanmaku.data.DanmakuItemData
 import com.kuaishou.akdanmaku.render.SimpleRenderer
 import com.kuaishou.akdanmaku.ui.DanmakuPlayer
 import com.kuaishou.akdanmaku.ui.DanmakuView
-import com.muedsa.util.AppUtil
 import kotlin.random.Random
 
 @SuppressLint("OpaqueUnitKey")
 @OptIn(UnstableApi::class)
 @Composable
 fun DanmakuVideoPlayer(
-    debug: Boolean = AppUtil.debuggable(LocalContext.current),
+    playerControlState: PlayerControlState = rememberPlayerControlState(),
     danmakuConfigSetting: DanmakuConfig.() -> Unit = {},
     danmakuPlayerInit: DanmakuPlayer.() -> Unit = {},
     videoPlayerBuilderSetting: ExoPlayer.Builder.() -> Unit = {},
@@ -38,8 +35,6 @@ fun DanmakuVideoPlayer(
 ) {
 
     val context = LocalContext.current
-
-    val playerControlTicker = remember { mutableIntStateOf(0) }
 
     val danmakuConfig = remember {
         DanmakuConfig().apply(danmakuConfigSetting)
@@ -54,7 +49,7 @@ fun DanmakuVideoPlayer(
             .also(videoPlayerBuilderSetting)
             .build()
             .also {
-                if (debug) {
+                if (playerControlState.debugMode) {
                     it.addAnalyticsListener(EventLogger())
                 }
                 it.addListener(object : Player.Listener {
@@ -69,10 +64,6 @@ fun DanmakuVideoPlayer(
                 })
                 it.videoPlayerInit()
             }
-    }
-
-    BackHandler(enabled = playerControlTicker.intValue > 0) {
-        playerControlTicker.intValue = 0
     }
 
     AndroidView(
@@ -112,7 +103,7 @@ fun DanmakuVideoPlayer(
         }
     )
 
-    PlayerControl(debug = debug, player = exoPlayer, state = playerControlTicker)
+    PlayerControl( state = playerControlState, player = exoPlayer)
 }
 
 fun List<DanmakuItemData>.mergeDanmaku(

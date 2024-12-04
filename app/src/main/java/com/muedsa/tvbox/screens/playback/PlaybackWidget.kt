@@ -34,6 +34,7 @@ import com.muedsa.compose.tv.useLocalToastMsgBoxController
 import com.muedsa.compose.tv.widget.AppBackHandler
 import com.muedsa.compose.tv.widget.player.DanmakuVideoPlayer
 import com.muedsa.compose.tv.widget.player.mergeDanmaku
+import com.muedsa.compose.tv.widget.player.rememberPlayerControlState
 import com.muedsa.tvbox.api.data.DanmakuDataFlow
 import com.muedsa.tvbox.model.AppSettingModel
 import com.muedsa.tvbox.room.model.EpisodeProgressModel
@@ -107,6 +108,7 @@ fun PlaybackWidget(
             )
         )
     }
+    val playerControlState = rememberPlayerControlState()
     Surface(
         modifier = Modifier
             .fillMaxSize(),
@@ -116,6 +118,7 @@ fun PlaybackWidget(
         )
     ) {
         DanmakuVideoPlayer(
+            playerControlState = playerControlState,
             danmakuConfigSetting = {
                 textSizeScale = appSetting.danmakuSizeScale / 100f
                 alpha = appSetting.danmakuAlpha / 100f
@@ -175,6 +178,9 @@ fun PlaybackWidget(
                                 toastController.info("跳转到上次播放位置: $positionStr")
                             }
                         }
+                    }
+                    if (duration > 600000L) {
+                        playerControlState.onceSeekMs = 15000L
                     }
                 }
 

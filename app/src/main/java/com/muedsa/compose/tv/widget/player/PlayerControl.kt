@@ -2,6 +2,7 @@ package com.muedsa.compose.tv.widget.player
 
 import android.icu.text.SimpleDateFormat
 import android.view.KeyEvent
+import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -27,17 +28,21 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.mapSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
@@ -50,6 +55,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.muedsa.compose.tv.focusOnInitial
 import com.muedsa.compose.tv.widget.OutlinedIconBox
+import com.muedsa.util.AppUtil
 import kotlinx.coroutines.delay
 import java.util.Date
 import java.util.Locale
@@ -64,31 +70,32 @@ import kotlin.time.toDuration
 @OptIn(UnstableApi::class)
 @Composable
 fun PlayerControl(
-    debug: Boolean = false,
+    state: PlayerControlState = rememberPlayerControlState(),
     player: Player,
-    state: MutableState<Int> = remember { mutableIntStateOf(0) },
 ) {
     var leftArrowBtnPressed by remember { mutableStateOf(false) }
     var rightArrowBtnPressed by remember { mutableStateOf(false) }
     var playBtnPressed by remember { mutableStateOf(false) }
     var videoInfo by remember { mutableStateOf("") }
 
-    var seekMs by remember { mutableLongStateOf(0) }
+    BackHandler(enabled = state.tick > 0L) {
+        state.tick = 0L
+    }
 
     LaunchedEffect(key1 = Unit) {
         while (true) {
-            delay(200.milliseconds)
-            if (state.value > 0 && !leftArrowBtnPressed && !rightArrowBtnPressed) {
-                state.value--
+            delay(state.loopDelay)
+            if (state.tick > 0 && !leftArrowBtnPressed && !rightArrowBtnPressed) {
+                state.tick--
             }
             if (player.isCurrentMediaItemSeekable) {
                 if (leftArrowBtnPressed) {
-                    if (seekMs > 0) seekMs = 0
-                    seekMs -= 5000
+                    if (state.seekMs > 0L) state.seekMs = 0L
+                    state.seekMs -= state.onceSeekMs
                 }
                 if (rightArrowBtnPressed) {
-                    if (seekMs < 0) seekMs = 0
-                    seekMs += 5000
+                    if (state.seekMs < 0L) state.seekMs = 0L
+                    state.seekMs += state.onceSeekMs
                 }
             }
         }
@@ -112,7 +119,7 @@ fun PlayerControl(
                         || it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_MEDIA_PLAY
                         || it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE
                     ) {
-                        state.value = 25
+                        state.tick = 25
                     }
                 }
                 if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
@@ -120,24 +127,29 @@ fun PlayerControl(
                         leftArrowBtnPressed = true
                     } else if (it.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
                         leftArrowBtnPressed = false
-                        if (seekMs < 0) {
-                            player.seekTo(max(0, player.currentPosition + seekMs))
+                        if (state.seekMs < 0) {
+                            player.seekTo(max(0, player.currentPosition + state.seekMs))
                         } else {
                             player.seekBack()
                         }
-                        seekMs = 0
+                        state.seekMs = 0
                     }
                 } else if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                     if (it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
                         rightArrowBtnPressed = true
                     } else if (it.nativeKeyEvent.action == KeyEvent.ACTION_UP) {
                         rightArrowBtnPressed = false
-                        if (seekMs > 0) {
-                            player.seekTo(min(player.duration, player.currentPosition + seekMs))
+                        if (state.seekMs > 0) {
+                            player.seekTo(
+                                min(
+                                    player.duration,
+                                    player.currentPosition + state.seekMs
+                                )
+                            )
                         } else {
                             player.seekForward()
                         }
-                        seekMs = 0
+                        state.seekMs = 0
                     }
                 } else if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
                     if (it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
@@ -149,7 +161,7 @@ fun PlayerControl(
                         } else {
                             player.play()
                         }
-                        seekMs = 0
+                        state.seekMs = 0
                     }
                 } else if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_MEDIA_PLAY) {
                     if (it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
@@ -178,7 +190,7 @@ fun PlayerControl(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)),
-            visible = state.value > 0,
+            visible = state.tick > 0,
             enter = fadeIn(),
             exit = fadeOut()
         ) {
@@ -204,7 +216,7 @@ fun PlayerControl(
                     .padding(20.dp),
                 verticalArrangement = Arrangement.Bottom,
             ) {
-                PlayerProgressIndicator(player = player, seekMs = seekMs)
+                PlayerProgressIndicator(player = player, seekMs = state.seekMs)
                 Spacer(modifier = Modifier.height(20.dp))
                 Row(
                     modifier = Modifier
@@ -235,9 +247,9 @@ fun PlayerControl(
                     }
                 }
 
-                if (debug) {
+                if (state.debugMode) {
                     Spacer(modifier = Modifier.height(20.dp))
-                    Text(text = "show: $state", color = Color.Red)
+                    Text(text = "displayTick: ${state.tick}", color = Color.Red)
                 }
             }
         }
@@ -304,7 +316,11 @@ fun PlayerProgressIndicator(player: Player, seekMs: Long) {
             currentStr =
                 if (player.duration > 0L) {
                     if (seekMs != 0L) {
-                        "${durationToString(player.currentPosition)} (${if (seekMs.sign > 0) "+" else "-"}${seekMs.absoluteValue / 1000}s)"
+                        "${durationToString(player.currentPosition)} (${if (seekMs.sign > 0) "+" else "-"}${seekMs.absoluteValue / 1000}s = ${
+                            durationToString(
+                                player.currentPosition + seekMs
+                            )
+                        })"
                     } else {
                         durationToString(player.currentPosition)
                     }
@@ -341,4 +357,62 @@ fun durationToString(duration: Long): String {
                 seconds,
             )
         }
+}
+
+@Stable
+class PlayerControlState(
+    initLoopDelayMs: Long = 200L,
+    initMaxDisplayTicks: Int = 25,
+    initOnceSeekMs: Long = 5000L,
+    initDebugMode: Boolean = false,
+) {
+    var loopDelay by mutableStateOf(initLoopDelayMs.milliseconds)
+    var tick by mutableLongStateOf(0L)
+    var maxDisplayTicks by mutableIntStateOf(initMaxDisplayTicks)
+    var seekMs by mutableLongStateOf(0L)
+    var onceSeekMs by mutableLongStateOf(initOnceSeekMs)
+    var debugMode by mutableStateOf(initDebugMode)
+
+    companion object {
+        const val LOOP_DELAY_KEY = "LOOP_DELAY"
+        const val MAX_DISPLAY_TICKS_KEY = "MAX_DISPLAY_TICKS"
+        const val ONCE_SEEK_MS = "ONCE_SEEK_MS"
+        const val DEBUG_MODE = "DEBUG_MODE"
+
+        val Saver: Saver<PlayerControlState, *> = mapSaver(
+            save = {
+                mutableMapOf<String, Any?>().apply {
+                    put(LOOP_DELAY_KEY, it.loopDelay.inWholeMilliseconds)
+                    put(MAX_DISPLAY_TICKS_KEY, it.maxDisplayTicks)
+                    put(ONCE_SEEK_MS, it.onceSeekMs)
+                    put(DEBUG_MODE, it.debugMode)
+                }
+            },
+            restore = {
+                PlayerControlState(
+                    initLoopDelayMs = it[LOOP_DELAY_KEY] as Long? ?: 200L,
+                    initMaxDisplayTicks = it[MAX_DISPLAY_TICKS_KEY] as Int? ?: 25,
+                    initOnceSeekMs = it[ONCE_SEEK_MS] as Long? ?: 5000L,
+                    initDebugMode = it[DEBUG_MODE] as Boolean? == true,
+                )
+            }
+        )
+    }
+}
+
+@Composable
+fun rememberPlayerControlState(
+    initLoopDelayMs: Long = 200L,
+    initMaxDisplayTicks: Int = 25,
+    initOnceSeekMs: Long = 5000L,
+    initDebugMode: Boolean = AppUtil.debuggable(LocalContext.current),
+): PlayerControlState {
+    return rememberSaveable(saver = PlayerControlState.Saver) {
+        PlayerControlState(
+            initLoopDelayMs = initLoopDelayMs,
+            initMaxDisplayTicks = initMaxDisplayTicks,
+            initOnceSeekMs = initOnceSeekMs,
+            initDebugMode = initDebugMode,
+        )
+    }
 }

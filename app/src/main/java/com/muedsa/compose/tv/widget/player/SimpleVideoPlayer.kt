@@ -3,11 +3,9 @@ package com.muedsa.compose.tv.widget.player
 import android.annotation.SuppressLint
 import android.view.Gravity
 import android.widget.FrameLayout
-import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -21,28 +19,22 @@ import androidx.media3.ui.PlayerView
 @OptIn(UnstableApi::class)
 @Composable
 fun SimpleVideoPlayer(
-    debug: Boolean = false,
+    playerControlState: PlayerControlState = rememberPlayerControlState(),
     playerBuilderSetting: ExoPlayer.Builder.() -> Unit = {},
     playerInit: ExoPlayer.() -> Unit
 ) {
     val context = LocalContext.current
-
-    val playerControlTicker = remember { mutableIntStateOf(0) }
 
     val exoPlayer = remember {
         ExoPlayer.Builder(context)
             .also(playerBuilderSetting)
             .build()
             .also {
-                if (debug) {
+                if (playerControlState.debugMode) {
                     it.addAnalyticsListener(EventLogger())
                 }
                 it.playerInit()
             }
-    }
-
-    BackHandler(enabled = playerControlTicker.intValue > 0) {
-        playerControlTicker.intValue = 0
     }
 
     DisposableEffect(
@@ -65,5 +57,5 @@ fun SimpleVideoPlayer(
         }
     }
 
-    PlayerControl(debug = debug, player = exoPlayer, state = playerControlTicker)
+    PlayerControl(state = playerControlState, player = exoPlayer)
 }
