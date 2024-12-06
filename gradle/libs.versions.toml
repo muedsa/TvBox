@@ -19,7 +19,7 @@ datastore = "1.1.1"
 room = "2.7.0-alpha11"
 paging = "3.3.4"
 googleServices = "4.4.2"
-firebaseBom = "33.6.0"
+firebaseBom = "33.7.0"
 firebaseCrashlytics = "3.0.2"
 
 [libraries]
