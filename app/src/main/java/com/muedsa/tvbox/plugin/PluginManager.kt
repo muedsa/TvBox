@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import android.os.Build
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.muedsa.tvbox.api.plugin.IPlugin
@@ -166,8 +166,7 @@ object PluginManager {
             packageName = pluginApplicationInfo.packageName,
             name = pluginApplicationInfo.loadLabel(packageManager).toString(),
             versionName = pluginPackageInfo.versionName ?: "",
-            versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-                pluginPackageInfo.longVersionCode else pluginPackageInfo.versionCode.toLong(),
+            versionCode = PackageInfoCompat.getLongVersionCode(pluginPackageInfo),
             icon = pluginApplicationInfo.loadIcon(packageManager),
             sourcePath = pluginApplicationInfo.sourceDir
         )
