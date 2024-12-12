@@ -37,7 +37,6 @@ inline fun Modifier.conditional(
     then(ifFalse(Modifier))
 }
 
-@Suppress("IllegalExperimentalApiUsage") // TODO (b/233188423): Address before moving to beta
 @OptIn(ExperimentalFoundationApi::class)
 // ToDo: Migrate to Modifier.Node and stop using composed function.
 internal fun Modifier.bringIntoViewIfChildrenAreFocused(
