@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,8 +28,8 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.model.ContentModel
-import com.muedsa.compose.tv.model.KeyModel
 import com.muedsa.compose.tv.theme.CardContentPadding
 import com.muedsa.compose.tv.theme.HorizontalPosterSize
 import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
@@ -36,11 +37,11 @@ import com.muedsa.compose.tv.theme.TvTheme
 import com.muedsa.compose.tv.theme.VerticalPosterSize
 import com.muedsa.util.anyMatchWithIndex
 
-
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun <T> ImageCardsRow(
     modifier: Modifier = Modifier,
+    rowFocusOnMountKey: String,
     state: LazyListState = rememberLazyListState(),
     title: String,
     modelList: List<T> = listOf(),
@@ -49,7 +50,7 @@ fun <T> ImageCardsRow(
     backgroundColorFn: (index: Int, model: T) -> Color = { _, _ -> Color.Unspecified },
     contentFn: (index: Int, item: T) -> ContentModel? = { _, _ -> null },
     onItemFocus: (index: Int, item: T) -> Unit = { _, _ -> },
-    onItemClick: (index: Int, item: T) -> Unit = { _, _ -> }
+    onItemClick: (index: Int, item: T) -> Unit = { _, _ -> },
 ) {
 
     val (lazyRowFR, firstItemFR) = remember { FocusRequester.createRefs() }
@@ -65,7 +66,7 @@ fun <T> ImageCardsRow(
         AnimatedContent(
             targetState = modelList,
             label = "",
-        ) {modelState ->
+        ) { modelState ->
             LazyRow(
                 modifier = Modifier
                     .focusRequester(lazyRowFR)
@@ -77,30 +78,28 @@ fun <T> ImageCardsRow(
                     end = 100.dp
                 )
             ) {
-                modelState.forEachIndexed { index, it ->
-                    var itemModifier = Modifier.padding(end = ImageCardRowCardPadding)
-                    if (index == 0) {
-                        itemModifier = itemModifier.focusRequester(firstItemFR)
-                    }
-                    item(key = if (it is KeyModel) it.key else null) {
-                        ImageContentCard(
-                            modifier = itemModifier,
-                            url = imageFn(index, it),
-                            imageSize = imageSize,
-                            backgroundColor = backgroundColorFn(index, it),
-                            type = CardType.COMPACT,
-                            model = contentFn(index, it),
-                            onItemFocus = { onItemFocus(index, it) },
-                            onItemClick = {
-                                lazyRowFR.saveFocusedChild()
-                                onItemClick(index, it)
-                            }
-                        )
-                    }
+                itemsIndexed(
+                    items = modelState,
+                ) { index, item ->
+                    ImageContentCard(
+                        modifier = Modifier
+                            .focusOnMount(
+                                itemKey = "$rowFocusOnMountKey, col $index",
+                                focusRequester = if (index == 0) firstItemFR else remember { FocusRequester() })
+                            .padding(end = ImageCardRowCardPadding),
+                        url = imageFn(index, item),
+                        imageSize = imageSize,
+                        backgroundColor = backgroundColorFn(index, item),
+                        type = CardType.COMPACT,
+                        model = contentFn(index, item),
+                        onItemFocus = { onItemFocus(index, item) },
+                        onItemClick = {
+                            lazyRowFR.saveFocusedChild()
+                            onItemClick(index, item)
+                        })
                 }
             }
         }
-
     }
 }
 
@@ -108,6 +107,7 @@ fun <T> ImageCardsRow(
 @Composable
 fun <T> StandardImageCardsRow(
     modifier: Modifier = Modifier,
+    rowFocusOnMountKey: String,
     state: LazyListState = rememberLazyListState(),
     title: String,
     modelList: List<T> = listOf(),
@@ -116,7 +116,7 @@ fun <T> StandardImageCardsRow(
     backgroundColorFn: (index: Int, model: T) -> Color = { _, _ -> Color.Unspecified },
     contentFn: (index: Int, item: T) -> ContentModel? = { _, _ -> null },
     onItemFocus: (index: Int, item: T) -> Unit = { _, _ -> },
-    onItemClick: (index: Int, item: T) -> Unit = { _, _ -> }
+    onItemClick: (index: Int, item: T) -> Unit = { _, _ -> },
 ) {
     val (lazyRowFR, firstItemFR) = remember { FocusRequester.createRefs() }
     var rowBottomPadding = remember { ImageCardRowCardPadding }
@@ -152,26 +152,25 @@ fun <T> StandardImageCardsRow(
                     end = 100.dp
                 )
             ) {
-                modelState.forEachIndexed { index, it ->
-                    item(key = if (it is KeyModel) it.key else null) {
-                        var itemModifier = Modifier.padding(end = ImageCardRowCardPadding)
-                        if (index == 0) {
-                            itemModifier = itemModifier.focusRequester(firstItemFR)
-                        }
-                        ImageContentCard(
-                            modifier = itemModifier,
-                            url = imageFn(index, it),
-                            imageSize = imageSize,
-                            backgroundColor = backgroundColorFn(index, it),
-                            type = CardType.STANDARD,
-                            model = contentFn(index, it),
-                            onItemFocus = { onItemFocus(index, it) },
-                            onItemClick = {
-                                lazyRowFR.saveFocusedChild()
-                                onItemClick(index, it)
-                            }
-                        )
-                    }
+                itemsIndexed(
+                    items = modelState,
+                ) { index, item ->
+                    ImageContentCard(
+                        modifier = Modifier
+                            .focusOnMount(
+                                itemKey = "$rowFocusOnMountKey, col $index",
+                                focusRequester = if (index == 0) firstItemFR else remember { FocusRequester() })
+                            .padding(end = ImageCardRowCardPadding),
+                        url = imageFn(index, item),
+                        imageSize = imageSize,
+                        backgroundColor = backgroundColorFn(index, item),
+                        type = CardType.STANDARD,
+                        model = contentFn(index, item),
+                        onItemFocus = { onItemFocus(index, item) },
+                        onItemClick = {
+                            lazyRowFR.saveFocusedChild()
+                            onItemClick(index, item)
+                        })
                 }
             }
         }
@@ -184,7 +183,7 @@ fun ImageCardsRowPreview() {
     val modelList = listOf("Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 5")
     TvTheme {
         ImageCardsRow(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(), rowFocusOnMountKey = "row",
             title = "Row Title",
             modelList = modelList,
             imageFn = { _, _ -> "" },
@@ -199,7 +198,7 @@ fun VerticalImageCardsRowPreview() {
     val modelList = listOf("Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 5")
     TvTheme {
         ImageCardsRow(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(), rowFocusOnMountKey = "row",
             title = "Row Title",
             modelList = modelList,
             imageFn = { _, _ -> "" },
@@ -215,7 +214,7 @@ fun StandardImageCardsRowPreview() {
     val modelList = listOf("Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 5")
     TvTheme {
         StandardImageCardsRow(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(), rowFocusOnMountKey = "row",
             title = "Standard Row Title",
             modelList = modelList,
             imageFn = { _, _ -> "" },
@@ -230,7 +229,7 @@ fun StandardVerticalImageCardsRowPreview() {
     val modelList = listOf("Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 5")
     TvTheme {
         StandardImageCardsRow(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(), rowFocusOnMountKey = "row",
             title = "Standard Row Title",
             modelList = modelList,
             imageFn = { _, _ -> "" },

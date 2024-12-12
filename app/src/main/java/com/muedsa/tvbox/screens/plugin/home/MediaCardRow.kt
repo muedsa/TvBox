@@ -13,6 +13,7 @@ import com.muedsa.tvbox.api.data.MediaCardType
 
 @Composable
 fun MediaCardRow(
+    rowFocusOnMountKey: String,
     row: MediaCardRow,
     onlyImage: Boolean = false,
     onItemFocus: (index: Int, item: MediaCard) -> Unit = { _, _ -> },
@@ -20,6 +21,7 @@ fun MediaCardRow(
 ) {
     when (row.cardType) {
         MediaCardType.STANDARD -> StandardImageCardsRow(
+            rowFocusOnMountKey = rowFocusOnMountKey,
             title = row.title,
             modelList = row.list,
             imageFn = { _, item -> item.coverImageUrl },
@@ -29,10 +31,11 @@ fun MediaCardRow(
                 if (onlyImage) null else ContentModel(item.title, item.subTitle)
             },
             onItemFocus = onItemFocus,
-            onItemClick = onItemClick
+            onItemClick = onItemClick,
         )
 
         MediaCardType.COMPACT, MediaCardType.NOT_IMAGE -> ImageCardsRow(
+            rowFocusOnMountKey = rowFocusOnMountKey,
             title = row.title,
             modelList = row.list,
             imageFn = { _, item -> if (row.cardType == MediaCardType.NOT_IMAGE) "" else item.coverImageUrl },
@@ -42,7 +45,7 @@ fun MediaCardRow(
                 if (onlyImage) null else ContentModel(item.title, item.subTitle)
             },
             onItemFocus = onItemFocus,
-            onItemClick = onItemClick
+            onItemClick = onItemClick,
         )
     }
 }

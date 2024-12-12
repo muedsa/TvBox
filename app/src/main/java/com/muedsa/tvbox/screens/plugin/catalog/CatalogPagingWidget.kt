@@ -21,8 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
-import com.muedsa.compose.tv.conditional
-import com.muedsa.compose.tv.focusOnInitial
+import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.model.ContentModel
 import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
@@ -115,9 +114,7 @@ fun CatalogPagingWidget(
             val mediaCard = lazyPagingItems[index]
             if (mediaCard != null) {
                 ImageContentCard(
-                    modifier = Modifier.conditional(index == 0) {
-                        focusOnInitial()
-                    },
+                    modifier = Modifier.focusOnMount(itemKey = "catalogScreen, grid $index"),
                     url = if (config.cardType == MediaCardType.NOT_IMAGE) "" else mediaCard.coverImageUrl,
                     imageSize = cardSize,
                     type = config.cardType.toCardType(),

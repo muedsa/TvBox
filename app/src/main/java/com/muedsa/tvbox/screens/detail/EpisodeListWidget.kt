@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import androidx.tv.material3.WideButton
+import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
 import com.muedsa.tvbox.api.data.MediaEpisode
 import com.muedsa.tvbox.model.dandanplay.BangumiEpisode
@@ -103,6 +104,7 @@ fun EpisodeListWidget(
                             val focusedState = interactionSource.collectIsFocusedAsState()
                             WideButton(
                                 modifier = Modifier
+                                    .focusOnMount(itemKey = "episode row $chunkIndex, col $episodePartIndex")
                                     .padding(end = 12.dp)
                                     .drawWithCache {
                                         // 进度条

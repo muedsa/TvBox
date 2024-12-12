@@ -31,6 +31,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.OutlinedButton
 import androidx.tv.material3.Text
+import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.model.ContentModel
 import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
@@ -100,6 +101,7 @@ fun FavoriteMediaScreen(
                 ) { index, item ->
                     ImageContentCard(
                         modifier = Modifier
+                            .focusOnMount(itemKey = "favoriteScreen, grid $index")
                             .padding(end = ImageCardRowCardPadding),
                         url = item.coverImageUrl,
                         imageSize = DpSize(item.cardWidth.dp, item.cardHeight.dp),

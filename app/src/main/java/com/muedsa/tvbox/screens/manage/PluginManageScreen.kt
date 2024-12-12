@@ -40,6 +40,7 @@ import androidx.tv.material3.OutlinedButton
 import androidx.tv.material3.Text
 import androidx.tv.material3.WideClassicCard
 import com.muedsa.compose.tv.conditional
+import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
 import com.muedsa.compose.tv.useLocalNavHostController
 import com.muedsa.compose.tv.useLocalRightSideDrawerController
@@ -133,7 +134,9 @@ fun PluginManage(
         ) {
             items(loadedPlugins.plugins) {
                 WideClassicCard(
-                    modifier = Modifier.padding(10.dp),
+                    modifier = Modifier
+                        .focusOnMount(it.packageName)
+                        .padding(10.dp),
                     onClick = {
                         if (deleteMode) {
                             if (it.isExternalPlugin) {

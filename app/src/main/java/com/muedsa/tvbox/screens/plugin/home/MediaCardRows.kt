@@ -88,6 +88,7 @@ fun MediaCardRows(
                                 .height(screenHeight - firstRowHeight - tabHeight - 5.dp)
                         )
                         MediaCardRow(
+                            rowFocusOnMountKey = "home, firstRow",
                             row = firstRow,
                             onlyImage = true,
                             onItemFocus = { _, mediaCard ->
@@ -113,8 +114,9 @@ fun MediaCardRows(
             itemsIndexed(
                 items = rows.subList(1, rows.size),
                 contentType = { index, _ -> "MEDIA_CARD_ROW_OTHER_$index" }
-            ) { _, item ->
+            ) { index, item ->
                 MediaCardRow(
+                    rowFocusOnMountKey = "home, otherRow$index",
                     row = item,
                     onItemFocus = { _, mediaCard ->
                         title = mediaCard.title

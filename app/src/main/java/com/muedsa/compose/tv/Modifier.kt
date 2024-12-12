@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.onPlaced
@@ -79,5 +80,33 @@ fun Modifier.focusOnInitial(): Modifier {
     return focusRequester(focusRequester)
         .onPlaced {
             focusRequester.requestFocus()
+        }
+}
+
+@Composable
+fun Modifier.focusOnMount(
+    itemKey: String,
+    focusRequester: FocusRequester = remember { FocusRequester() }
+): Modifier {
+    val isInitialFocusTransferred = useLocalFocusTransferredOnLaunch()
+    val lastFocusedItemPerDestination = useLocalLastFocusedItemPerDestination()
+    val navHostController = useLocalNavHostController()
+    val currentDestination =
+        remember(navHostController) { navHostController.currentDestination?.route }
+
+    return this
+        .focusRequester(focusRequester)
+        .onPlaced {
+            val lastFocusedKey = lastFocusedItemPerDestination[currentDestination]
+            if (!isInitialFocusTransferred.value && lastFocusedKey == itemKey) {
+                focusRequester.requestFocus()
+                isInitialFocusTransferred.value = true
+            }
+        }
+        .onFocusChanged {
+            if (it.isFocused) {
+                lastFocusedItemPerDestination[currentDestination ?: ""] = itemKey
+                isInitialFocusTransferred.value = true
+            }
         }
 }

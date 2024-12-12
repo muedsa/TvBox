@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.model.ContentModel
 import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
@@ -41,9 +42,11 @@ fun SearchResult(
             bottom = ImageCardRowCardPadding
         )
     ) {
-        itemsIndexed(row.list) { _, item ->
+        itemsIndexed(items = row.list) { index, item ->
             ImageContentCard(
-                modifier = Modifier.padding(end = ImageCardRowCardPadding),
+                modifier = Modifier
+                    .focusOnMount(itemKey = "searchScreen, gird $index")
+                    .padding(end = ImageCardRowCardPadding),
                 url = if (row.cardType == MediaCardType.NOT_IMAGE) "" else item.coverImageUrl,
                 imageSize = DpSize(row.cardWidth.dp, row.cardHeight.dp),
                 type = row.cardType.toCardType(),

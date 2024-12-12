@@ -329,8 +329,9 @@ fun MediaDetailWidget(
         itemsIndexed(
             items = mediaDetail.rows,
             contentType = { index, _ -> "MEDIA_RELATION_ROW_$index" }
-        ) { _, item ->
+        ) { index, item ->
             MediaCardRow(
+                rowFocusOnMountKey = "mediaRelationRow $index",
                 row = item,
                 onItemClick = { _, mediaCard ->
                     navController.nav(

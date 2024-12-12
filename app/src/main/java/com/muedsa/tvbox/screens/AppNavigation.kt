@@ -7,6 +7,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.muedsa.compose.tv.LocalFocusTransferredOnLaunchProvider
+import com.muedsa.compose.tv.LocalLastFocusedItemPerDestinationProvider
 import com.muedsa.compose.tv.LocalNavHostControllerProvider
 import com.muedsa.compose.tv.LocalRightSideDrawerControllerProvider
 import com.muedsa.compose.tv.widget.FullWidthDialogProperties
@@ -26,42 +28,51 @@ fun AppNavigation(navController: NavHostController = rememberNavController())  {
 
     LocalNavHostControllerProvider(navController) {
         LocalRightSideDrawerControllerProvider(drawerController) {
-            NavHost(
-                navController = navController,
-                startDestination = NavigationItems.Main
-            ) {
-                // 入口页
-                composable<NavigationItems.Main> {
-                    PluginManageScreen()
-                }
+            LocalLastFocusedItemPerDestinationProvider {
+                NavHost(
+                    navController = navController,
+                    startDestination = NavigationItems.Main
+                ) {
+                    // 入口页
+                    composable<NavigationItems.Main> {
+                        LocalFocusTransferredOnLaunchProvider {
+                            PluginManageScreen()
+                        }
+                    }
 
-                // 当前选择的插件主页
-                composable<NavigationItems.PluginHome> {
-                    PluginScreen()
-                }
+                    // 当前选择的插件主页
+                    composable<NavigationItems.PluginHome> {
+                        LocalFocusTransferredOnLaunchProvider {
+                            PluginScreen()
+                        }
+                    }
 
-                // 视频详情页
-                composable<NavigationItems.Detail> {
-                    val navItem = it.toRoute<NavigationItems.Detail>()
-                    MediaDetailScreen(navItem = navItem)
-                }
+                    // 视频详情页
+                    composable<NavigationItems.Detail> {
+                        LocalFocusTransferredOnLaunchProvider {
+                            val navItem = it.toRoute<NavigationItems.Detail>()
+                            MediaDetailScreen(navItem = navItem)
+                        }
+                    }
 
-                // 播放页
-                composable<NavigationItems.Player> {
-                    val navItem = it.toRoute<NavigationItems.Player>()
-                    PlaybackScreen(navItem = navItem)
-                }
+                    // 播放页
+                    composable<NavigationItems.Player> {
+                        val navItem = it.toRoute<NavigationItems.Player>()
+                        PlaybackScreen(navItem = navItem)
+                    }
 
-                // 设置 Dialog
-                dialog<NavigationItems.Setting>(dialogProperties = FullWidthDialogProperties()) {
-                    AppSettingScreen()
-                }
+                    // 设置 Dialog
+                    dialog<NavigationItems.Setting>(dialogProperties = FullWidthDialogProperties()) {
+                        AppSettingScreen()
+                    }
 
-                // rightSideDrawer
-                dialog<NavigationItems.RightSideDrawer>(dialogProperties = FullWidthDialogProperties()) {
-                    RightSideDrawerWithNavDrawerContent(controller = drawerController)
+                    // rightSideDrawer
+                    dialog<NavigationItems.RightSideDrawer>(dialogProperties = FullWidthDialogProperties()) {
+                        RightSideDrawerWithNavDrawerContent(controller = drawerController)
+                    }
                 }
             }
+
         }
     }
 }
