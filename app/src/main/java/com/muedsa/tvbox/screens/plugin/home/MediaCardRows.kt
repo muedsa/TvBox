@@ -26,6 +26,7 @@ import androidx.tv.material3.OutlinedIconButton
 import com.muedsa.compose.tv.model.ContentModel
 import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
+import com.muedsa.compose.tv.useLocalLastFocusedItemPerDestination
 import com.muedsa.compose.tv.useLocalNavHostController
 import com.muedsa.compose.tv.widget.ContentBlock
 import com.muedsa.compose.tv.widget.FillTextScreen
@@ -34,6 +35,8 @@ import com.muedsa.compose.tv.widget.ScreenBackgroundType
 import com.muedsa.tvbox.api.data.MediaCardRow
 import com.muedsa.tvbox.plugin.PluginInfo
 import com.muedsa.tvbox.screens.NavigationItems
+import com.muedsa.tvbox.screens.SPECIAL_DESTINATION_MEDIA_DETAIL
+import com.muedsa.tvbox.screens.detail.INIT_FOCUSED_ITEM_KEY_MEDIA_DETAIL
 import com.muedsa.tvbox.screens.nav
 import com.muedsa.tvbox.screens.plugin.useLocalHomeScreenBackgroundState
 
@@ -47,6 +50,7 @@ fun MediaCardRows(
         val configuration = LocalConfiguration.current
         val backgroundState = useLocalHomeScreenBackgroundState()
         val navController = useLocalNavHostController()
+        val lastFocusedItemPerDestination = useLocalLastFocusedItemPerDestination()
         val titleHeight= (MaterialTheme.typography.titleLarge.fontSize.value * configuration.fontScale + 0.5f).dp
         val labelHeight= (MaterialTheme.typography.labelLarge.fontSize.value * configuration.fontScale + 0.5f).dp
         var firstRow = remember { rows.first() }
@@ -98,6 +102,8 @@ fun MediaCardRows(
                                 backgroundState.url = mediaCard.coverImageUrl
                             },
                             onItemClick = { _, mediaCard ->
+                                lastFocusedItemPerDestination[SPECIAL_DESTINATION_MEDIA_DETAIL] =
+                                    INIT_FOCUSED_ITEM_KEY_MEDIA_DETAIL
                                 navController.nav(
                                     NavigationItems.Detail(
                                         pluginPackage = pluginInfo.packageName,
@@ -125,6 +131,8 @@ fun MediaCardRows(
                         backgroundState.url = mediaCard.coverImageUrl
                     },
                     onItemClick = { _, mediaCard ->
+                        lastFocusedItemPerDestination[SPECIAL_DESTINATION_MEDIA_DETAIL] =
+                            INIT_FOCUSED_ITEM_KEY_MEDIA_DETAIL
                         navController.nav(
                             NavigationItems.Detail(
                                 pluginPackage = pluginInfo.packageName,

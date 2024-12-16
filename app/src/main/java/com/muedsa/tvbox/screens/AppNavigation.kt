@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.muedsa.compose.tv.LocalDestinationProvider
 import com.muedsa.compose.tv.LocalFocusTransferredOnLaunchProvider
 import com.muedsa.compose.tv.LocalLastFocusedItemPerDestinationProvider
 import com.muedsa.compose.tv.LocalNavHostControllerProvider
@@ -19,6 +20,8 @@ import com.muedsa.tvbox.screens.manage.PluginManageScreen
 import com.muedsa.tvbox.screens.playback.PlaybackScreen
 import com.muedsa.tvbox.screens.plugin.PluginScreen
 import com.muedsa.tvbox.screens.setting.AppSettingScreen
+
+const val SPECIAL_DESTINATION_MEDIA_DETAIL = "MEDIA_DETAIL"
 
 @Composable
 fun AppNavigation(navController: NavHostController = rememberNavController())  {
@@ -49,9 +52,11 @@ fun AppNavigation(navController: NavHostController = rememberNavController())  {
 
                     // 视频详情页
                     composable<NavigationItems.Detail> {
-                        LocalFocusTransferredOnLaunchProvider {
-                            val navItem = it.toRoute<NavigationItems.Detail>()
-                            MediaDetailScreen(navItem = navItem)
+                        LocalDestinationProvider(SPECIAL_DESTINATION_MEDIA_DETAIL) {
+                            LocalFocusTransferredOnLaunchProvider {
+                                val navItem = it.toRoute<NavigationItems.Detail>()
+                                MediaDetailScreen(navItem = navItem)
+                            }
                         }
                     }
 

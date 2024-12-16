@@ -35,11 +35,14 @@ import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.model.ContentModel
 import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
+import com.muedsa.compose.tv.useLocalLastFocusedItemPerDestination
 import com.muedsa.compose.tv.useLocalNavHostController
 import com.muedsa.compose.tv.widget.CardType
 import com.muedsa.compose.tv.widget.ImageContentCard
 import com.muedsa.compose.tv.widget.ScreenBackgroundType
 import com.muedsa.tvbox.screens.NavigationItems
+import com.muedsa.tvbox.screens.SPECIAL_DESTINATION_MEDIA_DETAIL
+import com.muedsa.tvbox.screens.detail.INIT_FOCUSED_ITEM_KEY_MEDIA_DETAIL
 import com.muedsa.tvbox.screens.nav
 import com.muedsa.tvbox.screens.plugin.useLocalHomeScreenBackgroundState
 
@@ -48,6 +51,7 @@ fun FavoriteMediaScreen(
     favoriteMediaScreenViewModel: FavoriteMediaScreenViewModel
 ) {
     val navController = useLocalNavHostController()
+    val lastFocusedItemPerDestination = useLocalLastFocusedItemPerDestination()
     val backgroundState = useLocalHomeScreenBackgroundState()
 
     val favoriteMediaList by favoriteMediaScreenViewModel.favoriteMediasSF.collectAsState()
@@ -120,6 +124,8 @@ fun FavoriteMediaScreen(
                                 }
                                 favoriteMediaScreenViewModel.remove(item)
                             } else {
+                                lastFocusedItemPerDestination[SPECIAL_DESTINATION_MEDIA_DETAIL] =
+                                    INIT_FOCUSED_ITEM_KEY_MEDIA_DETAIL
                                 navController.nav(
                                     NavigationItems.Detail(
                                         pluginPackage = item.pluginPackage,

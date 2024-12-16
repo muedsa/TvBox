@@ -90,9 +90,7 @@ fun Modifier.focusOnMount(
 ): Modifier {
     val isInitialFocusTransferred = useLocalFocusTransferredOnLaunch()
     val lastFocusedItemPerDestination = useLocalLastFocusedItemPerDestination()
-    val navHostController = useLocalNavHostController()
-    val currentDestination =
-        remember(navHostController) { navHostController.currentDestination?.route }
+    val currentDestination = useLocalDestination()
 
     return this
         .focusRequester(focusRequester)
@@ -105,7 +103,7 @@ fun Modifier.focusOnMount(
         }
         .onFocusChanged {
             if (it.isFocused) {
-                lastFocusedItemPerDestination[currentDestination ?: ""] = itemKey
+                lastFocusedItemPerDestination[currentDestination] = itemKey
                 isInitialFocusTransferred.value = true
             }
         }

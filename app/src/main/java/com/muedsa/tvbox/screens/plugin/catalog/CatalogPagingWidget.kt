@@ -25,6 +25,7 @@ import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.model.ContentModel
 import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
+import com.muedsa.compose.tv.useLocalLastFocusedItemPerDestination
 import com.muedsa.compose.tv.useLocalNavHostController
 import com.muedsa.compose.tv.useLocalToastMsgBoxController
 import com.muedsa.compose.tv.widget.ImageContentCard
@@ -34,6 +35,8 @@ import com.muedsa.tvbox.api.data.MediaCardType
 import com.muedsa.tvbox.api.data.MediaCatalogConfig
 import com.muedsa.tvbox.plugin.Plugin
 import com.muedsa.tvbox.screens.NavigationItems
+import com.muedsa.tvbox.screens.SPECIAL_DESTINATION_MEDIA_DETAIL
+import com.muedsa.tvbox.screens.detail.INIT_FOCUSED_ITEM_KEY_MEDIA_DETAIL
 import com.muedsa.tvbox.screens.nav
 import com.muedsa.tvbox.screens.plugin.useLocalHomeScreenBackgroundState
 import com.muedsa.tvbox.toCardType
@@ -47,6 +50,7 @@ fun CatalogPagingWidget(
     catalogScreenViewModel: CatalogScreenViewModel
 ) {
     val navController = useLocalNavHostController()
+    val lastFocusedItemPerDestination = useLocalLastFocusedItemPerDestination()
     val toastController = useLocalToastMsgBoxController()
     val backgroundState = useLocalHomeScreenBackgroundState()
     val lazyPagingItems = catalogScreenViewModel.pageDataFlow.collectAsLazyPagingItems()
@@ -127,6 +131,8 @@ fun CatalogPagingWidget(
                         backgroundState.url = mediaCard.coverImageUrl
                     },
                     onItemClick = {
+                        lastFocusedItemPerDestination[SPECIAL_DESTINATION_MEDIA_DETAIL] =
+                            INIT_FOCUSED_ITEM_KEY_MEDIA_DETAIL
                         navController.nav(
                             NavigationItems.Detail(
                                 pluginPackage = plugin.pluginInfo.packageName,

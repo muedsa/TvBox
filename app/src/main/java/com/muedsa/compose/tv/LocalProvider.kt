@@ -16,6 +16,7 @@ private val LocalRightSideDrawerController = compositionLocalOf<RightSideDrawerC
 private val LocalLastFocusedItemPerDestination =
     compositionLocalOf<MutableMap<String, String>?> { null }
 private val LocalFocusTransferredOnLaunch = compositionLocalOf<MutableState<Boolean>?> { null }
+private val LocalDestination = compositionLocalOf<String?> { null }
 
 @Composable
 fun LocalNavHostControllerProvider(
@@ -67,6 +68,17 @@ fun LocalFocusTransferredOnLaunchProvider(content: @Composable () -> Unit) {
 }
 
 @Composable
+fun LocalDestinationProvider(
+    destination: String,
+    content: @Composable () -> Unit
+) {
+    CompositionLocalProvider(
+        LocalDestination provides remember { destination },
+        content = content
+    )
+}
+
+@Composable
 fun useLocalNavHostController(): NavHostController {
     return LocalNavHostController.current
         ?: throw RuntimeException("Please wrap your app with LocalNavHostControllerProvider")
@@ -94,4 +106,11 @@ fun useLocalLastFocusedItemPerDestination(): MutableMap<String, String> {
 fun useLocalFocusTransferredOnLaunch(): MutableState<Boolean> {
     return LocalFocusTransferredOnLaunch.current
         ?: throw RuntimeException("Please wrap your app with LocalLastFocusedItemPerDestinationProvider")
+}
+
+@Composable
+fun useLocalDestination(): String {
+    val navHostController = useLocalNavHostController()
+    return LocalDestination.current
+        ?: remember(navHostController) { navHostController.currentDestination?.route ?: "" }
 }

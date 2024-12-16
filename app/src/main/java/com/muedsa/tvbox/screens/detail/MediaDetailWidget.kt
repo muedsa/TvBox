@@ -39,9 +39,10 @@ import androidx.tv.material3.OutlinedIconButton
 import androidx.tv.material3.RadioButton
 import androidx.tv.material3.Text
 import androidx.tv.material3.WideButtonDefaults
-import com.muedsa.compose.tv.focusOnInitial
+import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.model.ContentModel
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
+import com.muedsa.compose.tv.useLocalLastFocusedItemPerDestination
 import com.muedsa.compose.tv.useLocalNavHostController
 import com.muedsa.compose.tv.useLocalRightSideDrawerController
 import com.muedsa.compose.tv.useLocalToastMsgBoxController
@@ -59,12 +60,15 @@ import com.muedsa.tvbox.model.dandanplay.BangumiSearch
 import com.muedsa.tvbox.plugin.PluginInfo
 import com.muedsa.tvbox.room.model.EpisodeProgressModel
 import com.muedsa.tvbox.screens.NavigationItems
+import com.muedsa.tvbox.screens.SPECIAL_DESTINATION_MEDIA_DETAIL
 import com.muedsa.tvbox.screens.nav
 import com.muedsa.tvbox.screens.plugin.home.MediaCardRow
 import com.muedsa.tvbox.theme.FavoriteIconColor
 import com.muedsa.tvbox.tool.LenientJson
 import kotlinx.serialization.encodeToString
 import timber.log.Timber
+
+const val INIT_FOCUSED_ITEM_KEY_MEDIA_DETAIL = "MEDIA_DETAIL_TOP"
 
 @Composable
 fun MediaDetailWidget(
@@ -82,6 +86,7 @@ fun MediaDetailWidget(
     val toastController = useLocalToastMsgBoxController()
     val drawerController = useLocalRightSideDrawerController()
     val navController = useLocalNavHostController()
+    val lastFocusedItemPerDestination = useLocalLastFocusedItemPerDestination()
 
     val backgroundState = rememberScreenBackgroundState(
         initType = ScreenBackgroundType.SCRIM
@@ -107,7 +112,11 @@ fun MediaDetailWidget(
         // top space
         item(contentType = "MEDIA_TOP") {
             // 占位锚点 使之可以通过Dpad返回页面的顶部
-            Spacer(modifier = Modifier.focusable().focusOnInitial())
+            Spacer(
+                modifier = Modifier
+                    .focusable()
+                    .focusOnMount(itemKey = INIT_FOCUSED_ITEM_KEY_MEDIA_DETAIL)
+            )
         }
 
         // 介绍
@@ -334,6 +343,8 @@ fun MediaDetailWidget(
                 rowFocusOnMountKey = "mediaRelationRow $index",
                 row = item,
                 onItemClick = { _, mediaCard ->
+                    lastFocusedItemPerDestination[SPECIAL_DESTINATION_MEDIA_DETAIL] =
+                        INIT_FOCUSED_ITEM_KEY_MEDIA_DETAIL
                     navController.nav(
                         NavigationItems.Detail(
                             pluginPackage = pluginInfo.packageName,
