@@ -28,7 +28,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.OutlinedButton
 import androidx.tv.material3.OutlinedIconButton
 import androidx.tv.material3.Text
-import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
+import com.muedsa.compose.tv.theme.CommonRowCardPadding
 import com.muedsa.tvbox.api.data.MediaCatalogConfig
 import com.muedsa.tvbox.api.data.MediaCatalogOption
 import com.muedsa.tvbox.plugin.Plugin
@@ -55,7 +55,7 @@ fun CatalogWidget(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = ImageCardRowCardPadding),
+                .padding(vertical = CommonRowCardPadding),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {

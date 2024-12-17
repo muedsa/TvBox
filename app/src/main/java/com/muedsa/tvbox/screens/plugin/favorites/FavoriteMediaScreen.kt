@@ -1,6 +1,7 @@
 package com.muedsa.tvbox.screens.plugin.favorites
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -33,7 +34,7 @@ import androidx.tv.material3.OutlinedButton
 import androidx.tv.material3.Text
 import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.model.ContentModel
-import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
+import com.muedsa.compose.tv.theme.CommonRowCardPadding
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
 import com.muedsa.compose.tv.useLocalLastFocusedItemPerDestination
 import com.muedsa.compose.tv.useLocalNavHostController
@@ -87,16 +88,23 @@ fun FavoriteMediaScreen(
         }
 
         if (favoriteMediaList.isNotEmpty()) {
-
-            val minWidth = favoriteMediaList.minOfOrNull { it.cardWidth }!!
-
+            val cardSize = remember(favoriteMediaList) {
+                DpSize(
+                    width = favoriteMediaList.maxOfOrNull { it.cardWidth }!!.dp,
+                    height = favoriteMediaList.maxOfOrNull { it.cardHeight }!!.dp
+                )
+            }
+            val cardVerticalSpace = remember(favoriteMediaList) { cardSize.height * 0.08f }
+            val cardHorizontalSpace = remember(favoriteMediaList) { cardSize.width * 0.08f }
             LazyVerticalGrid(
                 modifier = Modifier
                     .padding(start = 0.dp, top = 20.dp, end = 20.dp, bottom = 20.dp),
-                columns = GridCells.Adaptive(minWidth.dp + ImageCardRowCardPadding),
+                columns = GridCells.Adaptive(cardSize.width),
+                verticalArrangement = Arrangement.spacedBy(cardVerticalSpace),
+                horizontalArrangement = Arrangement.spacedBy(cardHorizontalSpace),
                 contentPadding = PaddingValues(
-                    top = ImageCardRowCardPadding,
-                    bottom = ImageCardRowCardPadding
+                    top = CommonRowCardPadding,
+                    bottom = CommonRowCardPadding
                 )
             ) {
                 itemsIndexed(
@@ -104,9 +112,7 @@ fun FavoriteMediaScreen(
                     key = { _, item -> item.mediaId }
                 ) { index, item ->
                     ImageContentCard(
-                        modifier = Modifier
-                            .focusOnMount(itemKey = "favoriteScreen, grid $index")
-                            .padding(end = ImageCardRowCardPadding),
+                        modifier = Modifier.focusOnMount(itemKey = "favoriteScreen, grid $index"),
                         url = item.coverImageUrl,
                         imageSize = DpSize(item.cardWidth.dp, item.cardHeight.dp),
                         type = CardType.STANDARD,

@@ -22,7 +22,7 @@ import androidx.tv.material3.FilterChipDefaults
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
-import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
+import com.muedsa.compose.tv.theme.CommonRowCardPadding
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
 import com.muedsa.compose.tv.useLocalToastMsgBoxController
 import com.muedsa.tvbox.api.data.MediaCatalogOption
@@ -37,7 +37,7 @@ fun CatalogOptionsWidget(
 
     LazyColumn(
         modifier = Modifier.padding(start = ScreenPaddingLeft),
-        contentPadding = PaddingValues(top = ImageCardRowCardPadding)
+        contentPadding = PaddingValues(top = CommonRowCardPadding)
     ) {
         items(items = options) { option ->
             Text(

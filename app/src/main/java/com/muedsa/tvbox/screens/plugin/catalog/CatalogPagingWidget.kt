@@ -23,7 +23,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.model.ContentModel
-import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
 import com.muedsa.compose.tv.useLocalLastFocusedItemPerDestination
 import com.muedsa.compose.tv.useLocalNavHostController
@@ -54,8 +53,10 @@ fun CatalogPagingWidget(
     val toastController = useLocalToastMsgBoxController()
     val backgroundState = useLocalHomeScreenBackgroundState()
     val lazyPagingItems = catalogScreenViewModel.pageDataFlow.collectAsLazyPagingItems()
-    val cardSize = remember { DpSize(config.cardWidth.dp, config.cardHeight.dp) }
-    val circularSize = remember {
+    val cardSize = remember(config) { DpSize(config.cardWidth.dp, config.cardHeight.dp) }
+    val cardVerticalSpace = remember(config) { cardSize.height * 0.08f }
+    val cardHorizontalSpace = remember(config) { cardSize.width * 0.08f }
+    val circularSize = remember(config) {
         val minSize = min(config.cardWidth, config.cardHeight).dp
         DpSize(minSize, minSize)
     }
@@ -87,11 +88,11 @@ fun CatalogPagingWidget(
     LazyVerticalGrid(
         modifier = Modifier.padding(start = ScreenPaddingLeft),
         columns = GridCells.Adaptive(config.cardWidth.dp),
-        verticalArrangement = Arrangement.spacedBy(ImageCardRowCardPadding),
-        horizontalArrangement = Arrangement.spacedBy(ImageCardRowCardPadding),
+        verticalArrangement = Arrangement.spacedBy(cardVerticalSpace),
+        horizontalArrangement = Arrangement.spacedBy(cardHorizontalSpace),
         contentPadding = PaddingValues(
-            top = ImageCardRowCardPadding,
-            bottom = ImageCardRowCardPadding
+            top = cardVerticalSpace,
+            bottom = cardVerticalSpace
         ),
         state = gridState
     ) {

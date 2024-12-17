@@ -31,8 +31,8 @@ import androidx.tv.material3.Text
 import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.model.ContentModel
 import com.muedsa.compose.tv.theme.CardContentPadding
+import com.muedsa.compose.tv.theme.CommonRowCardPadding
 import com.muedsa.compose.tv.theme.HorizontalPosterSize
-import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
 import com.muedsa.compose.tv.theme.TvTheme
 import com.muedsa.compose.tv.theme.VerticalPosterSize
 import com.muedsa.util.anyMatchWithIndex
@@ -52,17 +52,17 @@ fun <T> ImageCardsRow(
     onItemFocus: (index: Int, item: T) -> Unit = { _, _ -> },
     onItemClick: (index: Int, item: T) -> Unit = { _, _ -> },
 ) {
-
+    val cardHorizontalPadding = remember(imageSize) { imageSize.width * 0.08f }
     val (lazyRowFR, firstItemFR) = remember { FocusRequester.createRefs() }
     Column(modifier.focusGroup()) {
         Text(
-            modifier = Modifier.padding(start = ImageCardRowCardPadding),
+            modifier = Modifier.padding(start = cardHorizontalPadding),
             text = title,
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.titleLarge,
             maxLines = 1
         )
-        Spacer(modifier = Modifier.height(ImageCardRowCardPadding))
+        Spacer(modifier = Modifier.height(CommonRowCardPadding))
         AnimatedContent(
             targetState = modelList,
             label = "",
@@ -73,8 +73,8 @@ fun <T> ImageCardsRow(
                     .focusRestorer { firstItemFR },
                 state = state,
                 contentPadding = PaddingValues(
-                    start = ImageCardRowCardPadding,
-                    bottom = ImageCardRowCardPadding,
+                    start = cardHorizontalPadding,
+                    bottom = CommonRowCardPadding,
                     end = 100.dp
                 )
             ) {
@@ -86,7 +86,7 @@ fun <T> ImageCardsRow(
                             .focusOnMount(
                                 itemKey = "$rowFocusOnMountKey, col $index",
                                 focusRequester = if (index == 0) firstItemFR else remember { FocusRequester() })
-                            .padding(end = ImageCardRowCardPadding),
+                            .padding(end = cardHorizontalPadding),
                         url = imageFn(index, item),
                         imageSize = imageSize,
                         backgroundColor = backgroundColorFn(index, item),
@@ -118,19 +118,20 @@ fun <T> StandardImageCardsRow(
     onItemFocus: (index: Int, item: T) -> Unit = { _, _ -> },
     onItemClick: (index: Int, item: T) -> Unit = { _, _ -> },
 ) {
+    val cardHorizontalPadding = remember(imageSize) { imageSize.width * 0.075f }
     val (lazyRowFR, firstItemFR) = remember { FocusRequester.createRefs() }
-    var rowBottomPadding = remember { ImageCardRowCardPadding }
+    var rowBottomPadding = remember(modelList) { CommonRowCardPadding }
 
     LaunchedEffect(modelList) {
         rowBottomPadding = if (modelList.isNotEmpty() && modelList.anyMatchWithIndex { index, item ->
                 contentFn(index, item) != null
-            }) ImageCardRowCardPadding - CardContentPadding
-        else ImageCardRowCardPadding
+            }) CommonRowCardPadding - CardContentPadding
+        else CommonRowCardPadding
     }
 
     Column(modifier.focusGroup()) {
         Text(
-            modifier = Modifier.padding(start = ImageCardRowCardPadding),
+            modifier = Modifier.padding(start = cardHorizontalPadding),
             text = title,
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.titleLarge,
@@ -147,7 +148,7 @@ fun <T> StandardImageCardsRow(
                     .focusRestorer { firstItemFR },
                 state = state,
                 contentPadding = PaddingValues(
-                    start = ImageCardRowCardPadding,
+                    start = cardHorizontalPadding,
                     bottom = rowBottomPadding,
                     end = 100.dp
                 )
@@ -160,7 +161,7 @@ fun <T> StandardImageCardsRow(
                             .focusOnMount(
                                 itemKey = "$rowFocusOnMountKey, col $index",
                                 focusRequester = if (index == 0) firstItemFR else remember { FocusRequester() })
-                            .padding(end = ImageCardRowCardPadding),
+                            .padding(end = cardHorizontalPadding),
                         url = imageFn(index, item),
                         imageSize = imageSize,
                         backgroundColor = backgroundColorFn(index, item),

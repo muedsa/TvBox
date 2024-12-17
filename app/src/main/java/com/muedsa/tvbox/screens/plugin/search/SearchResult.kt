@@ -1,5 +1,6 @@
 package com.muedsa.tvbox.screens.plugin.search
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -8,12 +9,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.model.ContentModel
-import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
 import com.muedsa.compose.tv.useLocalLastFocusedItemPerDestination
 import com.muedsa.compose.tv.useLocalNavHostController
@@ -38,22 +39,27 @@ fun SearchResult(
     val navController = useLocalNavHostController()
     val lastFocusedItemPerDestination = useLocalLastFocusedItemPerDestination()
 
+    val cardSize = remember(row) { DpSize(row.cardWidth.dp, row.cardHeight.dp) }
+    val cardType = remember(row) { row.cardType.toCardType() }
+    val cardVerticalSpace = remember(row) { cardSize.height * 0.075f }
+    val cardHorizontalSpace = remember(row) { cardSize.width * 0.075f }
+
     LazyVerticalGrid(
         modifier = Modifier.padding(start = ScreenPaddingLeft),
-        columns = GridCells.Adaptive(row.cardWidth.dp + ImageCardRowCardPadding),
+        columns = GridCells.Adaptive(cardSize.width),
+        verticalArrangement = Arrangement.spacedBy(cardVerticalSpace),
+        horizontalArrangement = Arrangement.spacedBy(cardHorizontalSpace),
         contentPadding = PaddingValues(
-            top = ImageCardRowCardPadding,
-            bottom = ImageCardRowCardPadding
+            top = cardVerticalSpace,
+            bottom = cardVerticalSpace
         )
     ) {
         itemsIndexed(items = row.list) { index, item ->
             ImageContentCard(
-                modifier = Modifier
-                    .focusOnMount(itemKey = "searchScreen, gird $index")
-                    .padding(end = ImageCardRowCardPadding),
+                modifier = Modifier.focusOnMount(itemKey = "searchScreen, gird $index"),
                 url = if (row.cardType == MediaCardType.NOT_IMAGE) "" else item.coverImageUrl,
-                imageSize = DpSize(row.cardWidth.dp, row.cardHeight.dp),
-                type = row.cardType.toCardType(),
+                imageSize = cardSize,
+                type = cardType,
                 model = ContentModel(
                     title = item.title,
                     subtitle = item.subTitle

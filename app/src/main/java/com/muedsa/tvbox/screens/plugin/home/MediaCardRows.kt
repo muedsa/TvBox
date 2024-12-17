@@ -23,7 +23,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.OutlinedIconButton
 import com.muedsa.compose.tv.model.ContentModel
-import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
+import com.muedsa.compose.tv.theme.CommonRowCardPadding
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
 import com.muedsa.compose.tv.useLocalLastFocusedItemPerDestination
 import com.muedsa.compose.tv.useLocalNavHostController
@@ -55,7 +55,8 @@ fun MediaCardRows(
         val titleHeight= (MaterialTheme.typography.titleLarge.fontSize.value * configuration.fontScale + 0.5f).dp
         val labelHeight= (MaterialTheme.typography.labelLarge.fontSize.value * configuration.fontScale + 0.5f).dp
         var firstRow = remember { rows.first() }
-        val firstRowHeight = titleHeight + ImageCardRowCardPadding * 3 + firstRow.cardHeight.dp
+        val firstRowHeight = remember { titleHeight + CommonRowCardPadding * 3 + firstRow.cardHeight.dp }
+        val firstRowCardHorizontalPadding = remember { firstRow.cardWidth.dp * 0.075f }
         val tabHeight = remember { labelHeight + 24.dp * 2 + 6.dp * 2 }
         val screenHeight = configuration.screenHeightDp.dp
         val screenWidth = configuration.screenWidthDp.dp
@@ -63,13 +64,14 @@ fun MediaCardRows(
         var subTitle by remember { mutableStateOf<String?>(null) }
         LazyColumn(
             modifier = Modifier
-                .padding(start = ScreenPaddingLeft - ImageCardRowCardPadding)
+                .padding(start = ScreenPaddingLeft)
         ) {
             item(contentType = "MEDIA_CARD_ROW_IMMERSIVE_LIST") {
                 ImmersiveList(
                     background = {
                         ContentBlock(
                             modifier = Modifier
+                                .padding(start = firstRowCardHorizontalPadding)
                                 .width(screenWidth / 2)
                                 .height(screenHeight - firstRowHeight - tabHeight - 20.dp),
                             model = ContentModel(title = title, subtitle = subTitle),
@@ -139,8 +141,8 @@ fun MediaCardRows(
             item(contentType = "MEDIA_CARD_ROWS_OTHER_BUTTON_ROW") {
                 Row(
                     modifier = Modifier.padding(
-                        start = ImageCardRowCardPadding,
-                        bottom = ImageCardRowCardPadding
+                        start = CommonRowCardPadding,
+                        bottom = CommonRowCardPadding
                     )
                 ) {
                     OutlinedIconButton(onClick = { onRefresh() }) {

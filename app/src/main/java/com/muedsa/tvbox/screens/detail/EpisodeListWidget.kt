@@ -31,7 +31,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import androidx.tv.material3.WideButton
 import com.muedsa.compose.tv.focusOnMount
-import com.muedsa.compose.tv.theme.ImageCardRowCardPadding
+import com.muedsa.compose.tv.theme.CommonRowCardPadding
 import com.muedsa.tvbox.api.data.MediaEpisode
 import com.muedsa.tvbox.model.dandanplay.BangumiEpisode
 import com.muedsa.tvbox.room.model.EpisodeProgressModel
@@ -73,8 +73,8 @@ fun EpisodeListWidget(
                     // 剧集标题
                     Row(
                         modifier = Modifier.padding(
-                            start = ImageCardRowCardPadding,
-                            bottom = ImageCardRowCardPadding
+                            start = CommonRowCardPadding,
+                            bottom = CommonRowCardPadding
                         ),
                         verticalAlignment = Alignment.Bottom
                     ) {
@@ -85,7 +85,7 @@ fun EpisodeListWidget(
                             maxLines = 1
                         )
                         if (chunkIndex == 0 && danEpisodeList.isNotEmpty()) {
-                            Spacer(modifier = Modifier.width(ImageCardRowCardPadding))
+                            Spacer(modifier = Modifier.width(CommonRowCardPadding))
                             Text(
                                 text = "长按更改匹配的弹幕剧集",
                                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
@@ -186,8 +186,8 @@ fun EpisodeListWidget(
             } else {
                 Row(
                     modifier = Modifier.padding(
-                        start = ImageCardRowCardPadding,
-                        bottom = ImageCardRowCardPadding
+                        start = CommonRowCardPadding,
+                        bottom = CommonRowCardPadding
                     ),
                     verticalAlignment = Alignment.Bottom
                 ) {
@@ -197,7 +197,7 @@ fun EpisodeListWidget(
                         style = MaterialTheme.typography.titleLarge,
                         maxLines = 1
                     )
-                    Spacer(modifier = Modifier.width(ImageCardRowCardPadding))
+                    Spacer(modifier = Modifier.width(CommonRowCardPadding))
                     Text(
                         text = "选择一个弹弹Play剧集来匹配:",
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
@@ -217,8 +217,8 @@ fun EpisodeListWidget(
                     val episodePartEndNo = episodePartStartNo - 1 + danEpisodeList.size
                     Row(
                         modifier = Modifier.padding(
-                            start = ImageCardRowCardPadding,
-                            bottom = ImageCardRowCardPadding
+                            start = CommonRowCardPadding,
+                            bottom = CommonRowCardPadding
                         ),
                         verticalAlignment = Alignment.Bottom
                     ) {
@@ -229,7 +229,7 @@ fun EpisodeListWidget(
                             maxLines = 1
                         )
                         if (danChunkIndex == 0) {
-                            Spacer(modifier = Modifier.width(ImageCardRowCardPadding))
+                            Spacer(modifier = Modifier.width(CommonRowCardPadding))
                             Text(
                                 text = "长按使接下来的剧集都按当前选择的剧集依次匹配",
                                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
