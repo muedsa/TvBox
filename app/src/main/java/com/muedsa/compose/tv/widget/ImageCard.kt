@@ -22,8 +22,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Card
-import coil.compose.SubcomposeAsyncImage
-import coil.request.ImageRequest
+import coil3.compose.SubcomposeAsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.muedsa.compose.tv.model.ContentModel
 import com.muedsa.compose.tv.theme.CardContentPadding
 import com.muedsa.compose.tv.theme.HorizontalPosterSize
@@ -110,7 +111,10 @@ fun ImageCard(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(backgroundColor),
-                model = ImageRequest.Builder(LocalContext.current).data(url).crossfade(true)
+                model = ImageRequest
+                    .Builder(LocalContext.current)
+                    .data(url)
+                    .crossfade(true)
                     .build(),
                 contentDescription = null,
                 contentScale = ContentScale.FillBounds

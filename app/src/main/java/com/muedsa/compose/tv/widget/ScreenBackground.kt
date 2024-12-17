@@ -25,10 +25,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
-import coil.compose.SubcomposeAsyncImage
-import coil.request.ImageRequest
+import coil3.compose.SubcomposeAsyncImage
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import coil3.request.transformations
 import com.muedsa.compose.tv.theme.TvTheme
-import jp.wasabeef.transformers.coil.BlurTransformation
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -84,16 +87,19 @@ fun ScreenBackground(
             .crossfade(true)
             .also {
                 if (delayState.type == ScreenBackgroundType.BLUR) {
-                    it.transformations(
-                        BlurTransformation(context = context, radius = 25),
-                    )
+                    it.transformations(listOf(BlurTransformation()))
                 }
                 if (!delayState.headers.isEmpty()) {
                     delayState.headers.forEach { entry ->
-                        it.addHeader(entry.key, entry.value)
+                        it.httpHeaders(
+                            NetworkHeaders.Builder()
+                                .add(entry.key, entry.value)
+                                .build()
+                        )
                     }
                 }
-            }.build()
+            }
+            .build()
 
         Box(Modifier.fillMaxSize()) {
             SubcomposeAsyncImage(

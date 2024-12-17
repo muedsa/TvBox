@@ -113,10 +113,8 @@ dependencies {
 
     implementation(libs.datastore.preferences)
 
-    implementation(libs.coil)
     implementation(libs.coil.compose)
-    implementation(libs.coil.transformers)
-    // implementation(libs.coil.transformers.gpu)
+    implementation(libs.coil.network.okhttp)
 
     implementation(libs.media3)
     implementation(libs.media3.ui)

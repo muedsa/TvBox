@@ -11,8 +11,7 @@ composeBom = "2024.12.01"
 tvMaterial = "1.0.0-rc01"
 navCompose = "2.8.5"
 hiltNavCompose = "1.2.0"
-coil = "2.7.0"
-coilTransformers = "1.0.6"
+coil = "3.0.4"
 media3 = "1.5.0"
 akdanmaku = "1.0.3"
 datastore = "1.1.1"
@@ -43,9 +42,8 @@ navigation-compose = { group = "androidx.navigation", name = "navigation-compose
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavCompose" }
-coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
-coil-transformers = { group = "jp.wasabeef.transformers", name = "coil", version.ref = "coilTransformers" }
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 media3 = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
 media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
 media3-hls = { group = "androidx.media3", name = "media3-exoplayer-hls", version.ref = "media3" }
