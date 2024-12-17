@@ -25,6 +25,7 @@ import androidx.tv.material3.OutlinedIconButton
 import com.muedsa.compose.tv.model.ContentModel
 import com.muedsa.compose.tv.theme.CommonRowCardPadding
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
+import com.muedsa.compose.tv.useLocalFocusTransferredOnLaunch
 import com.muedsa.compose.tv.useLocalLastFocusedItemPerDestination
 import com.muedsa.compose.tv.useLocalNavHostController
 import com.muedsa.compose.tv.widget.ContentBlock
@@ -35,6 +36,7 @@ import com.muedsa.tvbox.api.data.MediaCardRow
 import com.muedsa.tvbox.plugin.PluginInfo
 import com.muedsa.tvbox.screens.NavigationItems
 import com.muedsa.tvbox.screens.SPECIAL_DESTINATION_MEDIA_DETAIL
+import com.muedsa.tvbox.screens.SPECIAL_DESTINATION_PLUGIN_HOME
 import com.muedsa.tvbox.screens.detail.INIT_FOCUSED_ITEM_KEY_MEDIA_DETAIL
 import com.muedsa.tvbox.screens.nav
 import com.muedsa.tvbox.screens.plugin.useLocalHomeScreenBackgroundState
@@ -52,6 +54,7 @@ fun MediaCardRows(
         val backgroundState = useLocalHomeScreenBackgroundState()
         val navController = useLocalNavHostController()
         val lastFocusedItemPerDestination = useLocalLastFocusedItemPerDestination()
+        val focusTransferredState = useLocalFocusTransferredOnLaunch()
         val titleHeight= (MaterialTheme.typography.titleLarge.fontSize.value * configuration.fontScale + 0.5f).dp
         val labelHeight= (MaterialTheme.typography.labelLarge.fontSize.value * configuration.fontScale + 0.5f).dp
         var firstRow = remember { rows.first() }
@@ -145,7 +148,12 @@ fun MediaCardRows(
                         bottom = CommonRowCardPadding
                     )
                 ) {
-                    OutlinedIconButton(onClick = { onRefresh() }) {
+                    OutlinedIconButton(onClick = {
+                        focusTransferredState.value = false
+                        lastFocusedItemPerDestination[SPECIAL_DESTINATION_PLUGIN_HOME] =
+                            "$HOME_FIRST_ROW_FOCUS_ON_MOUNT_KEY, col 0"
+                        onRefresh()
+                    }) {
                         Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Refresh")
                     }
                 }
