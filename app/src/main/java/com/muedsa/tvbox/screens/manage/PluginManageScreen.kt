@@ -42,6 +42,7 @@ import androidx.tv.material3.WideClassicCard
 import com.muedsa.compose.tv.conditional
 import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
+import com.muedsa.compose.tv.useLocalLastFocusedItemPerDestination
 import com.muedsa.compose.tv.useLocalNavHostController
 import com.muedsa.compose.tv.useLocalRightSideDrawerController
 import com.muedsa.compose.tv.useLocalToastMsgBoxController
@@ -50,7 +51,9 @@ import com.muedsa.compose.tv.widget.LoadingScreen
 import com.muedsa.tvbox.plugin.LoadedPlugins
 import com.muedsa.tvbox.plugin.PluginManager
 import com.muedsa.tvbox.screens.NavigationItems
+import com.muedsa.tvbox.screens.SPECIAL_DESTINATION_PLUGIN_HOME
 import com.muedsa.tvbox.screens.nav
+import com.muedsa.tvbox.screens.plugin.home.HOME_FIRST_ROW_FOCUS_ON_MOUNT_KEY
 import com.muedsa.util.AppUtil
 
 
@@ -83,6 +86,7 @@ fun PluginManage(
     apiVersion : Int,
 ) {
     val navController = useLocalNavHostController()
+    val lastFocusedItemPerDestination = useLocalLastFocusedItemPerDestination()
     val toastController = useLocalToastMsgBoxController()
     val drawerController = useLocalRightSideDrawerController()
     val context = LocalContext.current
@@ -158,6 +162,8 @@ fun PluginManage(
                             pluginManageScreenViewModel.launchPlugin(
                                 pluginInfo = it,
                                 onSuccess = {
+                                    lastFocusedItemPerDestination[SPECIAL_DESTINATION_PLUGIN_HOME] =
+                                        "$HOME_FIRST_ROW_FOCUS_ON_MOUNT_KEY, col 0"
                                     navController.nav(NavigationItems.PluginHome)
                                 },
                                 onFailure = {

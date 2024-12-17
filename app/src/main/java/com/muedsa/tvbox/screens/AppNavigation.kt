@@ -21,6 +21,7 @@ import com.muedsa.tvbox.screens.playback.PlaybackScreen
 import com.muedsa.tvbox.screens.plugin.PluginScreen
 import com.muedsa.tvbox.screens.setting.AppSettingScreen
 
+const val SPECIAL_DESTINATION_PLUGIN_HOME = "PLUGIN_HOME"
 const val SPECIAL_DESTINATION_MEDIA_DETAIL = "MEDIA_DETAIL"
 
 @Composable
@@ -45,8 +46,10 @@ fun AppNavigation(navController: NavHostController = rememberNavController())  {
 
                     // 当前选择的插件主页
                     composable<NavigationItems.PluginHome> {
-                        LocalFocusTransferredOnLaunchProvider {
-                            PluginScreen()
+                        LocalDestinationProvider(SPECIAL_DESTINATION_PLUGIN_HOME) {
+                            LocalFocusTransferredOnLaunchProvider {
+                                PluginScreen()
+                            }
                         }
                     }
 

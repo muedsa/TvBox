@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +39,8 @@ import com.muedsa.tvbox.screens.detail.INIT_FOCUSED_ITEM_KEY_MEDIA_DETAIL
 import com.muedsa.tvbox.screens.nav
 import com.muedsa.tvbox.screens.plugin.useLocalHomeScreenBackgroundState
 
+const val HOME_FIRST_ROW_FOCUS_ON_MOUNT_KEY = "home, firstRow"
+
 @Composable
 fun MediaCardRows(
     pluginInfo: PluginInfo,
@@ -60,15 +61,6 @@ fun MediaCardRows(
         val screenWidth = configuration.screenWidthDp.dp
         var title by remember { mutableStateOf("") }
         var subTitle by remember { mutableStateOf<String?>(null) }
-        LaunchedEffect(key1 = rows) {
-            firstRow = rows.first()
-            firstRow.list.firstOrNull()?.let {
-                title = it.title
-                subTitle = it.subTitle
-                backgroundState.url = it.coverImageUrl
-                backgroundState.type = ScreenBackgroundType.SCRIM
-            }
-        }
         LazyColumn(
             modifier = Modifier
                 .padding(start = ScreenPaddingLeft - ImageCardRowCardPadding)
@@ -92,7 +84,7 @@ fun MediaCardRows(
                                 .height(screenHeight - firstRowHeight - tabHeight - 5.dp)
                         )
                         MediaCardRow(
-                            rowFocusOnMountKey = "home, firstRow",
+                            rowFocusOnMountKey = HOME_FIRST_ROW_FOCUS_ON_MOUNT_KEY,
                             row = firstRow,
                             onlyImage = true,
                             onItemFocus = { _, mediaCard ->
