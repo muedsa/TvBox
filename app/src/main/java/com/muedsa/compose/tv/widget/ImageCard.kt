@@ -1,6 +1,5 @@
 package com.muedsa.compose.tv.widget
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +25,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Card
+import androidx.tv.material3.CardDefaults
+import androidx.tv.material3.MaterialTheme
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
@@ -106,41 +107,61 @@ fun ImageCard(
     onItemClick: () -> Unit = {},
     content: @Composable () -> Unit = {}
 ) {
-    SubcomposeAsyncImage(
-        model = ImageRequest
-            .Builder(LocalContext.current)
-            .data(url)
-            .crossfade(true)
-            .build(),
-        contentDescription = null,
-        contentScale = ContentScale.FillBounds
-    ) {
-        val state by painter.state.collectAsState()
+    if (url.isNotEmpty()) {
+        SubcomposeAsyncImage(
+            model = ImageRequest
+                .Builder(LocalContext.current)
+                .data(url)
+                .crossfade(true)
+                .build(),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds
+        ) {
+            val state by painter.state.collectAsState()
+            Card(
+                onClick = { onItemClick() },
+                modifier = modifier
+                    .size(imageSize)
+                    .onFocusChanged {
+                        if (it.isFocused) {
+                            onItemFocus()
+                        }
+                    },
+                colors = CardDefaults.colors(
+                    containerColor = if (backgroundColor != Color.Unspecified) backgroundColor else MaterialTheme.colorScheme.surfaceVariant
+                ),
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    if (state is AsyncImagePainter.State.Success) {
+                        this@SubcomposeAsyncImage.SubcomposeAsyncImageContent()
+                    } else if (showCircularProgressIndicator
+                        && (state is AsyncImagePainter.State.Loading
+                                || state is AsyncImagePainter.State.Empty)
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                    content()
+                }
+            }
+        }
+    } else {
         Card(
             onClick = { onItemClick() },
             modifier = modifier
                 .size(imageSize)
-                .background(backgroundColor)
                 .onFocusChanged {
                     if (it.isFocused) {
                         onItemFocus()
                     }
-                }
+                },
+            colors = CardDefaults.colors(
+                containerColor = if (backgroundColor != Color.Unspecified) backgroundColor else MaterialTheme.colorScheme.surfaceVariant
+            ),
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                if (state is AsyncImagePainter.State.Success) {
-                    this@SubcomposeAsyncImage.SubcomposeAsyncImageContent()
-                } else if (showCircularProgressIndicator
-                    && (state is AsyncImagePainter.State.Loading
-                            || state is AsyncImagePainter.State.Empty)
-                ) {
-                    CircularProgressIndicator()
-                }
-                content()
-            }
+            content()
         }
     }
 }
