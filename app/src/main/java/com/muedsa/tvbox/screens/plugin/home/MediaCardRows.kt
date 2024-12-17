@@ -119,7 +119,7 @@ fun MediaCardRows(
                     onItemFocus = { _, mediaCard ->
                         title = mediaCard.title
                         subTitle = mediaCard.subTitle
-                        backgroundState.type = ScreenBackgroundType.SCRIM
+                        backgroundState.type = ScreenBackgroundType.BLUR
                         backgroundState.url = mediaCard.coverImageUrl
                     },
                     onItemClick = { _, mediaCard ->
