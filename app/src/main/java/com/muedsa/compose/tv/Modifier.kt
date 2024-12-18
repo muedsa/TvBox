@@ -97,8 +97,11 @@ fun Modifier.focusOnMount(
         .onPlaced {
             val lastFocusedKey = lastFocusedItemPerDestination[currentDestination]
             if (!isInitialFocusTransferred.value && lastFocusedKey == itemKey) {
-                focusRequester.requestFocus()
-                isInitialFocusTransferred.value = true
+                try {
+                    focusRequester.requestFocus()
+                    isInitialFocusTransferred.value = true
+                } catch (_: Throwable) {
+                }
             }
         }
         .onFocusChanged {

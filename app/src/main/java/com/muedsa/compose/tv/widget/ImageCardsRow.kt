@@ -18,10 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.FocusRequester.Companion.FocusRequesterFactory.component1
-import androidx.compose.ui.focus.FocusRequester.Companion.FocusRequesterFactory.component2
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpSize
@@ -53,7 +50,7 @@ fun <T> ImageCardsRow(
     onItemClick: (index: Int, item: T) -> Unit = { _, _ -> },
 ) {
     val cardHorizontalPadding = remember(imageSize) { imageSize.width * 0.08f }
-    val (lazyRowFR, firstItemFR) = remember { FocusRequester.createRefs() }
+    val lazyRowFR = remember { FocusRequester() }
     Column(modifier.focusGroup()) {
         Text(
             modifier = Modifier.padding(start = cardHorizontalPadding),
@@ -68,9 +65,7 @@ fun <T> ImageCardsRow(
             label = "",
         ) { modelState ->
             LazyRow(
-                modifier = Modifier
-                    .focusRequester(lazyRowFR)
-                    .focusRestorer { firstItemFR },
+                modifier = Modifier.focusRequester(lazyRowFR),
                 state = state,
                 contentPadding = PaddingValues(
                     start = cardHorizontalPadding,
@@ -85,7 +80,7 @@ fun <T> ImageCardsRow(
                         modifier = Modifier
                             .focusOnMount(
                                 itemKey = "$rowFocusOnMountKey, col $index",
-                                focusRequester = if (index == 0) firstItemFR else remember { FocusRequester() })
+                            )
                             .padding(end = cardHorizontalPadding),
                         url = imageFn(index, item),
                         imageSize = imageSize,
@@ -119,7 +114,7 @@ fun <T> StandardImageCardsRow(
     onItemClick: (index: Int, item: T) -> Unit = { _, _ -> },
 ) {
     val cardHorizontalPadding = remember(imageSize) { imageSize.width * 0.075f }
-    val (lazyRowFR, firstItemFR) = remember { FocusRequester.createRefs() }
+    val lazyRowFR = remember { FocusRequester() }
     var rowBottomPadding = remember(modelList) { CommonRowCardPadding }
 
     LaunchedEffect(modelList) {
@@ -143,9 +138,7 @@ fun <T> StandardImageCardsRow(
             label = "",
         ) { modelState ->
             LazyRow(
-                modifier = Modifier
-                    .focusRequester(lazyRowFR)
-                    .focusRestorer { firstItemFR },
+                modifier = Modifier.focusRequester(lazyRowFR),
                 state = state,
                 contentPadding = PaddingValues(
                     start = cardHorizontalPadding,
@@ -160,7 +153,7 @@ fun <T> StandardImageCardsRow(
                         modifier = Modifier
                             .focusOnMount(
                                 itemKey = "$rowFocusOnMountKey, col $index",
-                                focusRequester = if (index == 0) firstItemFR else remember { FocusRequester() })
+                            )
                             .padding(end = cardHorizontalPadding),
                         url = imageFn(index, item),
                         imageSize = imageSize,
