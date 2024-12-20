@@ -101,26 +101,26 @@ fun ImageCard(
     onItemClick: () -> Unit = {},
     content: @Composable () -> Unit = {}
 ) {
-    if (url.isNotEmpty() && url.startsWith("http")) {
-        Card(
-            onClick = { onItemClick() },
-            modifier = modifier
-                .size(imageSize)
-                .onFocusChanged {
-                    if (it.isFocused) {
-                        onItemFocus()
-                    }
-                },
-            colors = CardDefaults.colors(
-                containerColor = if (backgroundColor.value != Color.Unspecified.value
-                    && backgroundColor.value != Color.Transparent.value) backgroundColor
-                else MaterialTheme.colorScheme.surfaceVariant
-            ),
+    Card(
+        onClick = { onItemClick() },
+        modifier = modifier
+            .size(imageSize)
+            .onFocusChanged {
+                if (it.isFocused) {
+                    onItemFocus()
+                }
+            },
+        colors = CardDefaults.colors(
+            containerColor = if (backgroundColor.value != Color.Unspecified.value
+                && backgroundColor.value != Color.Transparent.value) backgroundColor
+            else MaterialTheme.colorScheme.surfaceVariant
+        ),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
+            if (url.isNotEmpty() && url.startsWith("http")) {
                 AsyncImage(
                     modifier = Modifier.fillMaxSize(),
                     model = ImageRequest
@@ -131,25 +131,7 @@ fun ImageCard(
                     contentDescription = null,
                     contentScale = if (imageSize.height > imageSize.width) ContentScale.FillWidth else ContentScale.FillHeight
                 )
-                content()
             }
-        }
-    } else {
-        Card(
-            onClick = { onItemClick() },
-            modifier = modifier
-                .size(imageSize)
-                .onFocusChanged {
-                    if (it.isFocused) {
-                        onItemFocus()
-                    }
-                },
-            colors = CardDefaults.colors(
-                containerColor = if (backgroundColor.value != Color.Unspecified.value
-                    && backgroundColor.value != Color.Transparent.value) backgroundColor
-                else MaterialTheme.colorScheme.surfaceVariant
-            ),
-        ) {
             content()
         }
     }
