@@ -10,10 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -27,9 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.MaterialTheme
-import coil3.compose.AsyncImagePainter
-import coil3.compose.SubcomposeAsyncImage
-import coil3.compose.SubcomposeAsyncImageContent
+import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.muedsa.compose.tv.model.ContentModel
@@ -102,49 +97,41 @@ fun ImageCard(
     url: String,
     imageSize: DpSize,
     backgroundColor: Color = Color.Unspecified,
-    showCircularProgressIndicator: Boolean = true,
     onItemFocus: () -> Unit = {},
     onItemClick: () -> Unit = {},
     content: @Composable () -> Unit = {}
 ) {
-    if (url.isNotEmpty()) {
-        SubcomposeAsyncImage(
-            model = ImageRequest
-                .Builder(LocalContext.current)
-                .data(url)
-                .crossfade(true)
-                .build(),
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds
-        ) {
-            val state by painter.state.collectAsState()
-            Card(
-                onClick = { onItemClick() },
-                modifier = modifier
-                    .size(imageSize)
-                    .onFocusChanged {
-                        if (it.isFocused) {
-                            onItemFocus()
-                        }
-                    },
-                colors = CardDefaults.colors(
-                    containerColor = if (backgroundColor != Color.Unspecified) backgroundColor else MaterialTheme.colorScheme.surfaceVariant
-                ),
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    if (state is AsyncImagePainter.State.Success) {
-                        this@SubcomposeAsyncImage.SubcomposeAsyncImageContent()
-                    } else if (showCircularProgressIndicator
-                        && (state is AsyncImagePainter.State.Loading
-                                || state is AsyncImagePainter.State.Empty)
-                    ) {
-                        CircularProgressIndicator()
+    if (url.isNotEmpty() && url.startsWith("http")) {
+        Card(
+            onClick = { onItemClick() },
+            modifier = modifier
+                .size(imageSize)
+                .onFocusChanged {
+                    if (it.isFocused) {
+                        onItemFocus()
                     }
-                    content()
-                }
+                },
+            colors = CardDefaults.colors(
+                containerColor = if (backgroundColor.value != Color.Unspecified.value
+                    && backgroundColor.value != Color.Transparent.value) backgroundColor
+                else MaterialTheme.colorScheme.surfaceVariant
+            ),
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    model = ImageRequest
+                        .Builder(LocalContext.current)
+                        .data(url)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = null,
+                    contentScale = if (imageSize.height > imageSize.width) ContentScale.FillWidth else ContentScale.FillHeight
+                )
+                content()
             }
         }
     } else {
@@ -158,7 +145,9 @@ fun ImageCard(
                     }
                 },
             colors = CardDefaults.colors(
-                containerColor = if (backgroundColor != Color.Unspecified) backgroundColor else MaterialTheme.colorScheme.surfaceVariant
+                containerColor = if (backgroundColor.value != Color.Unspecified.value
+                    && backgroundColor.value != Color.Transparent.value) backgroundColor
+                else MaterialTheme.colorScheme.surfaceVariant
             ),
         ) {
             content()
@@ -214,7 +203,6 @@ fun CompactImageContentCard(
         url = url,
         imageSize = imageSize,
         backgroundColor = backgroundColor,
-        showCircularProgressIndicator = false,
         onItemFocus = onItemFocus,
         onItemClick = onItemClick,
     ) {
