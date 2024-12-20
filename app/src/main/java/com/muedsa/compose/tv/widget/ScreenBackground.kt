@@ -25,7 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
-import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.AsyncImage
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
@@ -82,28 +82,27 @@ fun ScreenBackground(
         } else {
             Modifier.size(screenWidth, screenHeight)
         }
-        val imageRequest = ImageRequest.Builder(context)
-            .data(delayState.url)
-            .crossfade(true)
-            .also {
-                if (delayState.type == ScreenBackgroundType.BLUR) {
-                    it.transformations(listOf(BlurTransformation()))
-                }
-                if (!delayState.headers.isEmpty()) {
-                    delayState.headers.forEach { entry ->
-                        it.httpHeaders(
-                            NetworkHeaders.Builder()
-                                .add(entry.key, entry.value)
-                                .build()
-                        )
-                    }
-                }
-            }
-            .build()
 
         Box(Modifier.fillMaxSize()) {
-            SubcomposeAsyncImage(
-                model = imageRequest,
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(delayState.url)
+                    .crossfade(true)
+                    .also {
+                        if (delayState.type == ScreenBackgroundType.BLUR) {
+                            it.transformations(listOf(BlurTransformation()))
+                        }
+                        if (!delayState.headers.isEmpty()) {
+                            delayState.headers.forEach { entry ->
+                                it.httpHeaders(
+                                    NetworkHeaders.Builder()
+                                        .add(entry.key, entry.value)
+                                        .build()
+                                )
+                            }
+                        }
+                    }
+                    .build(),
                 contentDescription = null,
                 modifier = imageModifier,
                 contentScale = if (horizontal) ContentScale.FillWidth else ContentScale.Crop
