@@ -164,9 +164,11 @@ class MediaDetailScreenViewModel @Inject constructor(
                         mediaId = favoriteMediaCard.id,
                         mediaTitle = favoriteMediaCard.title,
                         mediaDetailUrl = favoriteMediaCard.detailUrl,
+                        mediaSubTitle = favoriteMediaCard.subTitle,
                         coverImageUrl = favoriteMediaCard.coverImageUrl,
                         cardWidth = favoriteMediaCard.cardWidth,
-                        cardHeight = favoriteMediaCard.cardHeight
+                        cardHeight = favoriteMediaCard.cardHeight,
+                        updateAt = System.currentTimeMillis(),
                     )
                 )
             } else {

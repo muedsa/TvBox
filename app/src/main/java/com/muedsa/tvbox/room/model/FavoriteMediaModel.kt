@@ -9,6 +9,7 @@ data class FavoriteMediaModel(
     @ColumnInfo(name = "media_id") val mediaId: String,
     @ColumnInfo(name = "media_title") val mediaTitle: String,
     @ColumnInfo(name = "media_detail_url") val mediaDetailUrl: String,
+    @ColumnInfo(name = "media_sub_title", defaultValue = "NULL") val mediaSubTitle: String?,
     @ColumnInfo(name = "cover_image_url") val coverImageUrl: String,
     @ColumnInfo(name = "card_width") val cardWidth: Int,
     @ColumnInfo(name = "card_height") val cardHeight: Int,

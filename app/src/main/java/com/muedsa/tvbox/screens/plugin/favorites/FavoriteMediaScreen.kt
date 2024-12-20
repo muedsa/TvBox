@@ -116,7 +116,10 @@ fun FavoriteMediaScreen(
                         url = item.coverImageUrl,
                         imageSize = DpSize(item.cardWidth.dp, item.cardHeight.dp),
                         type = CardType.STANDARD,
-                        model = ContentModel(title = item.mediaTitle),
+                        model = ContentModel(
+                            title = item.mediaTitle,
+                            subtitle = item.mediaSubTitle,
+                        ),
                         onItemFocus = {
                             backgroundState.url = item.coverImageUrl
                             backgroundState.type = ScreenBackgroundType.BLUR
