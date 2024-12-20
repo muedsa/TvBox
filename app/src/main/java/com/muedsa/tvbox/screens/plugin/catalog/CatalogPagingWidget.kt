@@ -24,6 +24,8 @@ import androidx.paging.compose.itemContentType
 import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.model.ContentModel
 import com.muedsa.compose.tv.theme.ScreenPaddingLeft
+import com.muedsa.compose.tv.useLocalDestination
+import com.muedsa.compose.tv.useLocalFocusTransferredOnLaunch
 import com.muedsa.compose.tv.useLocalLastFocusedItemPerDestination
 import com.muedsa.compose.tv.useLocalNavHostController
 import com.muedsa.compose.tv.useLocalToastMsgBoxController
@@ -50,6 +52,8 @@ fun CatalogPagingWidget(
 ) {
     val navController = useLocalNavHostController()
     val lastFocusedItemPerDestination = useLocalLastFocusedItemPerDestination()
+    val isInitialFocusTransferred = useLocalFocusTransferredOnLaunch()
+    val currentScreenDestination = useLocalDestination()
     val toastController = useLocalToastMsgBoxController()
     val backgroundState = useLocalHomeScreenBackgroundState()
     val lazyPagingItems = catalogScreenViewModel.pageDataFlow.collectAsLazyPagingItems()
@@ -80,7 +84,9 @@ fun CatalogPagingWidget(
     BackHandler(enabled = gridState.canScrollBackward) {
         if (lazyPagingItems.itemCount > 0 && !gridState.isScrollInProgress) {
             coroutineScope.launch {
-                gridState.animateScrollToItem(0)
+                isInitialFocusTransferred.value = false
+                lastFocusedItemPerDestination[currentScreenDestination] = "catalogScreen, grid 0"
+                gridState.requestScrollToItem(0)
             }
         }
     }
