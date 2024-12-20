@@ -129,7 +129,7 @@ fun ImageCard(
                         .crossfade(true)
                         .build(),
                     contentDescription = null,
-                    contentScale = if (imageSize.height > imageSize.width) ContentScale.FillWidth else ContentScale.FillHeight
+                    contentScale = ContentScale.Crop
                 )
             }
             content()
