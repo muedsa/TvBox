@@ -124,8 +124,8 @@ class MediaDetailScreenViewModel @Inject constructor(
         _selectedDanBangumiSearchFlow
     ) { danBangumiListPair, selected ->
         val list = danBangumiListPair.second
-        val anime = if (list.isNullOrEmpty()) {
-            selected?.let { list?.find { it.animeId == selected.animeId } } ?: list?.firstOrNull()
+        val anime = if (!list.isNullOrEmpty()) {
+            selected?.let { list.find { it.animeId == selected.animeId } } ?: list.firstOrNull()
         } else null
         val danBangumiDetail = if (anime != null) {
             try {
