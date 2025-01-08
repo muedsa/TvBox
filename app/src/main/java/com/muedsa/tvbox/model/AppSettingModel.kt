@@ -19,8 +19,8 @@ data class AppSettingModel(
 
         fun fromPreferences(prefs: Preferences): AppSettingModel =
             AppSettingModel(
-                danmakuEnable = prefs[KEY_DANMAKU_ENABLE] ?: true,
-                danmakuMergeEnable = prefs[KEY_DANMAKU_MERGE_ENABLE] ?: false,
+                danmakuEnable = prefs[KEY_DANMAKU_ENABLE] != false,
+                danmakuMergeEnable = prefs[KEY_DANMAKU_MERGE_ENABLE] == true,
                 danmakuSizeScale = prefs[KEY_DANMAKU_SIZE_SCALE] ?: 140,
                 danmakuAlpha = prefs[KEY_DANMAKU_ALPHA] ?: 100,
                 danmakuScreenPart = prefs[KEY_DANMAKU_SCREEN_PART] ?: 100,
