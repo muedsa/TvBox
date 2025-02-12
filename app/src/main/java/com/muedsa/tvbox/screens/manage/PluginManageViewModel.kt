@@ -1,11 +1,14 @@
 package com.muedsa.tvbox.screens.manage
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Environment
 import androidx.compose.runtime.Immutable
+import androidx.core.content.ContextCompat
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.muedsa.tvbox.APP_PERMISSIONS
 import com.muedsa.tvbox.plugin.LoadedPlugins
 import com.muedsa.tvbox.plugin.PluginInfo
 import com.muedsa.tvbox.plugin.PluginManager
@@ -79,6 +82,7 @@ class PluginManageScreenViewModel @Inject constructor(
                 }
             }.onFailure {
                 withContext(Dispatchers.Main) {
+                    Timber.e(it)
                     onFailure(it)
                 }
             }
@@ -165,6 +169,10 @@ class PluginManageScreenViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun hasPermissions(): Boolean {
+        return APP_PERMISSIONS.all { ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED }
     }
 
     init {

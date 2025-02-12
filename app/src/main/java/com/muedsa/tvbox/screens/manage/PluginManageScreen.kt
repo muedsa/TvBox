@@ -1,6 +1,8 @@
 package com.muedsa.tvbox.screens.manage
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,6 +50,7 @@ import com.muedsa.compose.tv.useLocalRightSideDrawerController
 import com.muedsa.compose.tv.useLocalToastMsgBoxController
 import com.muedsa.compose.tv.widget.ErrorScreen
 import com.muedsa.compose.tv.widget.LoadingScreen
+import com.muedsa.tvbox.APP_PERMISSIONS
 import com.muedsa.tvbox.plugin.LoadedPlugins
 import com.muedsa.tvbox.plugin.PluginManager
 import com.muedsa.tvbox.screens.NavigationItems
@@ -90,6 +93,13 @@ fun PluginManage(
     val toastController = useLocalToastMsgBoxController()
     val drawerController = useLocalRightSideDrawerController()
     val context = LocalContext.current
+
+    var hasPermission by remember { mutableStateOf(pluginManageScreenViewModel.hasPermissions()) }
+    val permissionRequester = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions(),
+    ) {
+        hasPermission = it.values.all { it }
+    }
 
     var deleteMode by remember { mutableStateOf(false) }
 
@@ -280,11 +290,15 @@ fun PluginManage(
                     modifier = Modifier.padding(10.dp),
                     onClick = {
                         deleteMode = false
-                        popPluginInstall(
-                            drawerController = drawerController,
-                            toastController = toastController,
-                            pluginManageScreenViewModel = pluginManageScreenViewModel
-                        )
+                        if (hasPermission) {
+                            popPluginInstall(
+                                drawerController = drawerController,
+                                toastController = toastController,
+                                pluginManageScreenViewModel = pluginManageScreenViewModel
+                            )
+                        } else {
+                            permissionRequester.launch(APP_PERMISSIONS.toTypedArray())
+                        }
                     },
                     image = {
                         Icon(
