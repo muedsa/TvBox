@@ -138,7 +138,7 @@ object PluginManager {
     ): PluginInfo {
         val packageArchiveInfo =
             packageManager.getPackageArchiveInfo(pluginPackagePath, PackageManager.GET_META_DATA)
-                ?: throw RuntimeException("插件文件不存在 $pluginPackagePath")
+                ?: throw RuntimeException("不能解析插件文件 $pluginPackagePath")
         packageArchiveInfo.applicationInfo?.apply {
             if (publicSourceDir.isNullOrEmpty())
                 publicSourceDir = pluginPackagePath
