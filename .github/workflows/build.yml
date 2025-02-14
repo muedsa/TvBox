@@ -22,9 +22,9 @@ jobs:
           cache: gradle
       - name: Load secret files
         env:
-          - GOOGLE_SERVICES_JSON_DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
-          - SIGN_KEY_DATA: ${{ secrets.SIGN_KEY }}
-          - KEY_STORE_PROP_DATA: ${{ secrets.KEY_STORE_PROP }}
+          GOOGLE_SERVICES_JSON_DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          SIGN_KEY_DATA: ${{ secrets.SIGN_KEY }}
+          KEY_STORE_PROP_DATA: ${{ secrets.KEY_STORE_PROP }}
         run: |
           echo $GOOGLE_SERVICES_JSON_DATA | base64 -di > app/google-services.json 
           echo $SIGN_KEY_DATA | base64 -di > MUEDSA.jks
