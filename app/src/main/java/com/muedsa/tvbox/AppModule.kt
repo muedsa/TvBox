@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.room.Room
 import com.muedsa.tvbox.room.AppDatabase
 import com.muedsa.tvbox.service.DanDanPlayApiService
+import com.muedsa.tvbox.service.DanDanPlayAuthInterceptor
 import com.muedsa.tvbox.store.DataStoreRepo
 import com.muedsa.tvbox.tool.createJsonRetrofit
+import com.muedsa.tvbox.tool.createOkHttpClient
 import com.muedsa.util.AppUtil
 import dagger.Module
 import dagger.Provides
@@ -46,6 +48,8 @@ internal object AppModule {
         createJsonRetrofit(
             baseUrl = "https://api.dandanplay.net/api/",
             service = DanDanPlayApiService::class.java,
-            debug = AppUtil.debuggable(context)
+            okHttpClient = createOkHttpClient(debug = AppUtil.debuggable(context)) {
+                addInterceptor(DanDanPlayAuthInterceptor())
+            }
         )
 }

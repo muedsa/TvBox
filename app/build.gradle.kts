@@ -48,6 +48,19 @@ android {
         }
     }
 
+    defaultConfig {
+        buildConfigField(
+            "String",
+            "DANDANPLAY_APP_ID",
+            "\"${keystoreProperties["muedsa.danDanPlay.appId"]}\""
+        )
+        buildConfigField(
+            "String",
+            "DANDANPLAY_APP_SECRET",
+            "\"${keystoreProperties["muedsa.danDanPlay.appSecret"]}\""
+        )
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -70,6 +83,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     room {

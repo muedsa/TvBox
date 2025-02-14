@@ -20,10 +20,15 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
-      - name: Load Google Service file
+      - name: Load secret files
         env:
-          DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: echo $DATA | base64 -di > app/google-services.json
+          - GOOGLE_SERVICES_JSON_DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          - SIGN_KEY_DATA: ${{ secrets.SIGN_KEY }}
+          - KEY_STORE_PROP_DATA: ${{ secrets.KEY_STORE_PROP }}
+        run: |
+          echo $GOOGLE_SERVICES_JSON_DATA | base64 -di > app/google-services.json 
+          echo $SIGN_KEY_DATA | base64 -di > MUEDSA.jks
+          echo $KEY_STORE_PROP_DATA | base64 -di > keystore.properties
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle

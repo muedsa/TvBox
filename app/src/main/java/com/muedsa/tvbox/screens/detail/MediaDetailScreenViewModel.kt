@@ -2,6 +2,7 @@ package com.muedsa.tvbox.screens.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.muedsa.tvbox.BuildConfig
 import com.muedsa.tvbox.api.data.MediaDetail
 import com.muedsa.tvbox.api.data.MediaEpisode
 import com.muedsa.tvbox.api.data.MediaHttpSource
@@ -93,6 +94,8 @@ class MediaDetailScreenViewModel @Inject constructor(
     private val _danBangumiListFlow =
         combine(_mediaDetailFlow, _banBangumiSearchQueryFlow) { wrapper, searchQuery ->
             if (wrapper.data != null
+                && !BuildConfig.DANDANPLAY_APP_ID.isEmpty()
+                && !BuildConfig.DANDANPLAY_APP_SECRET.isEmpty()
                 && wrapper.data.second.enableDanDanPlaySearch
                 && !wrapper.data.third.enableCustomDanmakuList
                 && !wrapper.data.third.enableCustomDanmakuFlow

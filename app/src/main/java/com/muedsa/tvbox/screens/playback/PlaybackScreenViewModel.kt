@@ -3,6 +3,7 @@ package com.muedsa.tvbox.screens.playback
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kuaishou.akdanmaku.data.DanmakuItemData
+import com.muedsa.tvbox.BuildConfig
 import com.muedsa.tvbox.api.data.DanmakuDataFlow
 import com.muedsa.tvbox.api.data.MediaEpisode
 import com.muedsa.tvbox.model.AppSettingModel
@@ -70,7 +71,10 @@ class PlaybackScreenViewModel @Inject constructor(
                                         danmakuStyle = data.danmakuStyle
                                     )
                                 }
-                        } else if (it.danEpisodeId > 0) {
+                        } else if (!BuildConfig.DANDANPLAY_APP_ID.isEmpty()
+                            && !BuildConfig.DANDANPLAY_APP_SECRET.isEmpty()
+                            && it.danEpisodeId > 0
+                        ) {
                             danDanPlayApiService.getComment(
                                 episodeId = it.danEpisodeId,
                                 from = 0,
