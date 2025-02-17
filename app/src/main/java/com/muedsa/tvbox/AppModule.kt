@@ -2,9 +2,11 @@ package com.muedsa.tvbox
 
 import android.content.Context
 import androidx.room.Room
+import com.muedsa.tvbox.danmaku.DanmakuService
+import com.muedsa.tvbox.danmaku.dandanplay.DanDanPlayApiService
+import com.muedsa.tvbox.danmaku.dandanplay.DanDanPlayAuthInterceptor
+import com.muedsa.tvbox.danmaku.dandanplay.DanDanPlayDanmakuProvider
 import com.muedsa.tvbox.room.AppDatabase
-import com.muedsa.tvbox.service.DanDanPlayApiService
-import com.muedsa.tvbox.service.DanDanPlayAuthInterceptor
 import com.muedsa.tvbox.store.DataStoreRepo
 import com.muedsa.tvbox.tool.createJsonRetrofit
 import com.muedsa.tvbox.tool.createOkHttpClient
@@ -44,12 +46,26 @@ internal object AppModule {
 
     @Provides
     @Singleton
-    fun provideDanDanPlayApiService(@ApplicationContext context: Context): DanDanPlayApiService =
-        createJsonRetrofit(
-            baseUrl = "https://api.dandanplay.net/api/",
-            service = DanDanPlayApiService::class.java,
-            okHttpClient = createOkHttpClient(debug = AppUtil.debuggable(context)) {
-                addInterceptor(DanDanPlayAuthInterceptor())
-            }
+    fun provideDanDanPlayDanmakuProvider(@ApplicationContext context: Context) =
+        DanDanPlayDanmakuProvider(
+            danDanPlayApiService = createJsonRetrofit(
+                baseUrl = "https://api.dandanplay.net/api/",
+                service = DanDanPlayApiService::class.java,
+                okHttpClient = createOkHttpClient(debug = AppUtil.debuggable(context)) {
+                    addInterceptor(DanDanPlayAuthInterceptor())
+                }
+            )
         )
+
+    @Provides
+    @Singleton
+    fun provideDanmakuService(
+        danDanPlayDanmakuProvider: DanDanPlayDanmakuProvider,
+    ) = DanmakuService().also {
+        if (BuildConfig.DANDANPLAY_APP_ID.isNotEmpty()
+            && BuildConfig.DANDANPLAY_APP_SECRET.isNotEmpty()
+        ) {
+            it.register(danDanPlayDanmakuProvider)
+        }
+    }
 }

@@ -25,7 +25,7 @@ sealed interface NavigationItems {
         val pluginPackage: String,
         val mediaId: String,
         val episodeId: String,
-        val danEpisodeId: Long = -1,
+        val danmakuEpisodeJson: String? = null,
         val disableEpisodeProgression: Boolean,
         val enableCustomDanmakuList: Boolean,
         val enableCustomDanmakuFlow: Boolean,

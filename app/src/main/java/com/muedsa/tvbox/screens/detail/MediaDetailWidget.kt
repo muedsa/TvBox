@@ -55,8 +55,7 @@ import com.muedsa.compose.tv.widget.TwoSideWideButton
 import com.muedsa.compose.tv.widget.rememberScreenBackgroundState
 import com.muedsa.tvbox.api.data.MediaDetail
 import com.muedsa.tvbox.api.data.MediaMergingHttpSource
-import com.muedsa.tvbox.model.dandanplay.BangumiInfo
-import com.muedsa.tvbox.model.dandanplay.BangumiSearch
+import com.muedsa.tvbox.model.DanmakuMedia
 import com.muedsa.tvbox.plugin.PluginInfo
 import com.muedsa.tvbox.room.model.EpisodeProgressModel
 import com.muedsa.tvbox.screens.NavigationItems
@@ -65,7 +64,6 @@ import com.muedsa.tvbox.screens.nav
 import com.muedsa.tvbox.screens.plugin.home.MediaCardRow
 import com.muedsa.tvbox.theme.FavoriteIconColor
 import com.muedsa.tvbox.tool.LenientJson
-import kotlinx.serialization.encodeToString
 import timber.log.Timber
 
 const val INIT_FOCUSED_ITEM_KEY_MEDIA_DETAIL = "MEDIA_DETAIL_TOP"
@@ -76,9 +74,9 @@ fun MediaDetailWidget(
     mediaDetail: MediaDetail,
     favorite: Boolean,
     progressMap: Map<String, EpisodeProgressModel>,
-    danBangumiList: List<BangumiSearch>?,
-    danBangumiInfo: BangumiInfo?,
-    mediaDetailScreenViewModel: MediaDetailScreenViewModel
+    danmakuMediaList: List<DanmakuMedia>?,
+    danmakuMediaInfo: DanmakuMedia?,
+    mediaDetailScreenViewModel: MediaDetailScreenViewModel,
 ) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
@@ -223,27 +221,34 @@ fun MediaDetailWidget(
                     }
                 }
 
-                // 切换弹弹Play匹配剧集
-                if (danBangumiList != null) {
+                // 切换弹幕匹配剧集
+                if (danmakuMediaList != null) {
                     item {
+                        DanmakuProviderSelectorWidget(
+                            mediaDetailScreenViewModel = mediaDetailScreenViewModel,
+                        )
                         Text(
-                            text = "弹弹Play匹配剧集: ",
+                            text = "弹幕匹配: ",
                             color = MaterialTheme.colorScheme.onBackground,
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
                         )
                         Text(
                             modifier = Modifier
                                 .widthIn(max = 256.dp)
                                 .basicMarquee(),
                             text = if (enabledDanmakuState.value)
-                                danBangumiInfo?.let { "${it.animeTitle}[Rating ${it.rating}]" } ?: "--"
+                                danmakuMediaInfo?.let {
+                                    if (it.rating != null) {
+                                        "${it.mediaName}[Rating ${it.rating}]"
+                                    } else it.mediaName
+                                } ?: "--"
                             else "关闭",
                             color = MaterialTheme.colorScheme.onBackground,
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
                         )
-                        AnimeDanmakuSelectBtnWidget(
+                        DanmakuMediaSelectorWidget(
                             enabledDanmakuState = enabledDanmakuState,
-                            mediaDetailScreenViewModel = mediaDetailScreenViewModel
+                            mediaDetailScreenViewModel = mediaDetailScreenViewModel,
                         )
                     }
                 }
@@ -255,7 +260,7 @@ fun MediaDetailWidget(
                             onClick = {
                                 mediaDetailScreenViewModel.clearProgress(
                                     pluginInfo = pluginInfo,
-                                    mediaDetail = mediaDetail
+                                    mediaDetail = mediaDetail,
                                 )
                             }
                         ) {
@@ -283,16 +288,16 @@ fun MediaDetailWidget(
         val episodeList = episodePlaySource?.episodeList ?: emptyList()
         if (episodePlaySource != null && episodeList.isNotEmpty()) {
             item(contentType = "MEDIA_EPISODES") {
-                val episodeRelationMap = remember { mutableStateMapOf<String, Long>() }
+                val episodeRelationMap = remember { mutableStateMapOf<String, String>() }
                 var episodeClickLoading by remember { mutableStateOf(false) }
 
                 EpisodeListWidget(
                     episodeList = episodeList,
-                    danEpisodeList = danBangumiInfo?.episodes ?: emptyList(),
+                    danmakuEpisodeList = danmakuMediaInfo?.episodes ?: emptyList(),
                     episodeProgressMap = progressMap,
                     episodeRelationMap = episodeRelationMap,
                     enabled = !episodeClickLoading,
-                    onEpisodeClick = { episode, danEpisode ->
+                    onEpisodeClick = { episode, danmakuEpisode ->
                         episodeClickLoading = true
                         Timber.d("click episode ${mediaDetail.id}-${episode.name}")
 
@@ -309,8 +314,8 @@ fun MediaDetailWidget(
                                         pluginPackage = pluginInfo.packageName,
                                         mediaId = mediaDetail.id,
                                         episodeId = episode.id,
-                                        danEpisodeId = if (enabledDanmakuState.value && danEpisode != null)
-                                            danEpisode.episodeId else -1,
+                                        danmakuEpisodeJson = if (enabledDanmakuState.value && danmakuEpisode != null)
+                                            LenientJson.encodeToString(danmakuEpisode) else null,
                                         disableEpisodeProgression = mediaDetail.disableEpisodeProgression,
                                         enableCustomDanmakuList = mediaDetail.enableCustomDanmakuList,
                                         enableCustomDanmakuFlow = mediaDetail.enableCustomDanmakuFlow,

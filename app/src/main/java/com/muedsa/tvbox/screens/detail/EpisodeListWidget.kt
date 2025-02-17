@@ -33,7 +33,7 @@ import androidx.tv.material3.WideButton
 import com.muedsa.compose.tv.focusOnMount
 import com.muedsa.compose.tv.theme.CommonRowCardPadding
 import com.muedsa.tvbox.api.data.MediaEpisode
-import com.muedsa.tvbox.model.dandanplay.BangumiEpisode
+import com.muedsa.tvbox.model.DanmakuEpisode
 import com.muedsa.tvbox.room.model.EpisodeProgressModel
 import kotlin.math.max
 
@@ -45,26 +45,29 @@ val WideButtonCornerRadius = 12.dp
 fun EpisodeListWidget(
     modifier: Modifier = Modifier,
     episodeList: List<MediaEpisode>,
-    danEpisodeList: List<BangumiEpisode>,
+    danmakuEpisodeList: List<DanmakuEpisode>,
     episodeProgressMap: Map<String, EpisodeProgressModel>,
-    episodeRelationMap: Map<String, Long>,
+    episodeRelationMap: Map<String, String>,
     enabled: Boolean = true,
-    onEpisodeClick: (MediaEpisode, BangumiEpisode?) -> Unit = { _, _ -> },
-    onChangeEpisodeRelation: (List<Pair<String, BangumiEpisode>>) -> Unit = {}
+    onEpisodeClick: (MediaEpisode, DanmakuEpisode?) -> Unit = { _, _ -> },
+    onChangeEpisodeRelation: (List<Pair<String, DanmakuEpisode>>) -> Unit = {}
 ) {
 
     val episodeListChunks = episodeList.chunked(EpisodePageSize)
-    val danEpisodeListChunks = danEpisodeList.chunked(EpisodePageSize)
+    val danmakuEpisodeListChunks = danmakuEpisodeList.chunked(EpisodePageSize)
 
-    var changeDanEpisodeMode by remember { mutableStateOf(false) }
+    var changeDanmakuEpisodeMode by remember { mutableStateOf(false) }
     var selectedEpisodeIndex by remember { mutableIntStateOf(0) }
     var selectedEpisode by remember { mutableStateOf(episodeList[0]) }
 
-    BackHandler(enabled = changeDanEpisodeMode) {
-        changeDanEpisodeMode = false
+    BackHandler(enabled = changeDanmakuEpisodeMode) {
+        changeDanmakuEpisodeMode = false
     }
 
-    Crossfade(targetState = changeDanEpisodeMode, label = "changeDanEpisodeCrossFade") {
+    Crossfade(
+        targetState = changeDanmakuEpisodeMode,
+        label = "changeDanmakuEpisodeCrossFade",
+    ) {
         Column(modifier = modifier) {
             if (!it) {
                 episodeListChunks.forEachIndexed { chunkIndex, currentPartEpisodeList ->
@@ -84,7 +87,7 @@ fun EpisodeListWidget(
                             style = MaterialTheme.typography.titleMedium,
                             maxLines = 1
                         )
-                        if (chunkIndex == 0 && danEpisodeList.isNotEmpty()) {
+                        if (chunkIndex == 0 && danmakuEpisodeList.isNotEmpty()) {
                             Spacer(modifier = Modifier.width(CommonRowCardPadding))
                             Text(
                                 text = "长按更改匹配的弹幕剧集",
@@ -144,35 +147,36 @@ fun EpisodeListWidget(
                                     Text(text = episode.name, overflow = TextOverflow.Ellipsis)
                                 },
                                 subtitle = {
-                                    val danEpisode = getDanEpisode(
+                                    val danmakuEpisode = getDanmakuEpisode(
                                         episode = episode,
                                         episodeIndex = episodePartIndex + chunkIndex * EpisodePageSize,
-                                        danEpisodeList = danEpisodeList,
-                                        episodeRelationMap = episodeRelationMap
+                                        danEpisodeList = danmakuEpisodeList,
+                                        episodeRelationMap = episodeRelationMap,
                                     )
-                                    if (danEpisode != null) {
+                                    if (danmakuEpisode != null) {
                                         Text(
-                                            text = danEpisode.episodeTitle,
-                                            overflow = TextOverflow.Ellipsis
+                                            text = danmakuEpisode.episodeName,
+                                            overflow = TextOverflow.Ellipsis,
                                         )
                                     }
                                 },
                                 onClick = {
                                     onEpisodeClick(
-                                        episode, getDanEpisode(
+                                        episode,
+                                        getDanmakuEpisode(
                                             episode = episode,
                                             episodeIndex = episodePartIndex + chunkIndex * EpisodePageSize,
-                                            danEpisodeList = danEpisodeList,
-                                            episodeRelationMap = episodeRelationMap
+                                            danEpisodeList = danmakuEpisodeList,
+                                            episodeRelationMap = episodeRelationMap,
                                         )
                                     )
                                 },
                                 onLongClick = {
-                                    if (danEpisodeList.isNotEmpty()) {
+                                    if (danmakuEpisodeList.isNotEmpty()) {
                                         val index = episodePartIndex + chunkIndex * EpisodePageSize
                                         selectedEpisodeIndex = index
                                         selectedEpisode = episodeList[index]
-                                        changeDanEpisodeMode = true
+                                        changeDanmakuEpisodeMode = true
                                     }
                                 }
                             )
@@ -212,9 +216,9 @@ fun EpisodeListWidget(
                     )
                 }
 
-                danEpisodeListChunks.forEachIndexed { danChunkIndex, danEpisodeList ->
+                danmakuEpisodeListChunks.forEachIndexed { danChunkIndex, danmakuEpisodeList ->
                     val episodePartStartNo = 1 + danChunkIndex * EpisodePageSize
-                    val episodePartEndNo = episodePartStartNo - 1 + danEpisodeList.size
+                    val episodePartEndNo = episodePartStartNo - 1 + danmakuEpisodeList.size
                     Row(
                         modifier = Modifier.padding(
                             start = CommonRowCardPadding,
@@ -241,14 +245,14 @@ fun EpisodeListWidget(
 
                     LazyRow {
                         itemsIndexed(
-                            items = danEpisodeList,
-                        ) { danEpisodePartIndex, danEpisode ->
+                            items = danmakuEpisodeList,
+                        ) { danEpisodePartIndex, danmakuEpisode ->
                             val interactionSource = remember { MutableInteractionSource() }
                             WideButton(
                                 modifier = Modifier.padding(end = 12.dp),
                                 title = {
                                     Text(
-                                        text = danEpisode.episodeTitle,
+                                        text = danmakuEpisode.episodeName,
                                         overflow = TextOverflow.Ellipsis
                                     )
                                 },
@@ -263,22 +267,22 @@ fun EpisodeListWidget(
                                     }
                                 },
                                 onClick = {
-                                    onChangeEpisodeRelation(listOf(selectedEpisode.id to danEpisode))
-                                    changeDanEpisodeMode = false
+                                    onChangeEpisodeRelation(listOf(selectedEpisode.id to danmakuEpisode))
+                                    changeDanmakuEpisodeMode = false
                                 },
                                 onLongClick = {
                                     onChangeEpisodeRelation(buildList {
                                         var danEpisodePos =
                                             danEpisodePartIndex + danChunkIndex * EpisodePageSize
                                         for (episodePos in selectedEpisodeIndex..<episodeList.size) {
-                                            if (danEpisodePos >= danEpisodeList.size) {
+                                            if (danEpisodePos >= danmakuEpisodeList.size) {
                                                 break
                                             }
-                                            add(episodeList[episodePos].id to danEpisodeList[danEpisodePos])
+                                            add(episodeList[episodePos].id to danmakuEpisodeList[danEpisodePos])
                                             danEpisodePos++
                                         }
                                     })
-                                    changeDanEpisodeMode = false
+                                    changeDanmakuEpisodeMode = false
                                 },
                                 interactionSource = interactionSource
                             )
@@ -294,13 +298,13 @@ fun EpisodeListWidget(
     }
 }
 
-fun getDanEpisode(
+fun getDanmakuEpisode(
     episode: MediaEpisode,
     episodeIndex: Int,
-    danEpisodeList: List<BangumiEpisode>,
-    episodeRelationMap: Map<String, Long>
-): BangumiEpisode? {
-    var danEpisode: BangumiEpisode? = null
+    danEpisodeList: List<DanmakuEpisode>,
+    episodeRelationMap: Map<String, String>
+): DanmakuEpisode? {
+    var danEpisode: DanmakuEpisode? = null
 
     if (danEpisodeList.isNotEmpty()) {
         val episodeId = episodeRelationMap[episode.id]

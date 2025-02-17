@@ -1,4 +1,4 @@
-package com.muedsa.tvbox.service
+package com.muedsa.tvbox.danmaku.dandanplay
 
 import com.muedsa.tvbox.model.dandanplay.BangumiDetailsResp
 import com.muedsa.tvbox.model.dandanplay.BangumiSearch

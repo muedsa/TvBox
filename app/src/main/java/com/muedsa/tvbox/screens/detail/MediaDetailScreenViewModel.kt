@@ -2,15 +2,14 @@ package com.muedsa.tvbox.screens.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.muedsa.tvbox.BuildConfig
 import com.muedsa.tvbox.api.data.MediaDetail
 import com.muedsa.tvbox.api.data.MediaEpisode
 import com.muedsa.tvbox.api.data.MediaHttpSource
 import com.muedsa.tvbox.api.data.MediaPlaySource
 import com.muedsa.tvbox.api.data.SavedMediaCard
 import com.muedsa.tvbox.api.plugin.PluginOptions
-import com.muedsa.tvbox.model.dandanplay.BangumiInfo
-import com.muedsa.tvbox.model.dandanplay.BangumiSearch
+import com.muedsa.tvbox.danmaku.DanmakuService
+import com.muedsa.tvbox.model.DanmakuMedia
 import com.muedsa.tvbox.plugin.PluginInfo
 import com.muedsa.tvbox.plugin.PluginManager
 import com.muedsa.tvbox.room.dao.EpisodeProgressDao
@@ -18,7 +17,6 @@ import com.muedsa.tvbox.room.dao.FavoriteMediaDao
 import com.muedsa.tvbox.room.model.EpisodeProgressModel
 import com.muedsa.tvbox.room.model.FavoriteMediaModel
 import com.muedsa.tvbox.screens.NavigationItems
-import com.muedsa.tvbox.service.DanDanPlayApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,7 +34,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MediaDetailScreenViewModel @Inject constructor(
-    private val danDanPlayApiService: DanDanPlayApiService,
+    private val danmakuService: DanmakuService,
     private val favoriteMediaDao: FavoriteMediaDao,
     private val episodeProgressDao: EpisodeProgressDao
 ) : ViewModel() {
@@ -89,29 +87,33 @@ class MediaDetailScreenViewModel @Inject constructor(
         }
     }
 
-    private val _banBangumiSearchQueryFlow = MutableStateFlow<String?>(null)
+    private val _selectedDanmakuProviderFlow = MutableStateFlow<String?>(
+        danmakuService.getProviders().firstOrNull()
+    )
+    val selectedDanmakuProviderFlow: StateFlow<String?> = _selectedDanmakuProviderFlow
 
-    private val _danBangumiListFlow =
-        combine(_mediaDetailFlow, _banBangumiSearchQueryFlow) { wrapper, searchQuery ->
+    private val _danmakuMediaSearchQueryFlow = MutableStateFlow<String?>(null)
+
+    private val _danmakuMediaListFlow =
+        combine(_mediaDetailFlow, _selectedDanmakuProviderFlow, _danmakuMediaSearchQueryFlow) { wrapper, danmakuProvider, searchQuery ->
             if (wrapper.data != null
-                && !BuildConfig.DANDANPLAY_APP_ID.isEmpty()
-                && !BuildConfig.DANDANPLAY_APP_SECRET.isEmpty()
                 && wrapper.data.second.enableDanDanPlaySearch
                 && !wrapper.data.third.enableCustomDanmakuList
                 && !wrapper.data.third.enableCustomDanmakuFlow
             ) {
-                try {
-                    val resp =
-                        danDanPlayApiService.searchAnime(searchQuery ?: wrapper.data.third.title)
-                    val list = if (resp.errorCode == 0) {
-                        resp.animes ?: emptyList()
-                    } else {
-                        Timber.d("danDanPlayApiService.searchAnime(${wrapper.data.third.title}) ${resp.errorMessage}")
-                        emptyList()
+                val dp = danmakuProvider ?: danmakuService.getProviders().firstOrNull()
+                if (dp != null) {
+                    try {
+                        val list = danmakuService.searchMedia(
+                            provider = dp,
+                            keyword = searchQuery ?: wrapper.data.third.title
+                        )
+                        Pair(wrapper.data, list)
+                    } catch (throwable: Throwable) {
+                        Timber.e(throwable)
+                        Pair(wrapper.data, emptyList())
                     }
-                    Pair(wrapper.data, list)
-                } catch (throwable: Throwable) {
-                    Timber.e(throwable)
+                } else {
                     Pair(wrapper.data, emptyList())
                 }
             } else Pair(wrapper.data, null)
@@ -120,31 +122,27 @@ class MediaDetailScreenViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000)
         )
 
-    private val _selectedDanBangumiSearchFlow = MutableStateFlow<BangumiSearch?>(null)
+    private val _selectedDanmakuMediaSearchFlow = MutableStateFlow<DanmakuMedia?>(null)
 
-    private val _danBangumiDetailFlow = combine(
-        _danBangumiListFlow,
-        _selectedDanBangumiSearchFlow
-    ) { danBangumiListPair, selected ->
-        val list = danBangumiListPair.second
-        val anime = if (!list.isNullOrEmpty()) {
-            selected?.let { list.find { it.animeId == selected.animeId } } ?: list.firstOrNull()
+    private val _danmakuMediaDetailFlow = combine(
+        _danmakuMediaListFlow,
+        _selectedDanmakuMediaSearchFlow
+    ) { danmakuMediaListPair, selected ->
+        val list = danmakuMediaListPair.second
+        val danmakuMedia = if (!list.isNullOrEmpty()) {
+            selected?.let {
+                list.find { it.provider == selected.provider && it.mediaId == selected.mediaId }
+            } ?: list.firstOrNull()
         } else null
-        val danBangumiDetail = if (anime != null) {
+        val detail = danmakuMedia?.let {
             try {
-                val resp = danDanPlayApiService.getAnime(anime.animeId)
-                if (resp.errorCode == 0) {
-                    resp.bangumi
-                } else {
-                    Timber.d("danDanPlayApiService.getAnime(${anime.animeId}) ${resp.errorMessage}")
-                    null
-                }
+                danmakuService.getMediaEpisodes(media = danmakuMedia)
             } catch (throwable: Throwable) {
                 Timber.e(throwable)
                 null
             }
-        } else null
-        Pair(danBangumiListPair.first, danBangumiDetail)
+        }
+        Pair(danmakuMediaListPair.first, detail)
     }
 
     fun refreshMediaDetail(navItem: NavigationItems.Detail) {
@@ -186,15 +184,23 @@ class MediaDetailScreenViewModel @Inject constructor(
         }
     }
 
-    fun changeDanBangumi(selected: BangumiSearch) {
+    fun getDanmakuProviders() = danmakuService.getProviders()
+
+    fun changeDanmakuProvider(selected: String) {
         viewModelScope.launch {
-            _selectedDanBangumiSearchFlow.emit(selected)
+            _selectedDanmakuProviderFlow.emit(selected)
         }
     }
 
-    fun searchDanBangumi(query: String) {
+    fun changeDanmakuMedia(selected: DanmakuMedia) {
         viewModelScope.launch {
-            _banBangumiSearchQueryFlow.emit(query)
+            _selectedDanmakuMediaSearchFlow.emit(selected)
+        }
+    }
+
+    fun searchDanmakuMedia(query: String) {
+        viewModelScope.launch {
+            _danmakuMediaSearchQueryFlow.emit(query)
         }
     }
 
@@ -240,9 +246,9 @@ class MediaDetailScreenViewModel @Inject constructor(
                 _mediaDetailFlow,
                 _favoriteFlow,
                 _mediaProgressFlow,
-                _danBangumiListFlow,
-                _danBangumiDetailFlow
-            ) { wrapper, favoritePair, progressMapPair, danBangumiListPair, danBangumiInfoPair ->
+                _danmakuMediaListFlow,
+                _danmakuMediaDetailFlow
+            ) { wrapper, favoritePair, progressMapPair, danmakuMediaListPair, danmakuMediaDetailPair ->
                 if (progressMapPair.first == null) {
                     Timber.e(wrapper.error, wrapper.error?.message ?: "error")
                     MediaDetailScreenUiState.Error(
@@ -250,16 +256,17 @@ class MediaDetailScreenViewModel @Inject constructor(
                         exception = wrapper.error
                     )
                 } else if (wrapper.data != null && favoritePair.first == wrapper.data
-                    && progressMapPair.first == wrapper.data && danBangumiListPair.first == wrapper.data
-                    && danBangumiInfoPair.first == wrapper.data
+                    && progressMapPair.first == wrapper.data && danmakuMediaListPair.first == wrapper.data
+                    && danmakuMediaDetailPair.first == wrapper.data
                 ) {
                     MediaDetailScreenUiState.Ready(
                         pluginInfo = wrapper.data.first,
                         mediaDetail = wrapper.data.third,
                         favorite = favoritePair.second != null,
                         progressMap = progressMapPair.second,
-                        danBangumiList = danBangumiListPair.second,
-                        danBangumiInfo = danBangumiInfoPair.second
+                        danmakuProviders = danmakuService.getProviders(),
+                        danmakuMediaList = danmakuMediaListPair.second,
+                        danmakuMediaInfo = danmakuMediaDetailPair.second
                     )
                 } else null
             }.filterNotNull().collect {
@@ -277,8 +284,9 @@ sealed interface MediaDetailScreenUiState {
         val mediaDetail: MediaDetail,
         val favorite: Boolean,
         val progressMap: Map<String, EpisodeProgressModel>,
-        val danBangumiList: List<BangumiSearch>?, // 为null表示插件不支持dandanplay
-        val danBangumiInfo: BangumiInfo?,
+        val danmakuProviders: Set<String>,
+        val danmakuMediaList: List<DanmakuMedia>?, // 为null表示插件禁用了弹幕搜索
+        val danmakuMediaInfo: DanmakuMedia?,
     ) : MediaDetailScreenUiState
 }
 
