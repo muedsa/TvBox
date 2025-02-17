@@ -11,11 +11,13 @@ import com.muedsa.tvbox.store.DataStoreRepo
 import com.muedsa.tvbox.tool.createJsonRetrofit
 import com.muedsa.tvbox.tool.createOkHttpClient
 import com.muedsa.util.AppUtil
+import com.muedsa.util.OkHttpCacheInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Cache
 import javax.inject.Singleton
 
 @Module
@@ -46,13 +48,24 @@ internal object AppModule {
 
     @Provides
     @Singleton
-    fun provideDanDanPlayDanmakuProvider(@ApplicationContext context: Context) =
-        DanDanPlayDanmakuProvider(
+    fun provideOkhttpCache(@ApplicationContext context: Context) = Cache(
+        directory = context.cacheDir.resolve("http_cache"),
+        maxSize = 50 * 1024 * 1024,
+    )
+
+    @Provides
+    @Singleton
+    fun provideDanDanPlayDanmakuProvider(
+        @ApplicationContext context: Context,
+        okHttpCache: Cache,
+    ) = DanDanPlayDanmakuProvider(
             danDanPlayApiService = createJsonRetrofit(
                 baseUrl = "https://api.dandanplay.net/api/",
                 service = DanDanPlayApiService::class.java,
                 okHttpClient = createOkHttpClient(debug = AppUtil.debuggable(context)) {
+                    cache(okHttpCache)
                     addInterceptor(DanDanPlayAuthInterceptor())
+                    addNetworkInterceptor(OkHttpCacheInterceptor())
                 }
             )
         )
