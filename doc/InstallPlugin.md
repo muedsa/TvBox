@@ -9,7 +9,7 @@ TvBox是为电视、电视盒子等制作的AndroidTV APP, 最便捷的方式是
 
 1. 复制插件文件(.tbp后缀)到**外部储存的公共下载目录**  [示例1](image/Screenshot_20250218_093819.png)  [示例2](image/Screenshot_20250218_094132.png)
 2. 在TvBox中点击**添加插件**[按钮](image/Screenshot_20250218_094406.png)，在[弹出窗口](image/Screenshot_20250218_094518.png)中选择需要安装的插件。
-3. 新安装的插件会展示在[插件列表](image/Screenshot_20250218_094518.png)中, 已经存在的插件会被替换。
+3. 新安装的插件会展示在[插件列表](image/Screenshot_20250218_095144.png)中, 已经存在的插件会被替换。
 
 ## 使用Github下载器插件
 
