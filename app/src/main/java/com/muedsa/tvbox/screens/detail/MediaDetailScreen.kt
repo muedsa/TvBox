@@ -32,8 +32,8 @@ fun MediaDetailScreen(
             mediaDetail = s.mediaDetail,
             favorite = s.favorite,
             progressMap = s.progressMap,
-            danBangumiList = s.danBangumiList,
-            danBangumiInfo = s.danBangumiInfo,
+            danmakuMediaList = s.danmakuMediaList,
+            danmakuMediaInfo = s.danmakuMediaInfo,
             mediaDetailScreenViewModel = mediaDetailScreenViewModel
         )
     }

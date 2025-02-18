@@ -40,15 +40,15 @@ import com.muedsa.compose.tv.widget.NoBackground
 import com.muedsa.compose.tv.widget.TwoSideWideButton
 
 @Composable
-fun AnimeDanmakuSelectBtnWidget(
+fun DanmakuMediaSelectorWidget(
     enabledDanmakuState: MutableState<Boolean> = remember { mutableStateOf(false) },
-    mediaDetailScreenViewModel: MediaDetailScreenViewModel
+    mediaDetailScreenViewModel: MediaDetailScreenViewModel,
 ) {
     val drawerController = useLocalRightSideDrawerController()
 
     OutlinedIconButton(onClick = {
         drawerController.pop {
-            DanmakuSelectorSideWidget(
+            DanmakuMediaSelectorSideWidget(
                 enabledDanmakuState = enabledDanmakuState,
                 mediaDetailScreenViewModel = mediaDetailScreenViewModel
             )
@@ -56,13 +56,13 @@ fun AnimeDanmakuSelectBtnWidget(
     }) {
         Icon(
             imageVector = Icons.Outlined.Edit,
-            contentDescription = "修改弹弹Play匹配剧集"
+            contentDescription = "修改弹幕匹配剧集"
         )
     }
 }
 
 @Composable
-fun DanmakuSelectorSideWidget(
+fun DanmakuMediaSelectorSideWidget(
     enabledDanmakuState: MutableState<Boolean> = remember { mutableStateOf(false) },
     mediaDetailScreenViewModel: MediaDetailScreenViewModel
 ) {
@@ -75,10 +75,10 @@ fun DanmakuSelectorSideWidget(
         return
     }
     val mediaDetail = (ui as MediaDetailScreenUiState.Ready).mediaDetail
-    val danBangumiList = (ui as MediaDetailScreenUiState.Ready).danBangumiList ?: emptyList()
-    val danBangumiInfo = (ui as MediaDetailScreenUiState.Ready).danBangumiInfo
+    val danmakuMediaList = (ui as MediaDetailScreenUiState.Ready).danmakuMediaList ?: emptyList()
+    val danmakuMediaInfo = (ui as MediaDetailScreenUiState.Ready).danmakuMediaInfo
 
-    var searchTitle by remember { mutableStateOf(danBangumiInfo?.animeTitle ?: mediaDetail.title) }
+    var searchTitle by remember { mutableStateOf(danmakuMediaInfo?.mediaName ?: mediaDetail.title) }
 
     val splitTitles = mediaDetail.title.split("\\s+".toRegex())
 
@@ -115,19 +115,19 @@ fun DanmakuSelectorSideWidget(
                         )
                     }
                 }
-                items(items = danBangumiList, key = { it.animeId }) {
+                items(items = danmakuMediaList, key = { it.mediaName }) {
                     val interactionSource = remember { MutableInteractionSource() }
                     TwoSideWideButton(
                         title = {
                             Text(
                                 modifier = Modifier.basicMarquee(),
-                                text = "${it.animeTitle} - ${it.typeDescription} - ${it.startOnlyDate}"
+                                text = "${it.mediaName} - ${it.publishDate}"
                             )
                         },
                         onClick = {
                             drawerController.close()
                             enabledDanmakuState.value = true
-                            mediaDetailScreenViewModel.changeDanBangumi(it)
+                            mediaDetailScreenViewModel.changeDanmakuMedia(it)
                         },
                         interactionSource = interactionSource,
                         background = {
@@ -138,7 +138,7 @@ fun DanmakuSelectorSideWidget(
                     ) {
                         RadioButton(
                             selected = enabledDanmakuState.value
-                                    && danBangumiInfo?.animeId == it.animeId,
+                                    && danmakuMediaInfo?.mediaId == it.mediaId,
                             onClick = { },
                             interactionSource = interactionSource
                         )
@@ -199,7 +199,7 @@ fun DanmakuSelectorSideWidget(
             ) {
                 Button(
                     onClick = {
-                        mediaDetailScreenViewModel.searchDanBangumi(searchTitle)
+                        mediaDetailScreenViewModel.searchDanmakuMedia(searchTitle)
                         isSelectorTab = true
                     }
                 ) {
@@ -221,7 +221,7 @@ fun DanmakuSelectorSideWidget(
                         modifier = Modifier.padding(top = 10.dp),
                         onClick = {
                             searchTitle = it
-                            mediaDetailScreenViewModel.searchDanBangumi(searchTitle)
+                            mediaDetailScreenViewModel.searchDanmakuMedia(searchTitle)
                             isSelectorTab = true
                         },
                         title = {
