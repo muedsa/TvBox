@@ -41,6 +41,7 @@ fun popPluginInstall(
                                     file = it,
                                     onSuccess = {
                                         drawerController.close()
+                                        toastController.success("已安装插件 ${it.name}")
                                         pluginManageScreenViewModel.refreshPluginInfoList()
                                     },
                                     onFailure = {
