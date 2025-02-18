@@ -9,6 +9,7 @@
 ## Plugin
 插件为.tbp后缀文件，你可以复制文件到Android公共下载目录，在应用中手动安装到内部。  
 推荐topic: [tvbox-plugin](https://github.com/topics/tvbox-plugin)
+[插件安装教程](doc/InstallPlugin.md)
 
 ## Requirement
 Minimum Android Version: [API 24(Android 7.0 Nougat)](https://developer.android.com/about/versions/nougat)  
