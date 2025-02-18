@@ -2,7 +2,7 @@
 
 TvBox的会从安卓**外部储存的公共下载目录**`Download`扫描插件文件(.tbp后缀), 然后安装到内部，安装后会展示在插件列表中。
 
-> 访问`Download`需要[储存空间]权限, 请允许插件的[权限申请](image/Screenshot_20250218_091706.png)或[手动授予](image/Screenshot_20250218_091928.png)。
+> 访问`Download`需要[储存空间](image/Screenshot_20250218_091706.png)权限, 请允许插件的[权限申请](image/Screenshot_20250218_091928.png)或[手动授予](image/Screenshot_20250218_091706.png)。
 
 
 ## 使用U盘安装插件
