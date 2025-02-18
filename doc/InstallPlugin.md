@@ -4,10 +4,8 @@ TvBox的会从安卓**外部储存的公共下载目录**`Download`扫描插件�
 
 > 访问`Download`需要[储存空间](image/Screenshot_20250218_091706.png)权限, 请允许插件的[权限申请](image/Screenshot_20250218_091928.png)或[手动授予](image/Screenshot_20250218_091706.png)。
 
-
-## 使用U盘安装插件
-
-TvBox是为电视、电视盒子等制作的AndroidTV APP, 最便捷的方式是下载插件到U盘, 然后使用其他文件管理APP(如[CX文件管理器](https://cxfileexplorer.com/), [FX文件管理器](http://www.nextapp.com/fx/)或自带的文件管理等)。
+TvBox是为电视、电视盒子等制作的AndroidTV APP, 最便捷的方式是下载插件到U盘, 然后使用其他文件管理APP(如[CX文件管理器](https://cxfileexplorer.com/), [FX文件管理器](http://www.nextapp.com/fx/)或自带的文件管理等)。  
+当然你也可以使用其他方式如安卓浏览器直接下载插件到下载目录等。
 
 1. 复制插件文件(.tbp后缀)到**外部储存的公共下载目录**  [示例1](image/Screenshot_20250218_093819.png)  [示例2](image/Screenshot_20250218_094132.png)
 2. 在TvBox中点击**添加插件**[按钮](image/Screenshot_20250218_094406.png)，在[弹出窗口](image/Screenshot_20250218_094518.png)中选择需要安装的插件。
