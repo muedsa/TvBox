@@ -42,6 +42,7 @@ import com.muedsa.tvbox.screens.nav
 import com.muedsa.tvbox.screens.plugin.useLocalHomeScreenBackgroundState
 import com.muedsa.tvbox.toCardType
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import kotlin.math.min
 
 @Composable
@@ -182,6 +183,7 @@ fun CatalogPagingWidget(
 
 fun toastLoadStateError(loadState: LoadState, toastController: ToastMessageBoxController) {
     if (loadState is LoadState.Error) {
+        Timber.e(loadState.error, "catalog loadState error")
         toastController.error(loadState.error)
     }
 }
