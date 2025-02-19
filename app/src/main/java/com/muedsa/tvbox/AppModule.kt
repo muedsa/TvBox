@@ -8,6 +8,8 @@ import com.muedsa.tvbox.danmaku.dandanplay.DanDanPlayAuthInterceptor
 import com.muedsa.tvbox.danmaku.dandanplay.DanDanPlayDanmakuProvider
 import com.muedsa.tvbox.danmaku.iqiyi.IqiyiDanmakuProvider
 import com.muedsa.tvbox.danmaku.iqiyi.IqiyiSearchApiService
+import com.muedsa.tvbox.danmaku.youku.YoukuApiService
+import com.muedsa.tvbox.danmaku.youku.YoukuDanmakuProvider
 import com.muedsa.tvbox.room.AppDatabase
 import com.muedsa.tvbox.store.DataStoreRepo
 import com.muedsa.tvbox.store.PluginPerfStore
@@ -61,13 +63,17 @@ internal object AppModule {
 
     @Provides
     @Singleton
-    fun provideOkhttpCookieJar(dataStoreRepo: DataStoreRepo) = PluginCookieJar(
-        saver = SharedCookieSaver(
-            store = PluginPerfStore(
-                pluginPackage = BuildConfig.APPLICATION_ID,
-                pluginDataStore = dataStoreRepo.dataStore,
-            ),
+    fun provideSharedCookieSaver(dataStoreRepo: DataStoreRepo) = SharedCookieSaver(
+        store = PluginPerfStore(
+            pluginPackage = BuildConfig.APPLICATION_ID,
+            pluginDataStore = dataStoreRepo.dataStore,
         ),
+    )
+
+    @Provides
+    @Singleton
+    fun provideOkhttpCookieJar(cookieSaver: SharedCookieSaver) = PluginCookieJar(
+        saver = cookieSaver,
     )
 
     @Provides
@@ -112,9 +118,25 @@ internal object AppModule {
 
     @Provides
     @Singleton
+    fun provideYoukuDanmakuProvider(
+        cookieSaver: SharedCookieSaver,
+        okHttpClient: OkHttpClient,
+    ) = YoukuDanmakuProvider(
+        cookieSaver = cookieSaver,
+        okHttpClient = okHttpClient,
+        youkuApiService = createJsonRetrofit(
+            baseUrl = "https://openapi.youku.com/",
+            service = YoukuApiService::class.java,
+            okHttpClient = okHttpClient,
+        ),
+    )
+
+    @Provides
+    @Singleton
     fun provideDanmakuService(
         danDanPlayDanmakuProvider: DanDanPlayDanmakuProvider,
         iqiyiDanmakuProvider: IqiyiDanmakuProvider,
+        youkuDanmakuProvider: YoukuDanmakuProvider
     ) = DanmakuService().also {
         if (BuildConfig.DANDANPLAY_APP_ID.isNotEmpty()
             && BuildConfig.DANDANPLAY_APP_SECRET.isNotEmpty()
@@ -122,5 +144,6 @@ internal object AppModule {
             it.register(danDanPlayDanmakuProvider)
         }
         it.register(iqiyiDanmakuProvider)
+        it.register(youkuDanmakuProvider)
     }
 }
