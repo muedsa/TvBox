@@ -97,7 +97,6 @@ class MediaDetailScreenViewModel @Inject constructor(
     private val _danmakuMediaListFlow =
         combine(_mediaDetailFlow, _selectedDanmakuProviderFlow, _danmakuMediaSearchQueryFlow) { wrapper, danmakuProvider, searchQuery ->
             if (wrapper.data != null
-                && wrapper.data.second.enableDanDanPlaySearch
                 && !wrapper.data.third.enableCustomDanmakuList
                 && !wrapper.data.third.enableCustomDanmakuFlow
             ) {

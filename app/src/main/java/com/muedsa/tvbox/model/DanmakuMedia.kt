@@ -7,4 +7,5 @@ class DanmakuMedia(
     val publishDate: String? = null,
     val rating: String? = null,
     val episodes: List<DanmakuEpisode>,
+    val extendData: String? = null,
 )

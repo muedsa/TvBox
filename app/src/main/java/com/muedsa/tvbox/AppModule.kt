@@ -8,6 +8,9 @@ import com.muedsa.tvbox.danmaku.dandanplay.DanDanPlayAuthInterceptor
 import com.muedsa.tvbox.danmaku.dandanplay.DanDanPlayDanmakuProvider
 import com.muedsa.tvbox.room.AppDatabase
 import com.muedsa.tvbox.store.DataStoreRepo
+import com.muedsa.tvbox.store.PluginPerfStore
+import com.muedsa.tvbox.tool.PluginCookieJar
+import com.muedsa.tvbox.tool.SharedCookieSaver
 import com.muedsa.tvbox.tool.createJsonRetrofit
 import com.muedsa.tvbox.tool.createOkHttpClient
 import com.muedsa.util.AppUtil
@@ -52,6 +55,29 @@ internal object AppModule {
         directory = context.cacheDir.resolve("http_cache"),
         maxSize = 50 * 1024 * 1024,
     )
+
+    @Provides
+    @Singleton
+    fun provideOkhttpCookieJar(dataStoreRepo: DataStoreRepo) = PluginCookieJar(
+        saver = SharedCookieSaver(
+            store = PluginPerfStore(
+                pluginPackage = BuildConfig.APPLICATION_ID,
+                pluginDataStore = dataStoreRepo.dataStore,
+            ),
+        ),
+    )
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(
+        @ApplicationContext context: Context,
+        okHttpCache: Cache,
+        cookieJar: PluginCookieJar,
+    ) = createOkHttpClient(debug = AppUtil.debuggable(context)) {
+        cache(okHttpCache)
+        addNetworkInterceptor(OkHttpCacheInterceptor())
+        cookieJar(cookieJar)
+    }
 
     @Provides
     @Singleton

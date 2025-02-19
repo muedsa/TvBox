@@ -9,4 +9,5 @@ class DanmakuEpisode(
     val mediaName: String,
     val episodeId: String,
     val episodeName: String,
+    val extendData: String? = null,
 )
