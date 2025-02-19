@@ -6,6 +6,8 @@ import com.muedsa.tvbox.danmaku.DanmakuService
 import com.muedsa.tvbox.danmaku.dandanplay.DanDanPlayApiService
 import com.muedsa.tvbox.danmaku.dandanplay.DanDanPlayAuthInterceptor
 import com.muedsa.tvbox.danmaku.dandanplay.DanDanPlayDanmakuProvider
+import com.muedsa.tvbox.danmaku.iqiyi.IqiyiDanmakuProvider
+import com.muedsa.tvbox.danmaku.iqiyi.IqiyiSearchApiService
 import com.muedsa.tvbox.room.AppDatabase
 import com.muedsa.tvbox.store.DataStoreRepo
 import com.muedsa.tvbox.store.PluginPerfStore
@@ -21,6 +23,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.Cache
+import okhttp3.OkHttpClient
 import javax.inject.Singleton
 
 @Module
@@ -98,13 +101,26 @@ internal object AppModule {
 
     @Provides
     @Singleton
+    fun provideIqiyiDanmakuProvider(okHttpClient: OkHttpClient) = IqiyiDanmakuProvider(
+        okHttpClient = okHttpClient,
+        iqiyiSearchApiService = createJsonRetrofit(
+            baseUrl = "https://search.video.iqiyi.com/",
+            service = IqiyiSearchApiService::class.java,
+            okHttpClient = okHttpClient,
+        ),
+    )
+
+    @Provides
+    @Singleton
     fun provideDanmakuService(
         danDanPlayDanmakuProvider: DanDanPlayDanmakuProvider,
+        iqiyiDanmakuProvider: IqiyiDanmakuProvider,
     ) = DanmakuService().also {
         if (BuildConfig.DANDANPLAY_APP_ID.isNotEmpty()
             && BuildConfig.DANDANPLAY_APP_SECRET.isNotEmpty()
         ) {
             it.register(danDanPlayDanmakuProvider)
         }
+        it.register(iqiyiDanmakuProvider)
     }
 }
