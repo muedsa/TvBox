@@ -8,6 +8,8 @@ import com.muedsa.tvbox.danmaku.dandanplay.DanDanPlayAuthInterceptor
 import com.muedsa.tvbox.danmaku.dandanplay.DanDanPlayDanmakuProvider
 import com.muedsa.tvbox.danmaku.iqiyi.IqiyiDanmakuProvider
 import com.muedsa.tvbox.danmaku.iqiyi.IqiyiSearchApiService
+import com.muedsa.tvbox.danmaku.tencent.TencentDanmakuProvider
+import com.muedsa.tvbox.danmaku.tencent.TencentVideoApiService
 import com.muedsa.tvbox.danmaku.youku.YoukuApiService
 import com.muedsa.tvbox.danmaku.youku.YoukuDanmakuProvider
 import com.muedsa.tvbox.room.AppDatabase
@@ -133,10 +135,23 @@ internal object AppModule {
 
     @Provides
     @Singleton
+    fun provideTencentDanmakuProvider(
+        okHttpClient: OkHttpClient,
+    ) = TencentDanmakuProvider(
+        tencentVideoApiService = createJsonRetrofit(
+            baseUrl = "https://pbaccess.video.qq.com/",
+            service = TencentVideoApiService::class.java,
+            okHttpClient = okHttpClient,
+        ),
+    )
+
+    @Provides
+    @Singleton
     fun provideDanmakuService(
         danDanPlayDanmakuProvider: DanDanPlayDanmakuProvider,
         iqiyiDanmakuProvider: IqiyiDanmakuProvider,
-        youkuDanmakuProvider: YoukuDanmakuProvider
+        youkuDanmakuProvider: YoukuDanmakuProvider,
+        tencentDanmakuProvider: TencentDanmakuProvider,
     ) = DanmakuService().also {
         if (BuildConfig.DANDANPLAY_APP_ID.isNotEmpty()
             && BuildConfig.DANDANPLAY_APP_SECRET.isNotEmpty()
@@ -145,5 +160,6 @@ internal object AppModule {
         }
         it.register(iqiyiDanmakuProvider)
         it.register(youkuDanmakuProvider)
+        it.register(tencentDanmakuProvider)
     }
 }
