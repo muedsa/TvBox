@@ -351,11 +351,11 @@ class PlayerControlState(
     var videoInfo by mutableStateOf(initVideoInfo)
 
     companion object {
-        const val LOOP_DELAY_KEY = "LOOP_DELAY"
-        const val MAX_DISPLAY_TICKS_KEY = "MAX_DISPLAY_TICKS"
-        const val ONCE_SEEK_MS_KEY = "ONCE_SEEK_MS"
-        const val DEBUG_MODE_KEY = "DEBUG_MODE"
-        const val VIDEO_INFO_KEY = "DEBUG_MODE"
+        private const val LOOP_DELAY_KEY = "LOOP_DELAY"
+        private const val MAX_DISPLAY_TICKS_KEY = "MAX_DISPLAY_TICKS"
+        private const val ONCE_SEEK_MS_KEY = "ONCE_SEEK_MS"
+        private const val DEBUG_MODE_KEY = "DEBUG_MODE"
+        private const val VIDEO_INFO_KEY = "VIDEO_INFO"
 
         val Saver: Saver<PlayerControlState, *> = mapSaver(
             save = {
