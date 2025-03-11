@@ -27,8 +27,8 @@ android {
         applicationId = "com.muedsa.tvbox"
         minSdk = 24
         targetSdk = 35
-        versionCode = 26
-        versionName = "0.3.2"
+        versionCode = 27
+        versionName = "0.3.3"
     }
 
     signingConfigs {
@@ -84,10 +84,6 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-
-    room {
-        schemaDirectory("$projectDir/schemas")
     }
 
     // 修改APK文件名
@@ -152,4 +148,8 @@ dependencies {
 
 ksp {
     arg("room.generateKotlin", "true")
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
