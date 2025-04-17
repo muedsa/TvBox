@@ -27,7 +27,7 @@ class IqiyiDanmakuProvider(
     override val name: String = "爱奇艺"
 
     override suspend fun searchMedia(keyword: String): List<DanmakuMedia> {
-        var resp = iqiyiSearchApiService.searchVideos(key = keyword)
+        val resp = iqiyiSearchApiService.searchVideos(key = keyword)
         return resp.data?.docInfos
             ?.filter { it.score > 0.7f }
             ?.map { it.albumDocInfo }
@@ -40,7 +40,7 @@ class IqiyiDanmakuProvider(
                     mediaId = it.albumId!!.toString(),
                     mediaName = "${it.albumTitle}(${it.channel.split(",")[0]})",
                     publishDate = it.releaseDate,
-                    rating = it.score?.toString(),
+                    rating = it.doubanScore?.toString() ?: it.score?.toString(),
                     episodes = emptyList(),
                     extendData = LenientJson.encodeToString(it)
                 )
