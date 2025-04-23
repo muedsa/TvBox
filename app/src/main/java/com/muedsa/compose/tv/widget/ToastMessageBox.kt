@@ -104,7 +104,6 @@ class ToastMessageBoxController(
             SnackbarDuration.Short -> 3
             SnackbarDuration.Long -> 5
             SnackbarDuration.Indefinite -> -1
-            else -> -1
         }
     }
 
