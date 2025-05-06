@@ -23,21 +23,21 @@ object PluginKeyCache {
     fun <T> getGlobalKey(pluginPackage: String, key: PluginPerfKey<T>): Preferences.Key<T> {
         val name = "${getGlobalKeyPrefix(pluginPackage)}${key.name}"
         return cache.computeIfAbsent(name) {
-            getAndroidKey(key)
+            getAndroidKey(key, name)
         } as Preferences.Key<T>
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T> getAndroidKey(key: PluginPerfKey<T>): Preferences.Key<T> {
+    private fun <T> getAndroidKey(key: PluginPerfKey<T>, globalKeyName: String): Preferences.Key<T> {
         return when(key) {
-            is PluginPerfKey.IntPluginPerfKey -> intPreferencesKey(key.name)
-            is PluginPerfKey.DoublePluginPerfKey -> doublePreferencesKey(key.name)
-            is PluginPerfKey.StringPluginPerfKey -> stringPreferencesKey(key.name)
-            is PluginPerfKey.BooleanPluginPerfKey -> booleanPreferencesKey(key.name)
-            is PluginPerfKey.FloatPluginPerfKey -> floatPreferencesKey(key.name)
-            is PluginPerfKey.LongPluginPerfKey -> longPreferencesKey(key.name)
-            is PluginPerfKey.StringSetPluginPerfKey -> stringSetPreferencesKey(key.name)
-            is PluginPerfKey.ByteArrayPluginPerfKey -> byteArrayPreferencesKey(key.name)
+            is PluginPerfKey.IntPluginPerfKey -> intPreferencesKey(globalKeyName)
+            is PluginPerfKey.DoublePluginPerfKey -> doublePreferencesKey(globalKeyName)
+            is PluginPerfKey.StringPluginPerfKey -> stringPreferencesKey(globalKeyName)
+            is PluginPerfKey.BooleanPluginPerfKey -> booleanPreferencesKey(globalKeyName)
+            is PluginPerfKey.FloatPluginPerfKey -> floatPreferencesKey(globalKeyName)
+            is PluginPerfKey.LongPluginPerfKey -> longPreferencesKey(globalKeyName)
+            is PluginPerfKey.StringSetPluginPerfKey -> stringSetPreferencesKey(globalKeyName)
+            is PluginPerfKey.ByteArrayPluginPerfKey -> byteArrayPreferencesKey(globalKeyName)
         } as Preferences.Key<T>
     }
 }
