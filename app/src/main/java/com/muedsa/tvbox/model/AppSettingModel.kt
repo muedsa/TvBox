@@ -6,6 +6,7 @@ import com.muedsa.tvbox.store.KEY_DANMAKU_ENABLE
 import com.muedsa.tvbox.store.KEY_DANMAKU_MERGE_ENABLE
 import com.muedsa.tvbox.store.KEY_DANMAKU_SCREEN_PART
 import com.muedsa.tvbox.store.KEY_DANMAKU_SIZE_SCALE
+import com.muedsa.tvbox.store.KEY_FSR_ENABLE
 
 data class AppSettingModel(
     val danmakuEnable: Boolean = true,
@@ -13,6 +14,7 @@ data class AppSettingModel(
     val danmakuSizeScale: Int = 140,
     val danmakuAlpha: Int = 100,
     val danmakuScreenPart: Int = 100,
+    val fsrEnable: Boolean = false,
 ) {
 
     companion object {
@@ -24,6 +26,7 @@ data class AppSettingModel(
                 danmakuSizeScale = prefs[KEY_DANMAKU_SIZE_SCALE] ?: 140,
                 danmakuAlpha = prefs[KEY_DANMAKU_ALPHA] ?: 100,
                 danmakuScreenPart = prefs[KEY_DANMAKU_SCREEN_PART] ?: 100,
+                fsrEnable = prefs[KEY_FSR_ENABLE] ?: false,
             )
     }
 }

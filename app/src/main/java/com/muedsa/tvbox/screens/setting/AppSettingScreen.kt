@@ -278,6 +278,31 @@ fun AppSettingScreen(
                 }
 
                 item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 20.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "FSR(实验性)",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        FocusScaleSwitch(
+                            checked = settingModel.fsrEnable,
+                            onCheckedChange = {
+                                appSettingScreenViewModel.changeFsrEnable(it)
+                            }
+                        )
+                    }
+                    HorizontalDivider(
+                        modifier = Modifier.padding(bottom = 20.dp)
+                    )
+                }
+
+                item {
                     WideButton(
                         modifier = Modifier.padding(bottom = 20.dp),
                         onClick = { appSettingScreenViewModel.clearPluginFavoriteMedias() },
