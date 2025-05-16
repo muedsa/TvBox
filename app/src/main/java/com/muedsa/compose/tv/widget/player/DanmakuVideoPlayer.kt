@@ -1,7 +1,6 @@
 package com.muedsa.compose.tv.widget.player
 
 import android.annotation.SuppressLint
-import android.view.Gravity
 import android.widget.FrameLayout
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,11 +16,14 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import androidx.media3.ui.R
 import com.kuaishou.akdanmaku.DanmakuConfig
 import com.kuaishou.akdanmaku.data.DanmakuItemData
 import com.kuaishou.akdanmaku.render.SimpleRenderer
 import com.kuaishou.akdanmaku.ui.DanmakuPlayer
 import com.kuaishou.akdanmaku.ui.DanmakuView
+import com.muedsa.compose.tv.widget.player.gl.FsrVideoProcessor
+import com.muedsa.compose.tv.widget.player.gl.VideoProcessingGLSurfaceView
 import kotlin.random.Random
 
 @SuppressLint("OpaqueUnitKey")
@@ -31,6 +33,7 @@ fun DanmakuVideoPlayer(
     playerControlState: PlayerControlState = rememberPlayerControlState(),
     danmakuConfigSetting: DanmakuConfig.() -> Unit = {},
     danmakuPlayerInit: DanmakuPlayer.() -> Unit = {},
+    enableFSR: Boolean = false,
     videoPlayerBuilderSetting: ExoPlayer.Builder.() -> Unit = {},
     videoPlayerInit: ExoPlayer.() -> Unit,
 ) {
@@ -71,6 +74,16 @@ fun DanmakuVideoPlayer(
             }
     }
 
+    val videoProcessingGLSurfaceView = remember {
+        if (enableFSR) {
+            VideoProcessingGLSurfaceView(
+                context = context,
+                requireSecureContext = false,
+                videoProcessor = FsrVideoProcessor(context = context),
+            )
+        } else null
+    }
+
     AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = {
@@ -79,15 +92,17 @@ fun DanmakuVideoPlayer(
                 useController = false
                 resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
                 player = exoPlayer
-                layoutParams = FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                    Gravity.CENTER
-                )
+            }.also {
+                if (videoProcessingGLSurfaceView != null) {
+                    videoProcessingGLSurfaceView.setPlayer(exoPlayer)
+                    val contentFrame: FrameLayout = it.findViewById(R.id.exo_content_frame)
+                    contentFrame.addView(videoProcessingGLSurfaceView)
+                }
             }
         },
         onRelease = {
             exoPlayer.release()
+            videoProcessingGLSurfaceView?.setPlayer(null)
         }
     )
     AndroidView(

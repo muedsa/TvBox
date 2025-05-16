@@ -135,6 +135,7 @@ fun PlaybackWidget(
                 }
                 danmakuPlayerHolder = this
             },
+            enableFSR = appSetting.fsrEnable,
             videoPlayerBuilderSetting = {
                 setMediaSourceFactory(mediaSourceFactory)
             }

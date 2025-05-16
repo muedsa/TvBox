@@ -13,6 +13,7 @@ import com.muedsa.tvbox.store.KEY_DANMAKU_ENABLE
 import com.muedsa.tvbox.store.KEY_DANMAKU_MERGE_ENABLE
 import com.muedsa.tvbox.store.KEY_DANMAKU_SCREEN_PART
 import com.muedsa.tvbox.store.KEY_DANMAKU_SIZE_SCALE
+import com.muedsa.tvbox.store.KEY_FSR_ENABLE
 import com.muedsa.tvbox.store.PluginKeyCache
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -109,6 +110,14 @@ class AppSettingScreenViewModel @Inject constructor(
                         it.remove(key)
                     }
                 }
+            }
+        }
+    }
+
+    fun changeFsrEnable(enable: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repo.dataStore.edit {
+                it[KEY_FSR_ENABLE] = enable
             }
         }
     }
