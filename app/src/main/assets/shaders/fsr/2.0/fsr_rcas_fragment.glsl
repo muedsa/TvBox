@@ -1,4 +1,3 @@
-#version 310 es
 // Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,13 +19,13 @@
 // THE SOFTWARE.
 
 // FidelityFX FSR v1.0.2 by AMD
-precision highp float;
+precision mediump float;
 
 uniform sampler2D inputTexture; // 纹理采样器
+uniform vec2 inputTextureSize; // 输入纹理大小
 uniform float sharpness; // 锐化强度
 
-in vec2 vTexCoord; // 从顶点着色器传过来的纹理坐标
-out vec4 fragColor; // 输出颜色
+varying vec2 vTexCoord; // 从顶点着色器传过来的纹理坐标
 
 //_____________________________________________________________/\_______________________________________________________________
 //==============================================================================================================================
@@ -84,25 +83,17 @@ out vec4 fragColor; // 输出颜色
 //==============================================================================================================================
 // This is set at the limit of providing unnatural results for sharpening.
 
+// TODO 需要一个中精度的近似代替
 float APrxMedRcpF1(float a) {
-	float b = uintBitsToFloat(uint(0x7ef19fff) - floatBitsToUint(a));
-	return b * (-b * a + 2.0);
+    return 1.0 / a;
 }
 
-// float APrxLoRcpF1(float a) {
-// 	return uintBitsToFloat(uint(0x7ef07ebb) - floatBitsToUint(a));
-// }
-
-// float APrxLoRsqF1(float a) {
-//     return uintBitsToFloat(uint(0x5f347d74) - (floatBitsToUint(a) >> uint(1)));
-// }
-
 float AMin3F1(float x, float y, float z) {
-	return min(x, min(y, z));
+    return min(x, min(y, z));
 }
 
 float AMax3F1(float x, float y, float z) {
-	return max(x, max(y, z));
+    return max(x, max(y, z));
 }
 
 #define FSR_RCAS_LIMIT (0.25-(1.0/16.0))
@@ -114,10 +105,10 @@ void FsrRcasCon(
 ) {
     // Transform from stops to linear value.
     float linearSharpness = exp2(-sharpness);
-    vec2 hSharp = vec2(sharpness, sharpness);
+    // vec2 hSharp = vec2(sharpness, sharpness); // 16-bit半精度用的，这里用不到
     con = vec4(
         linearSharpness, 
-        uintBitsToFloat(packHalf2x16(hSharp)),
+        0.0, // uintBitsToFloat(packHalf2x16(hSharp)),
         0.0, 
         0.0
     );
@@ -134,12 +125,11 @@ void FsrRcasF(
     //    b 
     //  d e f
     //    h
-    vec2 sp = ip;
-    vec3 b = texelFetch(tex, ivec2(sp) + ivec2( 0,-1), 0).rgb;
-    vec3 d = texelFetch(tex, ivec2(sp) + ivec2(-1, 0), 0).rgb;
-    vec3 e = texelFetch(tex, ivec2(sp)               , 0).rgb;
-    vec3 f = texelFetch(tex, ivec2(sp) + ivec2( 1, 0), 0).rgb;
-    vec3 h = texelFetch(tex, ivec2(sp) + ivec2( 0, 1), 0).rgb;
+    vec3 b = texture2D(tex, (ip + vec2( 0, -1)) / inputTextureSize).rgb;
+    vec3 d = texture2D(tex, (ip + vec2(-1,  0)) / inputTextureSize).rgb;
+    vec3 e = texture2D(tex,  ip                 / inputTextureSize).rgb;
+    vec3 f = texture2D(tex, (ip + vec2( 1,  0)) / inputTextureSize).rgb;
+    vec3 h = texture2D(tex, (ip + vec2( 0,  1)) / inputTextureSize).rgb;
 
     // Rename (32-bit) or regroup (16-bit).
     float bR = b.r;
@@ -213,11 +203,10 @@ void FsrRcasF(
 }
 
 void main() {
-    vec2 texSize = vec2(textureSize(inputTexture, 0));
-    vec2 ip = vTexCoord.xy * texSize;
+    vec2 ip = vTexCoord.xy * inputTextureSize;
     vec3 pix;
     vec4 con;
     FsrRcasCon(con, sharpness);
     FsrRcasF(pix, ip, con, inputTexture);
-    fragColor = vec4(pix, 1.0);
+    gl_FragColor = vec4(pix, 1.0);
 }

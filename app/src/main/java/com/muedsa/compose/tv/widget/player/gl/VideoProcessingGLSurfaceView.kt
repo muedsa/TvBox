@@ -28,7 +28,6 @@ import javax.microedition.khronos.egl.EGLDisplay
 import javax.microedition.khronos.egl.EGLSurface
 import javax.microedition.khronos.opengles.GL10
 
-
 @SuppressLint("ViewConstructor")
 @UnstableApi
 class VideoProcessingGLSurfaceView(
@@ -62,17 +61,31 @@ class VideoProcessingGLSurfaceView(
             ): EGLContext {
                 val glAttributes = if (requireSecureContext) intArrayOf(
                     EGL14.EGL_CONTEXT_CLIENT_VERSION,
-                    2,
+                    3,
                     EGL_PROTECTED_CONTENT_EXT,
                     EGL14.EGL_TRUE,
                     EGL14.EGL_NONE
-                ) else intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE)
-                return egl.eglCreateContext(
+                ) else intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, 3, EGL14.EGL_NONE)
+                var context = egl.eglCreateContext(
                     display,
                     eglConfig,
                     /* share_context= */ EGL10.EGL_NO_CONTEXT,
                     glAttributes
                 )
+                val error = EGL14.eglGetError()
+                if (context == null || error != EGL14.EGL_SUCCESS) {
+                    context?.let {
+                        egl.eglDestroyContext(display, it)
+                    }
+                    glAttributes[1] = 2
+                    context = egl.eglCreateContext(
+                        display,
+                        eglConfig,
+                        /* share_context= */ EGL10.EGL_NO_CONTEXT,
+                        glAttributes
+                    )
+                }
+                return context
             }
 
             override fun destroyContext(
@@ -156,16 +169,18 @@ class VideoProcessingGLSurfaceView(
     ) : Renderer, VideoFrameMetadataListener {
 
         private val frameAvailable: AtomicBoolean = AtomicBoolean()
-        private val videoFrameTimestampQueue: TimedValueQueue<Long> = TimedValueQueue()
+        private val videoFrameInfoQueue: TimedValueQueue<Triple<Long, Int, Int>> = TimedValueQueue()
         private val transformMatrix: FloatArray = FloatArray(16)
 
         private var texture = 0
         private var surfaceTexture: SurfaceTexture? = null
 
         private var initialized = false
-        private var width = -1
-        private var height = -1
+        private var surfaceWidth = -1
+        private var surfaceHeight = -1
         private var frameTimestampUs: Long = C.TIME_UNSET
+        private var frameWidth = -1
+        private var frameHeight = -1
 
         override fun onSurfaceCreated(
             gl: GL10,
@@ -182,7 +197,6 @@ class VideoProcessingGLSurfaceView(
                     requestRender()
                 }
                 onSurfaceTextureAvailable(this@apply)
-
             }
         }
 
@@ -192,29 +206,37 @@ class VideoProcessingGLSurfaceView(
             height: Int
         ) {
             GLES20.glViewport(0, 0, width, height)
-            this.width = width
-            this.height = height
+            this.surfaceWidth = width
+            this.surfaceHeight = height
         }
 
         override fun onDrawFrame(gl: GL10) {
 
             if (!initialized) {
-                videoProcessor.initialize()
+                var glVersion = gl.glGetString(GL10.GL_VERSION)
+                Timber.i(glVersion)
+                glVersion = glVersion.removePrefix("OpenGL ES ")
+                val major = glVersion.substringBefore(".", "-1")
+                val minor = glVersion.removePrefix("$major.")
+                    .substringBefore(" ", "-1")
+                videoProcessor.initialize(major.toInt(), minor.toInt())
                 initialized = true
             }
 
-            if (width != -1 && height != -1) {
-                videoProcessor.setSurfaceSize(width, height)
-                width = -1
-                height = -1
+            if (surfaceWidth != -1 && surfaceHeight != -1) {
+                videoProcessor.setSurfaceSize(surfaceWidth, surfaceHeight)
+                surfaceWidth = -1
+                surfaceHeight = -1
             }
 
             if (frameAvailable.compareAndSet(true, false)) {
                 val surfaceTexture = Assertions.checkNotNull(this.surfaceTexture)
                 surfaceTexture.updateTexImage()
                 val lastFrameTimestampNs = surfaceTexture.timestamp
-                videoFrameTimestampQueue.poll(lastFrameTimestampNs)?.let {
-                    this.frameTimestampUs = it
+                videoFrameInfoQueue.poll(lastFrameTimestampNs)?.let {
+                    this.frameTimestampUs = it.first
+                    this.frameWidth = it.second
+                    this.frameHeight = it.third
                 }
                 surfaceTexture.getTransformMatrix(transformMatrix)
             }
@@ -222,6 +244,8 @@ class VideoProcessingGLSurfaceView(
             videoProcessor.draw(
                 texture,
                 frameTimestampUs,
+                frameWidth,
+                frameHeight,
                 transformMatrix,
             )
         }
@@ -232,14 +256,21 @@ class VideoProcessingGLSurfaceView(
             format: Format,
             mediaFormat: MediaFormat?
         ) {
-            videoFrameTimestampQueue.add(releaseTimeNs, presentationTimeUs)
+            videoFrameInfoQueue.add(
+                releaseTimeNs,
+                Triple(
+                    presentationTimeUs,
+                    format.width,
+                    format.height,
+                )
+            )
         }
     }
 
     interface VideoProcessor {
 
         /** Performs any required GL initialization.  */
-        fun initialize()
+        fun initialize(glMajorVersion: Int, glMinorVersion: Int)
 
         /** Sets the size of the output surface in pixels.  */
         fun setSurfaceSize(width: Int, height: Int)
@@ -249,11 +280,15 @@ class VideoProcessingGLSurfaceView(
          *
          * @param frameTexture The ID of a GL texture containing a video frame.
          * @param frameTimestampUs The presentation timestamp of the frame, in microseconds.
+         * @param frameWidth
+         * @param frameHeight
          * @param transformMatrix The 4 * 4 transform matrix to be applied to the texture.
          */
         fun draw(
             frameTexture: Int,
             frameTimestampUs: Long,
+            frameWidth: Int,
+            frameHeight: Int,
             transformMatrix: FloatArray
         )
 

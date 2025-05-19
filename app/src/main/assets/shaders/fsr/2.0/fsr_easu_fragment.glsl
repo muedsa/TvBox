@@ -1,4 +1,3 @@
-#version 310 es
 // Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,14 +22,13 @@
 // Reference https://github.com/GPUOpen-Effects/FidelityFX-FSR/tree/master/ffx-fsr
 
 #extension GL_OES_EGL_image_external : require
-precision highp float;
+precision mediump float;
 
 uniform samplerExternalOES inputTexture; // 纹理
-// uniform vec2 inputTextureSize; // 输入纹理大小
+uniform vec2 inputTextureSize; // 输入纹理大小
 uniform vec2 outputTextureSize; // 输出纹理大小
 
-in vec2 vTexCoord; // 从顶点着色器传过来的纹理坐标
-out vec4 fragColor; // 输出颜色
+varying vec2 vTexCoord; // 从顶点着色器传过来的纹理坐标
 
 //==============================================================================================================================
 //
@@ -64,19 +62,22 @@ out vec4 fragColor; // 输出颜色
 // but before film grain or composite of the UI.
 //------------------------------------------------------------------------------------------------------------------------------
 
+// TODO 需要一个近似代替
 float APrxLoRcpF1(float a) {
-	return uintBitsToFloat(uint(0x7ef07ebb) - floatBitsToUint(a));
+	return 1.0 / a;
 }
 
+// TODO 需要一个近似代替
 float APrxLoRsqF1(float a) {
-	return uintBitsToFloat(uint(0x5f347d74) - (floatBitsToUint(a) >> uint(1)));
+	return 1.0 / sqrt(a);
 }
+
 vec3 AMin3F3(vec3 x, vec3 y, vec3 z) {
-	return min(x, min(y, z));
+    return min(x, min(y, z));
 }
 
 vec3 AMax3F3(vec3 x, vec3 y, vec3 z) {
-	return max(x, max(y, z));
+    return max(x, max(y, z));
 }
 
 // 计算并设置 EASU 算法需要的常量
@@ -89,6 +90,20 @@ void FsrEasuCon(
     // This is the display resolution which the input image gets upscaled to
     float outputSizeInPixelsX, float outputSizeInPixelsY
 ) {
+    // Centers of gather4, first offset from upper-left of 'F'.
+    //      +---+---+
+    //      |   |   |
+    //      +--(0)--+
+    //      | b | c |
+    //  +---F---+---+---+
+    //  | e | f | g | h |
+    //  +--(1)--+--(2)--+
+    //  | i | j | k | l |
+    //  +---+---+---+---+
+    //      | n | o |
+    //      +--(3)--+
+    //      |   |   |
+    //      +---+---+
     con0 = vec4(
       inputViewportInPixelsX / outputSizeInPixelsX,
       inputViewportInPixelsY / outputSizeInPixelsY,
@@ -143,8 +158,8 @@ void FsrEasuTapF(
 ) {
     // Rotate offset by direction.
     vec2 v;
-	v.x = (off.x * ( dir.x)) + (off.y * dir.y);
-	v.y = (off.x * (-dir.y)) + (off.y * dir.x);
+    v.x = (off.x * ( dir.x)) + (off.y * dir.y);
+    v.y = (off.x * (-dir.y)) + (off.y * dir.x);
     // Anisotropy.
     v *= len;
     // Compute distance^2.
@@ -180,10 +195,10 @@ void FsrEasuTapF(
     //  s t
     //  u v
     float w = 0.0;
-	if (biS) w = (1.0 - pp.x) * (1.0 - pp.y);
-	if (biT) w =        pp.x  * (1.0 - pp.y);
-	if (biU) w = (1.0 - pp.x) *        pp.y;
-	if (biV) w =        pp.x  *        pp.y;
+    if (biS) w = (1.0 - pp.x) * (1.0 - pp.y);
+    if (biT) w =        pp.x  * (1.0 - pp.y);
+    if (biU) w = (1.0 - pp.x) *        pp.y;
+    if (biV) w =        pp.x  *        pp.y;
     // Direction is the '+' diff.
     //    a
     //  b c d
@@ -238,44 +253,93 @@ void FsrEasuF(
     //    a b
     //    r g    <- unused (z)
     // Allowing dead-code removal to remove the 'z's.
-    vec2 p0 = fp * con1.xy + con1.zw;
-    vec2 p1 = p0 + con2.xy;
-    vec2 p2 = p0 + con2.zw;
-    vec2 p3 = p0 + con3.xy;
 
-    // 从纹理中采样
-    vec4 bczzR = textureGather(tex, p0, 0);
-    vec4 bczzG = textureGather(tex, p0, 1);
-    vec4 bczzB = textureGather(tex, p0, 2);
-    vec4 ijfeR = textureGather(tex, p1, 0);
-    vec4 ijfeG = textureGather(tex, p1, 1);
-    vec4 ijfeB = textureGather(tex, p1, 2);
-    vec4 klhgR = textureGather(tex, p2, 0);
-    vec4 klhgG = textureGather(tex, p2, 1);
-    vec4 klhgB = textureGather(tex, p2, 2);
-    vec4 zzonR = textureGather(tex, p3, 0);
-    vec4 zzonG = textureGather(tex, p3, 1);
-    vec4 zzonB = textureGather(tex, p3, 2);
+
+    //      +---+---+
+    //      |   |   |
+    //      +--(0)--+
+    //      | b | c |
+    //  +---F---+---+---+
+    //  | e | f | g | h |
+    //  +--(1)--+--(2)--+
+    //  | i | j | k | l |
+    //  +---+---+---+---+
+    //      | n | o |
+    //      +--(3)--+
+    //      |   |   |
+    //      +---+---+
+
+    vec3 b = texture2D(tex, (fp + vec2( 0.5, -0.5)) * con1.xy).rgb;
+    vec3 c = texture2D(tex, (fp + vec2( 1.5, -0.5)) * con1.xy).rgb;
+    vec3 e = texture2D(tex, (fp + vec2(-0.5,  0.5)) * con1.xy).rgb;
+    vec3 f = texture2D(tex, (fp + vec2( 0.5,  0.5)) * con1.xy).rgb;
+    vec3 g = texture2D(tex, (fp + vec2( 1.5,  0.5)) * con1.xy).rgb;
+    vec3 h = texture2D(tex, (fp + vec2( 2.5,  0.5)) * con1.xy).rgb;
+    vec3 i = texture2D(tex, (fp + vec2(-0.5,  1.5)) * con1.xy).rgb;
+    vec3 j = texture2D(tex, (fp + vec2( 0.5,  1.5)) * con1.xy).rgb;
+    vec3 k = texture2D(tex, (fp + vec2( 1.5,  1.5)) * con1.xy).rgb;
+    vec3 l = texture2D(tex, (fp + vec2( 2.5,  1.5)) * con1.xy).rgb;
+    vec3 n = texture2D(tex, (fp + vec2( 0.5,  2.5)) * con1.xy).rgb;
+    vec3 o = texture2D(tex, (fp + vec2( 1.5,  2.5)) * con1.xy).rgb;
+
+    // vec3 b = texture2D(tex, vTexCoord + vec2( 0.5, -0.5) * con1.xy).rgb;
+    // vec3 c = texture2D(tex, vTexCoord + vec2( 1.5, -0.5) * con1.xy).rgb;
+    // vec3 e = texture2D(tex, vTexCoord + vec2(-0.5,  0.5) * con1.xy).rgb;
+    // vec3 f = texture2D(tex, vTexCoord                             ).rgb;
+    // vec3 g = texture2D(tex, vTexCoord + vec2( 1.5,  0.5) * con1.xy).rgb;
+    // vec3 h = texture2D(tex, vTexCoord + vec2( 2.5,  0.5) * con1.xy).rgb;
+    // vec3 i = texture2D(tex, vTexCoord + vec2(-0.5,  1.5) * con1.xy).rgb;
+    // vec3 j = texture2D(tex, vTexCoord + vec2( 0.5,  1.5) * con1.xy).rgb;
+    // vec3 k = texture2D(tex, vTexCoord + vec2( 1.5,  1.5) * con1.xy).rgb;
+    // vec3 l = texture2D(tex, vTexCoord + vec2( 2.5,  1.5) * con1.xy).rgb;
+    // vec3 n = texture2D(tex, vTexCoord + vec2( 0.5,  2.5) * con1.xy).rgb;
+    // vec3 o = texture2D(tex, vTexCoord + vec2( 1.5,  2.5) * con1.xy).rgb;
+
+    // vec3 b = texture2D(tex, vTexCoord + vec2( 0.0, -1.0) * con1.xy).rgb;
+    // vec3 c = texture2D(tex, vTexCoord + vec2( 1.0, -1.0) * con1.xy).rgb;
+    // vec3 e = texture2D(tex, vTexCoord + vec2(-1.0,  0.0) * con1.xy).rgb;
+    // vec3 f = texture2D(tex, vTexCoord                             ).rgb;
+    // vec3 g = texture2D(tex, vTexCoord + vec2( 1.0,  0.0) * con1.xy).rgb;
+    // vec3 h = texture2D(tex, vTexCoord + vec2( 2.0,  0.0) * con1.xy).rgb;
+    // vec3 i = texture2D(tex, vTexCoord + vec2(-1.0,  1.0) * con1.xy).rgb;
+    // vec3 j = texture2D(tex, vTexCoord + vec2( 0.0,  1.0) * con1.xy).rgb;
+    // vec3 k = texture2D(tex, vTexCoord + vec2( 1.0,  1.0) * con1.xy).rgb;
+    // vec3 l = texture2D(tex, vTexCoord + vec2( 2.0,  1.0) * con1.xy).rgb;
+    // vec3 n = texture2D(tex, vTexCoord + vec2( 0.0,  2.0) * con1.xy).rgb;
+    // vec3 o = texture2D(tex, vTexCoord + vec2( 1.0,  2.0) * con1.xy).rgb;
+
+    vec4 bczzR = vec4(b.r, c.r, 0.0, 0.0);
+    vec4 bczzG = vec4(b.g, c.g, 0.0, 0.0);
+    vec4 bczzB = vec4(b.b, c.b, 0.0, 0.0);
+    vec4 ijfeR = vec4(i.r, j.r, f.r, e.r);
+    vec4 ijfeG = vec4(i.g, j.g, f.g, e.g);
+    vec4 ijfeB = vec4(i.b, j.b, f.b, e.b);
+    vec4 klhgR = vec4(k.r, l.r, h.r, g.r);
+    vec4 klhgG = vec4(k.g, l.g, h.g, g.g);
+    vec4 klhgB = vec4(k.b, l.b, h.b, g.b);
+    vec4 zzonR = vec4(0.0, 0.0, o.r, n.r);
+    vec4 zzonG = vec4(0.0, 0.0, o.g, n.g);
+    vec4 zzonB = vec4(0.0, 0.0, o.b, n.b);
 
     // Simplest multi-channel approximate luma possible (luma times 2, in 2 FMA/MAD).
     vec4 bczzL = bczzB * 0.5 + bczzG * 0.5 + bczzR;
-    vec4 ijfeL = ijfeB * 0.5 + ijfeG * 0.5 + ijfeR ;
+    vec4 ijfeL = ijfeB * 0.5 + ijfeG * 0.5 + ijfeR;
     vec4 klhgL = klhgB * 0.5 + klhgG * 0.5 + klhgR;
     vec4 zzonL = zzonB * 0.5 + zzonG * 0.5 + zzonR;
 
     // Rename.
     float bL = bczzL.x;
-	float cL = bczzL.y;
-	float iL = ijfeL.x;
-	float jL = ijfeL.y;
-	float fL = ijfeL.z;
-	float eL = ijfeL.w;
-	float kL = klhgL.x;
-	float lL = klhgL.y;
-	float hL = klhgL.z;
-	float gL = klhgL.w;
-	float oL = zzonL.z;
-	float nL = zzonL.w;
+    float cL = bczzL.y;
+    float iL = ijfeL.x;
+    float jL = ijfeL.y;
+    float fL = ijfeL.z;
+    float eL = ijfeL.w;
+    float kL = klhgL.x;
+    float lL = klhgL.y;
+    float hL = klhgL.z;
+    float gL = klhgL.w;
+    float oL = zzonL.z;
+    float nL = zzonL.w;
 
     // Accumulate for bilinear interpolation.
     vec2 dir = vec2(0.0);
@@ -348,14 +412,13 @@ void FsrEasuF(
 }
 
 void main() {
-    vec2 texSize = vec2(textureSize(inputTexture, 0));
     vec4 con0, con1, con2, con3;
     FsrEasuCon(con0, con1, con2, con3,
-                texSize.x, texSize.y,
-                texSize.x, texSize.y,
+                inputTextureSize.x, inputTextureSize.y,
+                inputTextureSize.x, inputTextureSize.y,
                 outputTextureSize.x, outputTextureSize.y);
     vec3 pix;
     vec2 ip = floor(vTexCoord * outputTextureSize);
     FsrEasuF(pix, ip, con0, con1, con2, con3, inputTexture);
-    fragColor = vec4(pix, 1.0);
+    gl_FragColor = vec4(pix, 1.0);
 }
