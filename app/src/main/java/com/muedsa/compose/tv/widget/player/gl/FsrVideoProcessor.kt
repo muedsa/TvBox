@@ -26,7 +26,7 @@ class FsrVideoProcessor(
     private var outputHeight: Int = -1
     private var outputSize: FloatArray = FloatArray(2)
 
-    override fun initialize(glMajorVersion: Int, glMinorVersion: Int) {
+    override fun initialize(glMajorVersion: Int, glMinorVersion: Int, extensions: String) {
         var shaderFileDir = "shaders/fsr/2.0/"
         if (glMajorVersion > 3 || (glMajorVersion == 3 && glMinorVersion >= 1)) {
             shaderFileDir = "shaders/fsr/3.1/"

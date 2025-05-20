@@ -285,7 +285,7 @@ void FsrEasuF(
     // vec3 b = texture2D(tex, vTexCoord + vec2( 0.5, -0.5) * con1.xy).rgb;
     // vec3 c = texture2D(tex, vTexCoord + vec2( 1.5, -0.5) * con1.xy).rgb;
     // vec3 e = texture2D(tex, vTexCoord + vec2(-0.5,  0.5) * con1.xy).rgb;
-    // vec3 f = texture2D(tex, vTexCoord                             ).rgb;
+    // vec3 f = texture2D(tex, vTexCoord + vec2( 0.5,  0.5) * con1.xy).rgb;
     // vec3 g = texture2D(tex, vTexCoord + vec2( 1.5,  0.5) * con1.xy).rgb;
     // vec3 h = texture2D(tex, vTexCoord + vec2( 2.5,  0.5) * con1.xy).rgb;
     // vec3 i = texture2D(tex, vTexCoord + vec2(-0.5,  1.5) * con1.xy).rgb;
@@ -294,19 +294,6 @@ void FsrEasuF(
     // vec3 l = texture2D(tex, vTexCoord + vec2( 2.5,  1.5) * con1.xy).rgb;
     // vec3 n = texture2D(tex, vTexCoord + vec2( 0.5,  2.5) * con1.xy).rgb;
     // vec3 o = texture2D(tex, vTexCoord + vec2( 1.5,  2.5) * con1.xy).rgb;
-
-    // vec3 b = texture2D(tex, vTexCoord + vec2( 0.0, -1.0) * con1.xy).rgb;
-    // vec3 c = texture2D(tex, vTexCoord + vec2( 1.0, -1.0) * con1.xy).rgb;
-    // vec3 e = texture2D(tex, vTexCoord + vec2(-1.0,  0.0) * con1.xy).rgb;
-    // vec3 f = texture2D(tex, vTexCoord                             ).rgb;
-    // vec3 g = texture2D(tex, vTexCoord + vec2( 1.0,  0.0) * con1.xy).rgb;
-    // vec3 h = texture2D(tex, vTexCoord + vec2( 2.0,  0.0) * con1.xy).rgb;
-    // vec3 i = texture2D(tex, vTexCoord + vec2(-1.0,  1.0) * con1.xy).rgb;
-    // vec3 j = texture2D(tex, vTexCoord + vec2( 0.0,  1.0) * con1.xy).rgb;
-    // vec3 k = texture2D(tex, vTexCoord + vec2( 1.0,  1.0) * con1.xy).rgb;
-    // vec3 l = texture2D(tex, vTexCoord + vec2( 2.0,  1.0) * con1.xy).rgb;
-    // vec3 n = texture2D(tex, vTexCoord + vec2( 0.0,  2.0) * con1.xy).rgb;
-    // vec3 o = texture2D(tex, vTexCoord + vec2( 1.0,  2.0) * con1.xy).rgb;
 
     vec4 bczzR = vec4(b.r, c.r, 0.0, 0.0);
     vec4 bczzG = vec4(b.g, c.g, 0.0, 0.0);

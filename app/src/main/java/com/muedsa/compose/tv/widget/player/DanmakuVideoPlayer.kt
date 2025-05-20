@@ -22,7 +22,7 @@ import com.kuaishou.akdanmaku.data.DanmakuItemData
 import com.kuaishou.akdanmaku.render.SimpleRenderer
 import com.kuaishou.akdanmaku.ui.DanmakuPlayer
 import com.kuaishou.akdanmaku.ui.DanmakuView
-import com.muedsa.compose.tv.widget.player.gl.FsrVideoProcessor
+import com.muedsa.compose.tv.widget.player.gl.FsrMobileVideoProcessor
 import com.muedsa.compose.tv.widget.player.gl.VideoProcessingGLSurfaceView
 import kotlin.random.Random
 
@@ -79,7 +79,7 @@ fun DanmakuVideoPlayer(
             VideoProcessingGLSurfaceView(
                 context = context,
                 requireSecureContext = false,
-                videoProcessor = FsrVideoProcessor(context = context),
+                videoProcessor = FsrMobileVideoProcessor(context = context),
             )
         } else null
     }

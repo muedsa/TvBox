@@ -219,7 +219,8 @@ class VideoProcessingGLSurfaceView(
                 val major = glVersion.substringBefore(".", "-1")
                 val minor = glVersion.removePrefix("$major.")
                     .substringBefore(" ", "-1")
-                videoProcessor.initialize(major.toInt(), minor.toInt())
+                val extensions = gl.glGetString(GL10.GL_EXTENSIONS)
+                videoProcessor.initialize(major.toInt(), minor.toInt(), extensions)
                 initialized = true
             }
 
@@ -270,7 +271,7 @@ class VideoProcessingGLSurfaceView(
     interface VideoProcessor {
 
         /** Performs any required GL initialization.  */
-        fun initialize(glMajorVersion: Int, glMinorVersion: Int)
+        fun initialize(glMajorVersion: Int, glMinorVersion: Int, extensions: String)
 
         /** Sets the size of the output surface in pixels.  */
         fun setSurfaceSize(width: Int, height: Int)

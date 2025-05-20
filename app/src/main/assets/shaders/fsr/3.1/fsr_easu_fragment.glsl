@@ -254,10 +254,10 @@ void FsrEasuF(
     //      |   |   |
     //      +---+---+
 
-    vec2 p0 = fp * con1.xy + con1.zw; // fp             + ( 1, -1)  所以fp是F点位置? 且定义的左上角为原点?
-    vec2 p1 = p0 + con2.xy;           // p0             + (-1,  2)
-    vec2 p2 = p0 + con2.zw;           // p0             + ( 1,  2)
-    vec2 p3 = p0 + con3.xy;           // p0             + ( 0,  4)
+    vec2 p0 = fp * con1.xy + con1.zw; // fp + ( 1, -1)
+    vec2 p1 = p0 + con2.xy;           // p0 + (-1,  2)  = fp + ( 0, 1)
+    vec2 p2 = p0 + con2.zw;           // p0 + ( 1,  2)  = fp + ( 2, 1)
+    vec2 p3 = p0 + con3.xy;           // p0 + ( 0,  4)  = fp + ( 1, 3)
 
     vec4 bczzR = textureGather(tex, p0, 0);
     vec4 bczzG = textureGather(tex, p0, 1);

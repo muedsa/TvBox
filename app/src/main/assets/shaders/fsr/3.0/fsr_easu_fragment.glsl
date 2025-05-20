@@ -270,7 +270,7 @@ void FsrEasuF(
     // vec3 b = texture(tex, vTexCoord + vec2( 0.5, -0.5) * con1.xy).rgb;
     // vec3 c = texture(tex, vTexCoord + vec2( 1.5, -0.5) * con1.xy).rgb;
     // vec3 e = texture(tex, vTexCoord + vec2(-0.5,  0.5) * con1.xy).rgb;
-    // vec3 f = texture(tex, vTexCoord                             ).rgb;
+    // vec3 f = texture(tex, vTexCoord + vec2( 0.5,  0.5) * con1.xy).rgb;
     // vec3 g = texture(tex, vTexCoord + vec2( 1.5,  0.5) * con1.xy).rgb;
     // vec3 h = texture(tex, vTexCoord + vec2( 2.5,  0.5) * con1.xy).rgb;
     // vec3 i = texture(tex, vTexCoord + vec2(-0.5,  1.5) * con1.xy).rgb;
@@ -279,19 +279,6 @@ void FsrEasuF(
     // vec3 l = texture(tex, vTexCoord + vec2( 2.5,  1.5) * con1.xy).rgb;
     // vec3 n = texture(tex, vTexCoord + vec2( 0.5,  2.5) * con1.xy).rgb;
     // vec3 o = texture(tex, vTexCoord + vec2( 1.5,  2.5) * con1.xy).rgb;
-
-    // vec3 b = texture(tex, vTexCoord + vec2( 0.0, -1.0) * con1.xy).rgb;
-    // vec3 c = texture(tex, vTexCoord + vec2( 1.0, -1.0) * con1.xy).rgb;
-    // vec3 e = texture(tex, vTexCoord + vec2(-1.0,  0.0) * con1.xy).rgb;
-    // vec3 f = texture(tex, vTexCoord                             ).rgb;
-    // vec3 g = texture(tex, vTexCoord + vec2( 1.0,  0.0) * con1.xy).rgb;
-    // vec3 h = texture(tex, vTexCoord + vec2( 2.0,  0.0) * con1.xy).rgb;
-    // vec3 i = texture(tex, vTexCoord + vec2(-1.0,  1.0) * con1.xy).rgb;
-    // vec3 j = texture(tex, vTexCoord + vec2( 0.0,  1.0) * con1.xy).rgb;
-    // vec3 k = texture(tex, vTexCoord + vec2( 1.0,  1.0) * con1.xy).rgb;
-    // vec3 l = texture(tex, vTexCoord + vec2( 2.0,  1.0) * con1.xy).rgb;
-    // vec3 n = texture(tex, vTexCoord + vec2( 0.0,  2.0) * con1.xy).rgb;
-    // vec3 o = texture(tex, vTexCoord + vec2( 1.0,  2.0) * con1.xy).rgb;
 
 
     vec4 bczzR = vec4(b.r, c.r, 0.0, 0.0);

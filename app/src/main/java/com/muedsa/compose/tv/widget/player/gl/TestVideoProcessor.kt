@@ -16,7 +16,7 @@ class TestVideoProcessor(
 
     private var program: GlProgram? = null
 
-    override fun initialize(glMajorVersion: Int, glMinorVersion: Int) {
+    override fun initialize(glMajorVersion: Int, glMinorVersion: Int, extensions: String) {
         program = GlProgram(
             context,
             /* vertexShaderFilePath= */ "shaders/test/test_vertex.glsl",
