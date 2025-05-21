@@ -269,8 +269,12 @@ void main() {
                 texSize.x, texSize.y,
                 texSize.x, texSize.y,
                 outputTextureSize.x, outputTextureSize.y);
-    vec3 pix;
-    vec2 ip = vTexCoord * outputTextureSize;
-    FsrMobile(pix, ip, con0, con1, con2, con3);
-    fragColor = vec4(pix, 1.0);
+    if (con0.x > 1.0 || con0.y > 1.0) {
+        fragColor = texture(inputTexture, vTexCoord);
+    } else {
+        vec3 pix;
+        vec2 ip = vTexCoord * outputTextureSize;
+        FsrMobile(pix, ip, con0, con1, con2, con3);
+        fragColor = vec4(pix, 1.0);
+    }
 }
