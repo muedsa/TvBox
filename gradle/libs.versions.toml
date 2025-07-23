@@ -19,7 +19,7 @@ room = "2.7.2"
 paging = "3.3.6"
 googleServices = "4.4.3"
 firebaseBom = "34.0.0"
-firebaseCrashlytics = "3.0.4"
+firebaseCrashlytics = "3.0.5"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
