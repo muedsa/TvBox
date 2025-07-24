@@ -18,6 +18,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
@@ -57,12 +59,14 @@ fun MediaCardRows(
         val focusTransferredState = useLocalFocusTransferredOnLaunch()
         val titleHeight= (MaterialTheme.typography.titleLarge.fontSize.value * configuration.fontScale + 0.5f).dp
         val labelHeight= (MaterialTheme.typography.labelLarge.fontSize.value * configuration.fontScale + 0.5f).dp
-        var firstRow = remember { rows.first() }
+        val firstRow = remember { rows.first() }
         val firstRowHeight = remember { titleHeight + CommonRowCardPadding * 3 + firstRow.cardHeight.dp }
         val firstRowCardHorizontalPadding = remember { firstRow.cardWidth.dp * 0.075f }
         val tabHeight = remember { labelHeight + 24.dp * 2 + 6.dp * 2 }
-        val screenHeight = configuration.screenHeightDp.dp
-        val screenWidth = configuration.screenWidthDp.dp
+        val containerSize = LocalWindowInfo.current.containerSize
+        val density = LocalDensity.current
+        val screenWidth = with(density) { containerSize.width.toDp() }
+        val screenHeight = with(density) { containerSize.height.toDp() }
         var title by remember { mutableStateOf("") }
         var subTitle by remember { mutableStateOf<String?>(null) }
         LazyColumn(

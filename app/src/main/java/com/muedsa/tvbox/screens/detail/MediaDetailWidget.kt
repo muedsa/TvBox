@@ -28,7 +28,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Icon
@@ -78,9 +79,10 @@ fun MediaDetailWidget(
     danmakuMediaInfo: DanmakuMedia?,
     mediaDetailScreenViewModel: MediaDetailScreenViewModel,
 ) {
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-    val screenWidth = configuration.screenWidthDp.dp
+    val containerSize = LocalWindowInfo.current.containerSize
+    val density = LocalDensity.current
+    val screenWidth = with(density) { containerSize.width.toDp() }
+    val screenHeight = with(density) { containerSize.height.toDp() }
     val toastController = useLocalToastMsgBoxController()
     val drawerController = useLocalRightSideDrawerController()
     val navController = useLocalNavHostController()

@@ -19,8 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -58,9 +59,10 @@ fun ScreenBackground(
 
     if (!delayState.url.isNullOrEmpty()) {
         val context = LocalContext.current
-        val configuration = LocalConfiguration.current
-        val screenWidth = configuration.screenWidthDp.dp
-        val screenHeight = configuration.screenHeightDp.dp
+        val containerSize = LocalWindowInfo.current.containerSize
+        val density = LocalDensity.current
+        val screenWidth = with(density) { containerSize.width.toDp() }
+        val screenHeight = with(density) { containerSize.height.toDp() }
         val horizontal = screenWidth > screenHeight
 
         val immersiveImageWidth: Dp
