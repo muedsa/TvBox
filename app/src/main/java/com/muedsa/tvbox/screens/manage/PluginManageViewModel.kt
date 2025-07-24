@@ -33,7 +33,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class PluginManageScreenViewModel @Inject constructor(
-    @ApplicationContext val context: Context,
+    @param:ApplicationContext val context: Context,
     private val favoriteMediaDao: FavoriteMediaDao,
     private val episodeProgressDao: EpisodeProgressDao,
     private val dateStoreRepo: DataStoreRepo,

@@ -23,7 +23,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchScreenViewModel  @Inject constructor(
-    @ApplicationContext val context: Context
+    @param:ApplicationContext val context: Context
 ) : ViewModel() {
 
     private val _queryFlow = MutableStateFlow("")

@@ -25,7 +25,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PluginHomeViewModel @Inject constructor(
-    @ApplicationContext val context: Context
+    @param:ApplicationContext val context: Context
 ) : ViewModel() {
 
     private val _refreshFlow = MutableStateFlow(0)
