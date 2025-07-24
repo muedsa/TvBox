@@ -58,6 +58,7 @@ fun SearchResult(
             ImageContentCard(
                 modifier = Modifier.focusOnMount(itemKey = "searchScreen, gird $index"),
                 url = if (row.cardType == MediaCardType.NOT_IMAGE) "" else item.coverImageUrl,
+                httpHeaders = if (row.cardType == MediaCardType.NOT_IMAGE) null else item.coverImageHttpHeaders,
                 imageSize = cardSize,
                 type = cardType,
                 model = ContentModel(
@@ -65,8 +66,11 @@ fun SearchResult(
                     subtitle = item.subTitle
                 ),
                 onItemFocus = {
-                    backgroundState.url = item.coverImageUrl
-                    backgroundState.type = ScreenBackgroundType.BLUR
+                    backgroundState.change(
+                        url = if (row.cardType == MediaCardType.NOT_IMAGE) "" else item.coverImageUrl,
+                        type = ScreenBackgroundType.BLUR,
+                        headers = if (row.cardType == MediaCardType.NOT_IMAGE) null else item.coverImageHttpHeaders,
+                    )
                 },
                 onItemClick = {
                     lastFocusedItemPerDestination[SPECIAL_DESTINATION_MEDIA_DETAIL] =

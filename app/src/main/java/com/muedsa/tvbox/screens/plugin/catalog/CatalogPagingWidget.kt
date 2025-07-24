@@ -128,6 +128,7 @@ fun CatalogPagingWidget(
                 ImageContentCard(
                     modifier = Modifier.focusOnMount(itemKey = "catalogScreen, grid $index"),
                     url = if (config.cardType == MediaCardType.NOT_IMAGE) "" else mediaCard.coverImageUrl,
+                    httpHeaders = if (config.cardType == MediaCardType.NOT_IMAGE) null else mediaCard.coverImageHttpHeaders,
                     imageSize = cardSize,
                     type = config.cardType.toCardType(),
                     model = ContentModel(
@@ -135,8 +136,11 @@ fun CatalogPagingWidget(
                         subtitle = mediaCard.subTitle
                     ),
                     onItemFocus = {
-                        backgroundState.type = ScreenBackgroundType.BLUR
-                        backgroundState.url = mediaCard.coverImageUrl
+                        backgroundState.change(
+                            url = mediaCard.coverImageUrl,
+                            type = ScreenBackgroundType.BLUR,
+                            headers = mediaCard.coverImageHttpHeaders
+                        )
                     },
                     onItemClick = {
                         lastFocusedItemPerDestination[SPECIAL_DESTINATION_MEDIA_DETAIL] =

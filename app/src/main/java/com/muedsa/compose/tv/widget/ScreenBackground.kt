@@ -96,7 +96,7 @@ fun ScreenBackground(
                             delayState.headers.forEach { entry ->
                                 it.httpHeaders(
                                     NetworkHeaders.Builder()
-                                        .add(entry.key, entry.value)
+                                        .set(entry.key, entry.value)
                                         .build()
                                 )
                             }
@@ -149,11 +149,22 @@ fun ScreenBackground(
 open class ScreenBackgroundState(
     initUrl: String? = null,
     initType: ScreenBackgroundType = ScreenBackgroundType.BLUR,
-    initHeaders: Map<String, String> = mapOf()
+    initHeaders: Map<String, List<String>> = mapOf()
 ) {
     open var url by mutableStateOf(initUrl)
     var type by mutableStateOf(initType)
     val headers = mutableStateMapOf(*initHeaders.toList().toTypedArray())
+
+    fun change(
+        url: String? = null,
+        type: ScreenBackgroundType? = null,
+        headers: Map<String, List<String>>? = null
+    ) {
+        this.url = url
+        type?.let { this.type = it }
+        this.headers.clear()
+        headers?.let { this.headers.putAll(headers) }
+    }
 
     companion object {
         const val SAVER_KEY_URL = "SAVER_KEY_URL"
@@ -174,7 +185,7 @@ open class ScreenBackgroundState(
                     initType = it[SAVER_KEY_TYPE] as ScreenBackgroundType,
                     initHeaders = it.filterKeys { key ->
                         SAVER_KEY_URL != key && SAVER_KEY_TYPE != key
-                    } as Map<String, String>
+                    } as Map<String, List<String>>
                 ))
             }
         )
@@ -185,7 +196,7 @@ open class ScreenBackgroundState(
 fun rememberScreenBackgroundState(
     initUrl: String? = null,
     initType: ScreenBackgroundType = ScreenBackgroundType.BLUR,
-    initHeaders: Map<String, String> = mapOf()
+    initHeaders: Map<String, List<String>> = mapOf()
 ): ScreenBackgroundState {
     return rememberSaveable(saver = ScreenBackgroundState.Saver) {
         ScreenBackgroundState(

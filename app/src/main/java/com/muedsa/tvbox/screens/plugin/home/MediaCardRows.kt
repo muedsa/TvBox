@@ -95,8 +95,10 @@ fun MediaCardRows(
                             onItemFocus = { _, mediaCard ->
                                 title = mediaCard.title
                                 subTitle = mediaCard.subTitle
-                                backgroundState.type = ScreenBackgroundType.SCRIM
-                                backgroundState.url = mediaCard.coverImageUrl
+                                backgroundState.change(
+                                    url = mediaCard.coverImageUrl,
+                                    type = ScreenBackgroundType.SCRIM,
+                                )
                             },
                             onItemClick = { _, mediaCard ->
                                 lastFocusedItemPerDestination[SPECIAL_DESTINATION_MEDIA_DETAIL] =
@@ -124,8 +126,10 @@ fun MediaCardRows(
                     onItemFocus = { _, mediaCard ->
                         title = mediaCard.title
                         subTitle = mediaCard.subTitle
-                        backgroundState.type = ScreenBackgroundType.BLUR
-                        backgroundState.url = mediaCard.coverImageUrl
+                        backgroundState.change(
+                            url = mediaCard.coverImageUrl,
+                            type = ScreenBackgroundType.BLUR,
+                        )
                     },
                     onItemClick = { _, mediaCard ->
                         lastFocusedItemPerDestination[SPECIAL_DESTINATION_MEDIA_DETAIL] =

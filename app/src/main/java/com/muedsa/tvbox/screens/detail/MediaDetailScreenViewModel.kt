@@ -17,6 +17,7 @@ import com.muedsa.tvbox.room.dao.FavoriteMediaDao
 import com.muedsa.tvbox.room.model.EpisodeProgressModel
 import com.muedsa.tvbox.room.model.FavoriteMediaModel
 import com.muedsa.tvbox.screens.NavigationItems
+import com.muedsa.tvbox.tool.LenientJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -166,6 +167,9 @@ class MediaDetailScreenViewModel @Inject constructor(
                         mediaDetailUrl = favoriteMediaCard.detailUrl,
                         mediaSubTitle = favoriteMediaCard.subTitle,
                         coverImageUrl = favoriteMediaCard.coverImageUrl,
+                        coverImageUrlHttpHeaders = favoriteMediaCard.coverImageHttpHeaders?.let {
+                            LenientJson.encodeToString(it)
+                        },
                         cardWidth = favoriteMediaCard.cardWidth,
                         cardHeight = favoriteMediaCard.cardHeight,
                         updateAt = System.currentTimeMillis(),

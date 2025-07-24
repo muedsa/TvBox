@@ -46,6 +46,7 @@ import com.muedsa.tvbox.screens.SPECIAL_DESTINATION_MEDIA_DETAIL
 import com.muedsa.tvbox.screens.detail.INIT_FOCUSED_ITEM_KEY_MEDIA_DETAIL
 import com.muedsa.tvbox.screens.nav
 import com.muedsa.tvbox.screens.plugin.useLocalHomeScreenBackgroundState
+import com.muedsa.tvbox.tool.LenientJson
 
 @Composable
 fun FavoriteMediaScreen(
@@ -111,9 +112,13 @@ fun FavoriteMediaScreen(
                     items = favoriteMediaList,
                     key = { _, item -> item.mediaId }
                 ) { index, item ->
+                    val httpHeaders = item.coverImageUrlHttpHeaders?.let {
+                        LenientJson.decodeFromString<Map<String, List<String>>>(it)
+                    }
                     ImageContentCard(
                         modifier = Modifier.focusOnMount(itemKey = "favoriteScreen, grid $index"),
                         url = item.coverImageUrl,
+                        httpHeaders = httpHeaders,
                         imageSize = DpSize(item.cardWidth.dp, item.cardHeight.dp),
                         type = CardType.STANDARD,
                         model = ContentModel(
@@ -121,8 +126,11 @@ fun FavoriteMediaScreen(
                             subtitle = item.mediaSubTitle,
                         ),
                         onItemFocus = {
-                            backgroundState.url = item.coverImageUrl
-                            backgroundState.type = ScreenBackgroundType.BLUR
+                            backgroundState.change(
+                                url = item.coverImageUrl,
+                                type = ScreenBackgroundType.BLUR,
+                                headers = httpHeaders,
+                            )
                         },
                         onItemClick = {
                             if (deleteMode) {

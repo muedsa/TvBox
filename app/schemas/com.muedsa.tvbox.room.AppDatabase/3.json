@@ -1,0 +1,162 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "cbcf83bd69206611bff2c1b8624cd0c1",
+    "entities": [
+      {
+        "tableName": "favorite_media",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`plugin_package` TEXT NOT NULL, `media_id` TEXT NOT NULL, `media_title` TEXT NOT NULL, `media_detail_url` TEXT NOT NULL, `media_sub_title` TEXT DEFAULT NULL, `cover_image_url` TEXT NOT NULL, `cover_image_url_http_headers` TEXT DEFAULT NULL, `card_width` INTEGER NOT NULL, `card_height` INTEGER NOT NULL, `update_at` INTEGER NOT NULL DEFAULT (CURRENT_TIMESTAMP), PRIMARY KEY(`plugin_package`, `media_id`))",
+        "fields": [
+          {
+            "fieldPath": "pluginPackage",
+            "columnName": "plugin_package",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mediaId",
+            "columnName": "media_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mediaTitle",
+            "columnName": "media_title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mediaDetailUrl",
+            "columnName": "media_detail_url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mediaSubTitle",
+            "columnName": "media_sub_title",
+            "affinity": "TEXT",
+            "defaultValue": "NULL"
+          },
+          {
+            "fieldPath": "coverImageUrl",
+            "columnName": "cover_image_url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coverImageUrlHttpHeaders",
+            "columnName": "cover_image_url_http_headers",
+            "affinity": "TEXT",
+            "defaultValue": "NULL"
+          },
+          {
+            "fieldPath": "cardWidth",
+            "columnName": "card_width",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cardHeight",
+            "columnName": "card_height",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updateAt",
+            "columnName": "update_at",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "(CURRENT_TIMESTAMP)"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "plugin_package",
+            "media_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_favorite_media_update_at",
+            "unique": false,
+            "columnNames": [
+              "update_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_favorite_media_update_at` ON `${TABLE_NAME}` (`update_at`)"
+          }
+        ]
+      },
+      {
+        "tableName": "episode_progress",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`plugin_package` TEXT NOT NULL, `media_id` TEXT NOT NULL, `episode_id` TEXT NOT NULL, `progress` INTEGER NOT NULL DEFAULT 0, `duration` INTEGER NOT NULL DEFAULT 0, `update_at` INTEGER NOT NULL DEFAULT (CURRENT_TIMESTAMP), PRIMARY KEY(`plugin_package`, `media_id`, `episode_id`))",
+        "fields": [
+          {
+            "fieldPath": "pluginPackage",
+            "columnName": "plugin_package",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mediaId",
+            "columnName": "media_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "episodeId",
+            "columnName": "episode_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "progress",
+            "columnName": "progress",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "duration",
+            "columnName": "duration",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "updateAt",
+            "columnName": "update_at",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "(CURRENT_TIMESTAMP)"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "plugin_package",
+            "media_id",
+            "episode_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_episode_progress_update_at",
+            "unique": false,
+            "columnNames": [
+              "update_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_episode_progress_update_at` ON `${TABLE_NAME}` (`update_at`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cbcf83bd69206611bff2c1b8624cd0c1')"
+    ]
+  }
+}

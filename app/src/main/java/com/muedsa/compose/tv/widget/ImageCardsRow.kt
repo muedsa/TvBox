@@ -43,6 +43,7 @@ fun <T> ImageCardsRow(
     title: String,
     modelList: List<T> = listOf(),
     imageFn: (index: Int, item: T) -> String,
+    imageHttpHeadersFn: (index: Int, item: T) -> Map<String, List<String>>? = { _, _ -> null },
     imageSize: DpSize = HorizontalPosterSize,
     backgroundColorFn: (index: Int, model: T) -> Color = { _, _ -> Color.Unspecified },
     contentFn: (index: Int, item: T) -> ContentModel? = { _, _ -> null },
@@ -83,6 +84,7 @@ fun <T> ImageCardsRow(
                             )
                             .padding(end = cardHorizontalPadding),
                         url = imageFn(index, item),
+                        httpHeaders = imageHttpHeadersFn(index, item),
                         imageSize = imageSize,
                         backgroundColor = backgroundColorFn(index, item),
                         type = CardType.COMPACT,
@@ -107,6 +109,7 @@ fun <T> StandardImageCardsRow(
     title: String,
     modelList: List<T> = listOf(),
     imageFn: (index: Int, item: T) -> String,
+    imageHttpHeadersFn: (index: Int, item: T) -> Map<String, List<String>>? = { _, _ -> null },
     imageSize: DpSize = HorizontalPosterSize,
     backgroundColorFn: (index: Int, model: T) -> Color = { _, _ -> Color.Unspecified },
     contentFn: (index: Int, item: T) -> ContentModel? = { _, _ -> null },
@@ -156,6 +159,7 @@ fun <T> StandardImageCardsRow(
                             )
                             .padding(end = cardHorizontalPadding),
                         url = imageFn(index, item),
+                        httpHeaders = imageHttpHeadersFn(index, item),
                         imageSize = imageSize,
                         backgroundColor = backgroundColorFn(index, item),
                         type = CardType.STANDARD,

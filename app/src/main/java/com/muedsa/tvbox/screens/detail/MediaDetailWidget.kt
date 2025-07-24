@@ -91,7 +91,10 @@ fun MediaDetailWidget(
     )
 
     LaunchedEffect(key1 = mediaDetail) {
-        backgroundState.url = mediaDetail.backgroundImageUrl
+        backgroundState.change(
+            url = mediaDetail.backgroundImageUrl,
+            headers = mediaDetail.backgroundImageHttpHeaders,
+        )
     }
 
     ScreenBackground(backgroundState)

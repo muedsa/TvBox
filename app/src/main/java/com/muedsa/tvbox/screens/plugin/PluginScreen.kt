@@ -112,8 +112,7 @@ fun PluginScreen(
                         onFocus = { focusedTabIndex = index },
                         onClick = {
                             if (selectedTabIndex != index) {
-                                backgroundState.url = null
-                                backgroundState.type = ScreenBackgroundType.BLUR
+                                backgroundState.change(type = ScreenBackgroundType.BLUR)
                                 selectedTabIndex = index
                             }
                         },

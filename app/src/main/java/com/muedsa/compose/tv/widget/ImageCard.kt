@@ -25,6 +25,8 @@ import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.MaterialTheme
 import coil3.compose.AsyncImage
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.muedsa.compose.tv.model.ContentModel
@@ -37,6 +39,7 @@ import com.muedsa.compose.tv.theme.VerticalPosterSize
 fun ImageContentCard(
     modifier: Modifier = Modifier,
     url: String,
+    httpHeaders: Map<String, List<String>>? = null,
     imageSize: DpSize,
     backgroundColor: Color = Color.Unspecified,
     type: CardType = CardType.STANDARD,
@@ -49,6 +52,7 @@ fun ImageContentCard(
         ImageCard(
             modifier = modifier,
             url = url,
+            httpHeaders = httpHeaders,
             imageSize = imageSize,
             backgroundColor = backgroundColor,
             onItemFocus = onItemFocus,
@@ -58,6 +62,7 @@ fun ImageContentCard(
         StandardImageContentCard(
             modifier = modifier,
             url = url,
+            httpHeaders = httpHeaders,
             imageSize = imageSize,
             backgroundColor = backgroundColor,
             model = model,
@@ -68,6 +73,7 @@ fun ImageContentCard(
         CompactImageContentCard(
             modifier = modifier,
             url = url,
+            httpHeaders = httpHeaders,
             imageSize = imageSize,
             backgroundColor = backgroundColor,
             model = model,
@@ -78,6 +84,7 @@ fun ImageContentCard(
         WideStandardImageContentCard(
             modifier = modifier,
             url = url,
+            httpHeaders = httpHeaders,
             imageSize = imageSize,
             backgroundColor = backgroundColor,
             model = model,
@@ -94,7 +101,7 @@ enum class CardType {
 @Composable
 fun ImageCard(
     modifier: Modifier = Modifier,
-    url: String,
+    url: String, httpHeaders: Map<String, List<String>>? = null,
     imageSize: DpSize,
     backgroundColor: Color = Color.Unspecified,
     onItemFocus: () -> Unit = {},
@@ -127,6 +134,14 @@ fun ImageCard(
                         .Builder(LocalContext.current)
                         .data(url)
                         .crossfade(true)
+                        .apply {
+                            if (!httpHeaders.isNullOrEmpty()) {
+                                httpHeaders(
+                                    NetworkHeaders.Builder()
+                                        .also { httpHeaders.forEach { (k, v) -> it[k] = v } }
+                                        .build())
+                            }
+                        }
                         .build(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop
@@ -141,6 +156,7 @@ fun ImageCard(
 fun StandardImageContentCard(
     modifier: Modifier = Modifier,
     url: String,
+    httpHeaders: Map<String, List<String>>? = null,
     imageSize: DpSize,
     backgroundColor: Color = Color.Unspecified,
     model: ContentModel,
@@ -150,6 +166,7 @@ fun StandardImageContentCard(
     Column(modifier) {
         ImageCard(
             url = url,
+            httpHeaders = httpHeaders,
             imageSize = imageSize,
             backgroundColor = backgroundColor,
             onItemFocus = onItemFocus,
@@ -174,6 +191,7 @@ fun StandardImageContentCard(
 fun CompactImageContentCard(
     modifier: Modifier = Modifier,
     url: String,
+    httpHeaders: Map<String, List<String>>? = null,
     imageSize: DpSize,
     backgroundColor: Color = Color.Unspecified,
     model: ContentModel,
@@ -183,6 +201,7 @@ fun CompactImageContentCard(
     ImageCard(
         modifier = modifier,
         url = url,
+        httpHeaders = httpHeaders,
         imageSize = imageSize,
         backgroundColor = backgroundColor,
         onItemFocus = onItemFocus,
@@ -206,6 +225,7 @@ fun CompactImageContentCard(
 fun WideStandardImageContentCard(
     modifier: Modifier = Modifier,
     url: String,
+    httpHeaders: Map<String, List<String>>? = null,
     imageSize: DpSize,
     backgroundColor: Color = Color.Unspecified,
     model: ContentModel,
@@ -216,6 +236,7 @@ fun WideStandardImageContentCard(
         ImageCard(
             modifier = modifier,
             url = url,
+            httpHeaders = httpHeaders,
             imageSize = imageSize,
             backgroundColor = backgroundColor,
             onItemFocus = onItemFocus,

@@ -25,6 +25,7 @@ fun MediaCardRow(
             title = row.title,
             modelList = row.list,
             imageFn = { _, item -> item.coverImageUrl },
+            imageHttpHeadersFn = { _, item -> item.coverImageHttpHeaders },
             imageSize = DpSize(row.cardWidth.dp, row.cardHeight.dp),
             backgroundColorFn = { _, item -> Color(item.backgroundColor) },
             contentFn = { _, item ->
@@ -39,6 +40,7 @@ fun MediaCardRow(
             title = row.title,
             modelList = row.list,
             imageFn = { _, item -> if (row.cardType == MediaCardType.NOT_IMAGE) "" else item.coverImageUrl },
+            imageHttpHeadersFn = { _, item -> if (row.cardType == MediaCardType.NOT_IMAGE) null else item.coverImageHttpHeaders },
             imageSize = DpSize(row.cardWidth.dp, row.cardHeight.dp),
             backgroundColorFn = { _, item -> Color(item.backgroundColor) },
             contentFn = { _, item ->
