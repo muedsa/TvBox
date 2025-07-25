@@ -14,3 +14,8 @@ TvBox是为电视、电视盒子等制作的AndroidTV APP, 最便捷的方式是
 ## 使用Github下载器插件
 
 [Github下载器插件](https://github.com/muedsa/github-tvbox-plugin-downloader)可以帮你快捷下载Github发布的插件到**公共下载目录**, 请在TvBox使用**添加插件**按钮手动安装插件到TvBox
+
+## 0.6.1及以上版本已经支持在文件管理APP选择文件安装
+
+![选择文件的打开方式](image/Screenshot_20250725_132837.png)  
+![等待插件安装完成](image/Screenshot_20250725_132916.png)  
