@@ -45,8 +45,8 @@ class InstallPluginActivity : ComponentActivity() {
             }.onSuccess {
                 uiState = "✅插件安装成功!!! ╰(*°▽°*)╯\n${uri}"
             }.onFailure {
-                uiState = "❌插件安装失败!!! (╯°□°）╯︵ ┻━┻\n${it.message}\n${uri}"
-                Timber.e(it, "install plugin error")
+                uiState = "❌插件安装失败!!! (╯°□°）╯︵ ┻━┻\n${it.javaClass.name}: ${it.message}\n${uri}"
+                Timber.e(it, "install plugin error: $uri")
             }
         }
         setContent {

@@ -9,7 +9,6 @@ import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.net.toFile
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.documentfile.provider.DocumentFile
 import com.muedsa.tvbox.api.plugin.IPlugin
 import com.muedsa.tvbox.api.plugin.TvBoxContext
 import com.muedsa.tvbox.store.PluginPerfStore
@@ -216,40 +215,35 @@ object PluginManager {
 
     suspend fun installPlugin(context: Context, uri: Uri) {
         when (uri.scheme) {
-            uri.scheme -> {
-                val docFile = DocumentFile.fromSingleUri(context, uri)
-                    ?: throw RuntimeException("获取文件内容失败")
-                if (!docFile.isFile || !docFile.canRead()) {
-                    throw RuntimeException("请提供一个文件")
-                }
-                val tempFile = copyToTempPluginFile(context = context, uri = uri)
+            "content" -> {
+                val cacheDir = context.externalCacheDir ?: context.cacheDir
+                val tempFile = File.createTempFile("temp_plugin_", ".tbp", cacheDir)
                 try {
+                    copyToFile(context = context, uri = uri, file = tempFile)
                     installPlugin(context = context, file = tempFile)
                 } finally {
                     tempFile.delete()
                 }
             }
-            uri.scheme -> {
+            "file" -> {
                 installPlugin(context = context, file = uri.toFile())
             }
             else -> {
-                throw RuntimeException("请选择正确的插件文件")
+                throw RuntimeException("不支持的scheme:${uri.scheme}")
             }
         }
     }
 
-    fun copyToTempPluginFile(context: Context, uri: Uri): File {
-        val tempFile = File.createTempFile("temp_plugin_", ".tbp", context.externalCacheDir)
+    fun copyToFile(context: Context, uri: Uri, file: File) {
         context.contentResolver.openInputStream(uri)?.use { input ->
-            FileOutputStream(tempFile).use { output ->
+            FileOutputStream(file).use { output ->
                 val buffer = ByteArray(4096)
                 var bytesRead: Int
                 while (input.read(buffer).also { bytesRead = it } != -1) {
                     output.write(buffer, 0, bytesRead)
                 }
             }
-        } ?: throw Exception("Unable to open input stream for: $uri")
-        return tempFile
+        } ?: throw Exception("不能获取文件内容: $uri")
     }
 
     suspend fun installPlugin(context: Context, file: File) = mutex.withLock {
