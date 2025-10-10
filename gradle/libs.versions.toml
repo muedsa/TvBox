@@ -17,7 +17,7 @@ akdanmaku = "1.0.3"
 datastore = "1.1.7"
 room = "2.8.2"
 paging = "3.3.6"
-googleServices = "4.4.3"
+googleServices = "4.4.4"
 firebaseBom = "34.4.0"
 firebaseCrashlytics = "3.0.6"
 
