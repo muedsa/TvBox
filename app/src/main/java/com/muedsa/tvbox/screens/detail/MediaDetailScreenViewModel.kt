@@ -1,11 +1,13 @@
 package com.muedsa.tvbox.screens.detail
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.muedsa.tvbox.api.data.MediaDetail
 import com.muedsa.tvbox.api.data.MediaEpisode
 import com.muedsa.tvbox.api.data.MediaHttpSource
 import com.muedsa.tvbox.api.data.MediaPlaySource
+import com.muedsa.tvbox.api.data.MediaSniffingSource
 import com.muedsa.tvbox.api.data.SavedMediaCard
 import com.muedsa.tvbox.api.plugin.PluginOptions
 import com.muedsa.tvbox.danmaku.DanmakuService
@@ -19,6 +21,7 @@ import com.muedsa.tvbox.room.model.FavoriteMediaModel
 import com.muedsa.tvbox.screens.NavigationItems
 import com.muedsa.tvbox.tool.LenientJson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -35,6 +38,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MediaDetailScreenViewModel @Inject constructor(
+    @param:ApplicationContext val context: Context,
     private val danmakuService: DanmakuService,
     private val favoriteMediaDao: FavoriteMediaDao,
     private val episodeProgressDao: EpisodeProgressDao
@@ -231,8 +235,27 @@ class MediaDetailScreenViewModel @Inject constructor(
                 if (info.url.isBlank()) {
                     throw RuntimeException("获取视频地址失败, 返回视频地址为空")
                 }
-                withContext(Dispatchers.Main) {
-                    onSuccess(info)
+                if (info is MediaSniffingSource) {
+                    MediaUrlExtractor(
+                        context = context,
+                        mediaExtensions = info.sniffingMediaExtensions
+                            ?: MediaUrlExtractor.DEFAULT_MEDIA_EXTENSIONS
+                    ).extractVideoUrl(
+                        pageUrl = info.url,
+                        httpHeaders = info.httpHeaders
+                    ) { source ->
+                        viewModelScope.launch(Dispatchers.Main) {
+                            if (source == null) {
+                                onFailure(RuntimeException("获取视频地址失败, 解析地址为空"))
+                            } else {
+                                onSuccess(source)
+                            }
+                        }
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        onSuccess(info)
+                    }
                 }
             } catch (throwable: Throwable) {
                 Timber.e(throwable)

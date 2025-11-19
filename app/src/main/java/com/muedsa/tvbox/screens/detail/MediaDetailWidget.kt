@@ -314,7 +314,7 @@ fun MediaDetailWidget(
                                 Timber.d("episode:${mediaDetail.id}-${episode.name}, url:${it.url}")
                                 navController.nav(
                                     NavigationItems.Player(
-                                        urls = if (it is MediaMergingHttpSource ) it.urls else listOf(it.url),
+                                        urls = if (it is MediaMergingHttpSource) it.urls else listOf(it.url),
                                         httpHeadersJson = it.httpHeaders?.let { h -> LenientJson.encodeToString(h) },
                                         pluginPackage = pluginInfo.packageName,
                                         mediaId = mediaDetail.id,
