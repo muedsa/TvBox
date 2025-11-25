@@ -242,6 +242,47 @@ fun AppSettingScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
+                            text = "嗅探超时",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(modifier = Modifier.width(20.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedIconButton(onClick = {
+                                appSettingScreenViewModel.changeMediaSniffingTimeout(settingModel.mediaSniffingTimeout - 5L)
+                            }) {
+                                Icon(imageVector = Icons.Outlined.Remove, contentDescription = "-")
+                            }
+                            Text(
+                                modifier = Modifier.width(60.dp),
+                                text = "${settingModel.mediaSniffingTimeout}秒",
+                                color = MaterialTheme.colorScheme.onBackground,
+                                style = MaterialTheme.typography.titleMedium,
+                                textAlign = TextAlign.Center
+                            )
+                            OutlinedIconButton(onClick = {
+                                appSettingScreenViewModel.changeMediaSniffingTimeout(settingModel.mediaSniffingTimeout + 5L)
+                            }) {
+                                Icon(imageVector = Icons.Outlined.Add, contentDescription = "+")
+                            }
+                        }
+                    }
+                    HorizontalDivider(
+                        modifier = Modifier.padding(bottom = 20.dp)
+                    )
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 20.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
                             text = "APP版本",
                             color = MaterialTheme.colorScheme.onBackground,
                             style = MaterialTheme.typography.titleMedium

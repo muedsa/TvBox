@@ -20,6 +20,7 @@ typealias MediaHttpSourceCallback = (MediaHttpSource?) -> Unit
 class MediaUrlExtractor(
     private val context: Context,
     val mediaExtensions: List<String> = DEFAULT_MEDIA_EXTENSIONS,
+    val timeout: Long = 30L,
 ) {
     private var webView: WebView? = null
     private var callback: MediaHttpSourceCallback? = null
@@ -48,7 +49,7 @@ class MediaUrlExtractor(
 
             // 设置超时机制（10秒未获取到则返回null）
             launch(Dispatchers.IO) {
-                delay(10000)
+                delay(timeout * 1000L)
                 if (isExtracting) {
                     Timber.d("webview 获取URL超时")
                     finishExtraction(null)

@@ -11,6 +11,7 @@ import com.muedsa.tvbox.api.data.MediaSniffingSource
 import com.muedsa.tvbox.api.data.SavedMediaCard
 import com.muedsa.tvbox.api.plugin.PluginOptions
 import com.muedsa.tvbox.danmaku.DanmakuService
+import com.muedsa.tvbox.model.AppSettingModel
 import com.muedsa.tvbox.model.DanmakuMedia
 import com.muedsa.tvbox.plugin.PluginInfo
 import com.muedsa.tvbox.plugin.PluginManager
@@ -19,6 +20,7 @@ import com.muedsa.tvbox.room.dao.FavoriteMediaDao
 import com.muedsa.tvbox.room.model.EpisodeProgressModel
 import com.muedsa.tvbox.room.model.FavoriteMediaModel
 import com.muedsa.tvbox.screens.NavigationItems
+import com.muedsa.tvbox.store.DataStoreRepo
 import com.muedsa.tvbox.tool.LenientJson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -30,6 +32,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,8 +44,17 @@ class MediaDetailScreenViewModel @Inject constructor(
     @param:ApplicationContext val context: Context,
     private val danmakuService: DanmakuService,
     private val favoriteMediaDao: FavoriteMediaDao,
-    private val episodeProgressDao: EpisodeProgressDao
+    private val episodeProgressDao: EpisodeProgressDao,
+    dateStoreRepo: DataStoreRepo,
 ) : ViewModel() {
+
+    val settingSF: StateFlow<AppSettingModel> = dateStoreRepo.dataStore.data
+        .map { AppSettingModel.fromPreferences(it) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = AppSettingModel()
+        )
 
     private val _uiState: MutableStateFlow<MediaDetailScreenUiState> =
         MutableStateFlow(MediaDetailScreenUiState.Loading)
@@ -239,14 +251,15 @@ class MediaDetailScreenViewModel @Inject constructor(
                     MediaUrlExtractor(
                         context = context,
                         mediaExtensions = info.sniffingMediaExtensions
-                            ?: MediaUrlExtractor.DEFAULT_MEDIA_EXTENSIONS
+                            ?: MediaUrlExtractor.DEFAULT_MEDIA_EXTENSIONS,
+                        timeout = settingSF.value.mediaSniffingTimeout,
                     ).extractVideoUrl(
                         pageUrl = info.url,
                         httpHeaders = info.httpHeaders
                     ) { source ->
                         viewModelScope.launch(Dispatchers.Main) {
                             if (source == null) {
-                                onFailure(RuntimeException("获取视频地址失败, 解析地址为空"))
+                                onFailure(RuntimeException("从页面获取视频地址失败"))
                             } else {
                                 onSuccess(source)
                             }
