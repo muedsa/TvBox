@@ -124,8 +124,12 @@ class ToastMessageBoxController(
     }
 
     fun error(error: Throwable?, duration: SnackbarDuration = SnackbarDuration.Short) {
+        val causeMsg = error?.cause?.localizedMessage ?: error?.cause?.message
         val message = error?.localizedMessage ?: error?.message ?: "error"
-        error(message = message, duration = duration)
+        error(
+            message = if (causeMsg.isNullOrEmpty()) message else "$message\n$causeMsg",
+            duration = duration
+        )
     }
 
     fun clear() {
