@@ -36,7 +36,7 @@ object PluginManager {
     const val PLUGIN_FILE_SUFFIX = ".tbp"
     private lateinit var pluginDir: File
     private lateinit var pluginOATDir: File
-    private lateinit var sharedTvBoxContext: SharedTvBoxContext
+    lateinit var sharedTvBoxContext: SharedTvBoxContext
     private var initialized: Boolean = false
 
     private var _pluginInfoMap: Map<String, PluginInfo>? = null

@@ -19,7 +19,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
-import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MergingMediaSource
@@ -37,12 +37,18 @@ import com.muedsa.compose.tv.widget.player.mergeDanmaku
 import com.muedsa.compose.tv.widget.player.rememberPlayerControlState
 import com.muedsa.tvbox.api.data.DanmakuDataFlow
 import com.muedsa.tvbox.model.AppSettingModel
+import com.muedsa.tvbox.plugin.PluginManager
 import com.muedsa.tvbox.room.model.EpisodeProgressModel
+import com.muedsa.tvbox.tool.IPv6Checker
+import com.muedsa.tvbox.tool.createOkHttpClient
+import com.muedsa.util.AppUtil
 import kotlinx.coroutines.delay
+import okhttp3.logging.HttpLoggingInterceptor
 import timber.log.Timber
 import kotlin.math.max
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
+
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -100,7 +106,16 @@ fun PlaybackWidget(
     val mediaSourceFactory = remember {
         DefaultMediaSourceFactory(
             DefaultDataSource.Factory(androidContext,
-                DefaultHttpDataSource.Factory().apply {
+                OkHttpDataSource.Factory(
+                    createOkHttpClient(
+                        onlyIpv4 = PluginManager.sharedTvBoxContext.iPv6Status != IPv6Checker.IPv6Status.SUPPORTED
+                    ) {
+                        if (AppUtil.debuggable(androidContext)) {
+                            addNetworkInterceptor(HttpLoggingInterceptor()
+                                .also { it.level = HttpLoggingInterceptor.Level.HEADERS })
+                        }
+                    }
+                ).apply {
                     if (!httpHeaders.isNullOrEmpty()) {
                         setDefaultRequestProperties(httpHeaders)
                     }
