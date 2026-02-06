@@ -18,7 +18,7 @@ datastore = "1.2.0"
 room = "2.8.4"
 paging = "3.4.0"
 googleServices = "4.4.4"
-firebaseBom = "34.8.0"
+firebaseBom = "34.9.0"
 firebaseCrashlytics = "3.0.6"
 kotlin-binary-compatibility-validator = "0.18.1"
 
