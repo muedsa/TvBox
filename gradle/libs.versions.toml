@@ -21,6 +21,7 @@ googleServices = "4.4.4"
 firebaseBom = "34.11.0"
 firebaseCrashlytics = "3.0.6"
 kotlin-binary-compatibility-validator = "0.18.1"
+conscrypt = "2.5.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -59,6 +60,7 @@ paging-compose = { group = "androidx.paging", name = "paging-compose", version.r
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+conscrypt = { group = "org.conscrypt", name = "conscrypt-android", version.ref = "conscrypt"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
