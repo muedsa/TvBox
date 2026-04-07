@@ -27,8 +27,8 @@ android {
         applicationId = "com.muedsa.tvbox"
         minSdk = 24
         targetSdk = 36
-        versionCode = 40
-        versionName = "0.7.2"
+        versionCode = 41
+        versionName = "0.7.3"
     }
 
     signingConfigs {
