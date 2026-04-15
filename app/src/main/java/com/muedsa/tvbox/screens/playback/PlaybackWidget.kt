@@ -1,5 +1,6 @@
 package com.muedsa.tvbox.screens.playback
 
+import android.os.Handler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarDuration
@@ -59,7 +60,8 @@ fun PlaybackWidget(
     danmakuDataFlow: DanmakuDataFlow?,
     appSetting: AppSettingModel,
     disableEpisodeProgression: Boolean,
-    playbackScreenViewModel: PlaybackScreenViewModel
+    skipSegments: List<Pair<Long, Long>>? = null,
+    playbackScreenViewModel: PlaybackScreenViewModel,
 ) {
     val navController = useLocalNavHostController()
     val toastController = useLocalToastMsgBoxController()
@@ -98,6 +100,27 @@ fun PlaybackWidget(
             }
         }
     }
+
+    LaunchedEffect(key1 = exoplayerHolder) {
+        if (exoplayerHolder != null) {
+            if (appSetting.skipSegmentsEnable) {
+                val exoPlayer = exoplayerHolder!!
+                val exoPlayerHandler = Handler(exoPlayer.applicationLooper)
+                skipSegments?.forEach { segment ->
+                    if (segment.first < segment.second) {
+                        exoPlayer.createMessage { _, _ ->
+                            toastController.tips("自动跳过 ${segment.first / 1000} - ${segment.second / 1000}")
+                            exoPlayerHandler.post { exoPlayer.seekTo(segment.second) }
+                        }
+                            .setPosition(segment.first)
+                            .setDeleteAfterDelivery(false)
+                            .send()
+                    }
+                }
+            }
+        }
+    }
+
     val androidContext = LocalContext.current
     val mediaSourceFactory = remember {
         DefaultMediaSourceFactory(

@@ -269,6 +269,28 @@ fun AppSettingScreen(
                             }
                         }
                     }
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 20.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "启用自动跳过",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        FocusScaleSwitch(
+                            checked = settingModel.skipSegmentsEnable,
+                            onCheckedChange = {
+                                appSettingScreenViewModel.changeSkipSegmentsEnable(it)
+                            }
+                        )
+                    }
                     HorizontalDivider(
                         modifier = Modifier.padding(bottom = 20.dp)
                     )

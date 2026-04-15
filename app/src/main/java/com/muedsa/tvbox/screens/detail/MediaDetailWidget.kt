@@ -324,6 +324,7 @@ fun MediaDetailWidget(
                                         disableEpisodeProgression = mediaDetail.disableEpisodeProgression,
                                         enableCustomDanmakuList = mediaDetail.enableCustomDanmakuList,
                                         enableCustomDanmakuFlow = mediaDetail.enableCustomDanmakuFlow,
+                                        skipSegments = NavigationItems.encodeSkipSegments(it.skipSegments),
                                         episodeInfoJson = LenientJson.encodeToString(episode),
                                     )
                                 )

@@ -107,6 +107,7 @@ class PlaybackScreenViewModel @Inject constructor(
             danmakuDataFlow = danmakuPair.second,
             appSetting = appSetting,
             disableEpisodeProgression = param.disableEpisodeProgression,
+            skipSegments = NavigationItems.decodeSkipSegments(param.skipSegments),
         )
     }.catch {
         PlayBackScreenUiState.Error(error = it.message ?: "error", it)
@@ -142,5 +143,6 @@ sealed interface PlayBackScreenUiState {
         val danmakuDataFlow: DanmakuDataFlow? = null,   // 实时弹幕
         val appSetting: AppSettingModel,
         val disableEpisodeProgression: Boolean,
+        val skipSegments: List<Pair<Long, Long>>? = null,
     ) : PlayBackScreenUiState
 }

@@ -30,6 +30,7 @@ sealed interface NavigationItems {
         val enableCustomDanmakuList: Boolean,
         val enableCustomDanmakuFlow: Boolean,
         val episodeInfoJson: String,
+        val skipSegments: String? = null,
     ) : NavigationItems
 
     @Serializable
@@ -37,4 +38,35 @@ sealed interface NavigationItems {
 
     @Serializable
     data object RightSideDrawer : NavigationItems
+
+
+    companion object {
+
+        fun encodeSkipSegments(skipSegments: List<Pair<Long, Long>>?): String? {
+            return skipSegments?.joinToString("|") { "${it.first},${it.second}" }
+        }
+
+        fun decodeSkipSegments(encodedString: String?): List<Pair<Long, Long>>? {
+            if (encodedString.isNullOrBlank()) {
+                return null
+            }
+            val segmentStrings = encodedString.split("|")
+            return segmentStrings.mapNotNull { segment ->
+                val times = segment.split(",")
+
+                if (times.size == 2) {
+                    val startTime = times[0].toLongOrNull()
+                    val endTime = times[1].toLongOrNull()
+                    if (startTime != null && endTime != null) {
+                        Pair(startTime, endTime)
+                    } else {
+                        null
+                    }
+                } else {
+                    null
+                }
+            }
+        }
+
+    }
 }

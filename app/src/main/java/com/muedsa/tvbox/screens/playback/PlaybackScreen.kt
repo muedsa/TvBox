@@ -39,6 +39,7 @@ fun PlaybackScreen(
             danmakuDataFlow = s.danmakuDataFlow,
             appSetting = s.appSetting,
             disableEpisodeProgression = s.disableEpisodeProgression,
+            skipSegments = s.skipSegments,
             playbackScreenViewModel = playbackScreenViewModel
         )
     }

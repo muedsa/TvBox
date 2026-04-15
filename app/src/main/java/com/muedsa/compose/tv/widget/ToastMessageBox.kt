@@ -5,13 +5,13 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,29 +56,52 @@ fun ToastMessageBox(
         enter = slideInHorizontally { -it },
         exit = slideOutHorizontally { -it / 2 } + fadeOut()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxHeight()
-                .height(IntrinsicSize.Min)
-                .padding(top = 100.dp)
-        ) {
-            Text(
+        if (controller.type == ToastMessageType.TIPS) {
+            Column(
                 modifier = Modifier
-                    .weight(8f)
-                    .shadow(
-                        elevation = 10.dp,
-                        shape = RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp)
-                    )
-                    .background(color = controller.type.containerColor)
-                    .padding(20.dp)
-                    .wrapContentWidth(Alignment.Start),
-                text = controller.message ?: "something happened",
-                color = controller.type.contentColor,
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.weight(2f))
+                    .fillMaxSize()
+                    .padding(bottom = 10.dp),
+                verticalArrangement = Arrangement.Bottom
+            ) {
+                Text(
+                    modifier = Modifier
+                        .offset(x = (-1).dp)
+                        .border(
+                            width = 1.dp,
+                            color = controller.type.contentColor,
+                            shape = RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp)
+                        )
+                        .padding(10.dp)
+                        .background(color = controller.type.containerColor)
+                        .wrapContentWidth(Alignment.Start),
+                    text = controller.message ?: "something happened",
+                    color = controller.type.contentColor,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 100.dp)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .weight(8f)
+                        .shadow(
+                            elevation = 10.dp,
+                            shape = RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp)
+                        )
+                        .background(color = controller.type.containerColor)
+                        .padding(20.dp)
+                        .wrapContentWidth(Alignment.Start),
+                    text = controller.message ?: "something happened",
+                    color = controller.type.contentColor,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(modifier = Modifier.weight(2f))
+            }
         }
-
     }
 }
 
@@ -132,6 +155,10 @@ class ToastMessageBoxController(
         )
     }
 
+    fun tips(message: String = "tips", duration: SnackbarDuration = SnackbarDuration.Short) {
+        prompt(message = message, type = ToastMessageType.TIPS, duration = duration)
+    }
+
     fun clear() {
         this.message = null
         this.type = ToastMessageType.INFO
@@ -159,6 +186,10 @@ enum class ToastMessageType(
         contentColor = Color(0xFF_F9_DE_DC),
         containerColor = Color(0xFF_8C_1D_18),
     ),
+    TIPS(
+        contentColor = Color(0xCC_FF_FF_FF),
+        containerColor = Color(0x20_00_00_00),
+    ),
     ;
 }
 
@@ -178,6 +209,7 @@ fun ToastMessageBoxPreview() {
                     Button(onClick = { controller.success("success") }) { Text("success") }
                     Button(onClick = { controller.warning("warning") }) { Text("warning") }
                     Button(onClick = { controller.error("error") }) { Text("error") }
+                    Button(onClick = { controller.tips("tips") }) { Text("tips") }
                 }
 
             }

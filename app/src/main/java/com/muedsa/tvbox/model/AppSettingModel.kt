@@ -8,6 +8,7 @@ import com.muedsa.tvbox.store.KEY_DANMAKU_SCREEN_PART
 import com.muedsa.tvbox.store.KEY_DANMAKU_SIZE_SCALE
 import com.muedsa.tvbox.store.KEY_FSR_ENABLE
 import com.muedsa.tvbox.store.KEY_MEDIA_SNIFFING_TIMEOUT
+import com.muedsa.tvbox.store.KEY_SKIP_SEGMENTS_ENABLE
 
 data class AppSettingModel(
     val danmakuEnable: Boolean = true,
@@ -16,6 +17,7 @@ data class AppSettingModel(
     val danmakuAlpha: Int = 100,
     val danmakuScreenPart: Int = 100,
     val mediaSniffingTimeout: Long = 30, // 秒
+    val skipSegmentsEnable: Boolean = true,
     val fsrEnable: Boolean = false,
 ) {
 
@@ -29,6 +31,7 @@ data class AppSettingModel(
                 danmakuAlpha = prefs[KEY_DANMAKU_ALPHA] ?: 100,
                 danmakuScreenPart = prefs[KEY_DANMAKU_SCREEN_PART] ?: 100,
                 mediaSniffingTimeout = prefs[KEY_MEDIA_SNIFFING_TIMEOUT] ?: 30,
+                skipSegmentsEnable = prefs[KEY_SKIP_SEGMENTS_ENABLE] != false,
                 fsrEnable = prefs[KEY_FSR_ENABLE] ?: false,
             )
     }
