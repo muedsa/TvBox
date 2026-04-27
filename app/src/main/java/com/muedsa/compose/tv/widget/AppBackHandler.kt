@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun AppBackHandler(
@@ -19,7 +20,7 @@ fun AppBackHandler(
     var tick by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(key1 = tick) {
-        delay(250)
+        delay(250.milliseconds)
         if (tick > 0) {
             tick--
         } else {

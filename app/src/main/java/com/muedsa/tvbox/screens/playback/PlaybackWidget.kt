@@ -46,6 +46,7 @@ import com.muedsa.util.AppUtil
 import kotlinx.coroutines.delay
 import okhttp3.logging.HttpLoggingInterceptor
 import timber.log.Timber
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -83,7 +84,7 @@ fun PlaybackWidget(
                 playbackScreenViewModel.saveEpisodeProgress(episodeProgress)
             }
             toastController.info("播放结束,即将返回")
-            delay(3_000)
+            delay(3_000.milliseconds)
             navController.popBackStack()
         }
     }
@@ -92,7 +93,7 @@ fun PlaybackWidget(
         if (exoplayerHolder != null && !disableEpisodeProgression) {
             val exoPlayer = exoplayerHolder!!
             while (exoplayerHolder != null) {
-                delay(10_000)
+                delay(10_000.milliseconds)
                 episodeProgress.progress = exoPlayer.currentPosition
                 episodeProgress.duration = exoPlayer.duration
                 episodeProgress.updateAt = System.currentTimeMillis()

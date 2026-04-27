@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlin.time.Duration.Companion.milliseconds
 
 typealias MediaHttpSourceCallback = (MediaHttpSource?) -> Unit
 
@@ -49,7 +50,7 @@ class MediaUrlExtractor(
 
             // 设置超时机制（10秒未获取到则返回null）
             launch(Dispatchers.IO) {
-                delay(timeout * 1000L)
+                delay((timeout * 1000L).milliseconds)
                 if (isExtracting) {
                     Timber.d("webview 获取URL超时")
                     finishExtraction(null)
