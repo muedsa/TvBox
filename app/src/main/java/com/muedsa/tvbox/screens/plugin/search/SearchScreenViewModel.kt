@@ -33,7 +33,7 @@ class SearchScreenViewModel  @Inject constructor(
     fun searchMedia(query: String) {
         if (query.isNotBlank()) {
             viewModelScope.launch(Dispatchers.IO) {
-                _queryFlow.emit("")
+                _uiState.emit(SearchScreenUiState.Searching)
                 _queryFlow.emit(query)
             }
         }
