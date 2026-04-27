@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.ParserException
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -24,6 +25,8 @@ import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MergingMediaSource
+import androidx.media3.extractor.DefaultExtractorsFactory
+import androidx.media3.extractor.ts.DefaultTsPayloadReaderFactory
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.SurfaceDefaults
@@ -140,7 +143,13 @@ fun PlaybackWidget(
                         setDefaultRequestProperties(httpHeaders)
                     }
                 }
-            )
+            ),
+            DefaultExtractorsFactory()
+                .setTsExtractorFlags(
+                    (DefaultTsPayloadReaderFactory.FLAG_IGNORE_SPLICE_INFO_STREAM // 忽略某些特定流错误
+                            or DefaultTsPayloadReaderFactory.FLAG_ALLOW_NON_IDR_KEYFRAMES // 允许非 IDR 关键帧
+                            )
+                )
         )
     }
     val playerControlState = rememberPlayerControlState()
@@ -178,9 +187,22 @@ fun PlaybackWidget(
             addListener(object : Player.Listener {
 
                 override fun onPlayerErrorChanged(error: PlaybackException?) {
-                    toastController.error(error, SnackbarDuration.Long)
-                    error?.let {
-                        Timber.i(it, "exoplayer mediaUrl: $urls")
+                    if (error != null) {
+                        Timber.w("${error.errorCodeName} ${error.errorCode}")
+                        Timber.e(error, "exoplayer mediaUrl: $urls")
+                        if (error.errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED
+                            && error.cause is ParserException
+                        ) {
+                            this@DanmakuVideoPlayer.prepare()
+                            this@DanmakuVideoPlayer.seekTo(error.timestampMs + 1000)
+                            this@DanmakuVideoPlayer.play()
+                            toastController.tips("尝试跳过解析异常片段", SnackbarDuration.Long)
+                        } else {
+                            toastController.error(error, SnackbarDuration.Long)
+                        }
+                    } else {
+                        Timber.e("exoplayer error, mediaUrl: $urls")
+                        toastController.error(error, SnackbarDuration.Long)
                     }
                 }
 
