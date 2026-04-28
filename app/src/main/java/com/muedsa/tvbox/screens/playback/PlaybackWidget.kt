@@ -186,22 +186,18 @@ fun PlaybackWidget(
         ) {
             addListener(object : Player.Listener {
 
-                override fun onPlayerErrorChanged(error: PlaybackException?) {
-                    if (error != null) {
-                        Timber.w("${error.errorCodeName} ${error.errorCode}")
-                        Timber.e(error, "exoplayer mediaUrl: $urls")
-                        if (error.errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED
-                            && error.cause is ParserException
-                        ) {
-                            this@DanmakuVideoPlayer.prepare()
-                            this@DanmakuVideoPlayer.seekTo(error.timestampMs + 1000)
-                            this@DanmakuVideoPlayer.play()
-                            toastController.tips("尝试跳过解析异常片段", SnackbarDuration.Long)
-                        } else {
-                            toastController.error(error, SnackbarDuration.Long)
-                        }
+                override fun onPlayerError(error: PlaybackException) {
+                    Timber.e("PlaybackException(${error.errorCode},${error.errorCodeName},${error.timestampMs})")
+                    Timber.e(error, "exoplayer mediaUrl: $urls")
+                    if (error.errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED
+                        && error.cause is ParserException
+                    ) {
+                        Timber.i("尝试跳过解析异常片段")
+                        this@DanmakuVideoPlayer.prepare()
+                        // this@DanmakuVideoPlayer.seekTo(this@DanmakuVideoPlayer.currentPosition + 1000)
+                        this@DanmakuVideoPlayer.play()
+                        toastController.tips("尝试跳过解析异常片段", SnackbarDuration.Long)
                     } else {
-                        Timber.e("exoplayer error, mediaUrl: $urls")
                         toastController.error(error, SnackbarDuration.Long)
                     }
                 }
