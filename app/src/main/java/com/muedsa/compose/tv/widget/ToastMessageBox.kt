@@ -71,8 +71,8 @@ fun ToastMessageBox(
                             color = controller.type.contentColor,
                             shape = RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp)
                         )
-                        .padding(10.dp)
                         .background(color = controller.type.containerColor)
+                        .padding(10.dp)
                         .wrapContentWidth(Alignment.Start),
                     text = controller.message ?: "something happened",
                     color = controller.type.contentColor,
