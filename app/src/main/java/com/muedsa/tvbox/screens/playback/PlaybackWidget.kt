@@ -197,6 +197,11 @@ fun PlaybackWidget(
                         // this@DanmakuVideoPlayer.seekTo(this@DanmakuVideoPlayer.currentPosition + 1000)
                         this@DanmakuVideoPlayer.play()
                         toastController.tips("尝试跳过解析异常片段", SnackbarDuration.Long)
+                    } else if (error.errorCode == PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW) {
+                        Timber.i("尝试重连")
+                        this@DanmakuVideoPlayer.prepare()
+                        this@DanmakuVideoPlayer.play()
+                        toastController.tips("尝试重连", SnackbarDuration.Long)
                     } else {
                         toastController.error(error, SnackbarDuration.Long)
                     }
