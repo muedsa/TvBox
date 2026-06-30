@@ -80,7 +80,7 @@ class IqiyiDanmakuProvider(
     override suspend fun getEpisodeDanmakuList(episode: DanmakuEpisode): List<DanmakuItemData> {
         var mat = 1
         val maxMat = ceil(episode.extendData!!.toInt() / 300.0)
-        val tvId = episode.episodeId.toString()
+        val tvId = episode.episodeId
         val s1 = tvId.substring(tvId.length - 4, tvId.length - 2)
         val s2 = tvId.substring(tvId.length - 2)
         val list = mutableListOf<DanmakuItemData>()
@@ -90,10 +90,7 @@ class IqiyiDanmakuProvider(
                     .feignChrome()
                     .header(OkHttpCacheInterceptor.HEADER, "max-age=21600")
                     .get(okHttpClient = okHttpClient)
-                    .body?.byteStream()
-            if (byteStream == null) {
-                break
-            }
+                    .body.byteStream()
             val unzipBytes = InflaterInputStream(byteStream).use { it.readBytes() }
             val xml = unzipBytes.toString(Charsets.UTF_8)
             val doc = Jsoup.parse(xml, Parser.xmlParser())
@@ -109,7 +106,7 @@ class IqiyiDanmakuProvider(
                     val contentType = it.select("contentType").text().toInt()
                     list.add(
                         DanmakuItemData(
-                            danmakuId = contentId.toLong(),
+                            danmakuId = contentId,
                             position = showTime * 1000,
                             content = content,
                             mode = when(contentType) {

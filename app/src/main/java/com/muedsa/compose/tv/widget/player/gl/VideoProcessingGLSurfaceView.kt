@@ -12,7 +12,6 @@ import android.os.Looper
 import android.view.Surface
 import androidx.media3.common.C
 import androidx.media3.common.Format
-import androidx.media3.common.util.Assertions
 import androidx.media3.common.util.GlUtil
 import androidx.media3.common.util.GlUtil.GlException
 import androidx.media3.common.util.TimedValueQueue
@@ -231,7 +230,7 @@ class VideoProcessingGLSurfaceView(
             }
 
             if (frameAvailable.compareAndSet(true, false)) {
-                val surfaceTexture = Assertions.checkNotNull(this.surfaceTexture)
+                val surfaceTexture = checkNotNull(this.surfaceTexture)
                 surfaceTexture.updateTexImage()
                 val lastFrameTimestampNs = surfaceTexture.timestamp
                 videoFrameInfoQueue.poll(lastFrameTimestampNs)?.let {

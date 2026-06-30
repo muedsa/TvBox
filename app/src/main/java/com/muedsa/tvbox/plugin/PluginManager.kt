@@ -15,11 +15,13 @@ import com.muedsa.tvbox.store.PluginPerfStore
 import com.muedsa.tvbox.tool.IPv6Checker
 import com.muedsa.util.AppUtil
 import dalvik.system.PathClassLoader
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import java.io.FileOutputStream
@@ -217,7 +219,9 @@ object PluginManager {
         when (uri.scheme) {
             "content" -> {
                 val cacheDir = context.externalCacheDir ?: context.cacheDir
-                val tempFile = File.createTempFile("temp_plugin_", ".tbp", cacheDir)
+                val tempFile = withContext(Dispatchers.IO) {
+                    File.createTempFile("temp_plugin_", ".tbp", cacheDir)
+                }
                 try {
                     copyToFile(context = context, uri = uri, file = tempFile)
                     installPlugin(context = context, file = tempFile)
