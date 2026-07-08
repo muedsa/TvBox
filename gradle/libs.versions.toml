@@ -17,9 +17,6 @@ akdanmaku = "1.0.3"
 datastore = "1.2.1"
 room = "2.8.4"
 paging = "3.5.0"
-googleServices = "4.4.4"
-firebaseBom = "34.14.0"
-firebaseCrashlytics = "3.0.7"
 kotlin-binary-compatibility-validator = "0.18.1"
 conscrypt = "2.5.3"
 
@@ -57,9 +54,6 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 paging = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
-firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 conscrypt = { group = "org.conscrypt", name = "conscrypt-android", version.ref = "conscrypt"}
 
 [plugins]
@@ -70,6 +64,4 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-room = { id = "androidx.room", version.ref = "room" }
-google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlytics" }
 kotlin-binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "kotlin-binary-compatibility-validator"}
