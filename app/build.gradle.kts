@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.room)
+    alias(libs.plugins.sentry.android.gradle)
 }
 
 val keystorePropertiesFile: File = rootProject.file("keystore.properties")
@@ -153,4 +154,13 @@ ksp {
 
 room {
     schemaDirectory("$projectDir/schemas")
+}
+
+sentry {
+    org.set("muedsa")
+    projectName.set("tvbox")
+
+    // this will upload your source code to Sentry to show it as part of the stack traces
+    // disable if you don't want to expose your sources
+    includeSourceContext.set(true)
 }

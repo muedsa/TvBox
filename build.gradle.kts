@@ -8,4 +8,5 @@ plugins {
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.android.room) apply false
     alias(libs.plugins.kotlin.binary.compatibility.validator) apply false
+    alias(libs.plugins.sentry.android.gradle) apply false
 }

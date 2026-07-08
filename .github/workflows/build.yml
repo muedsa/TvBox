@@ -25,9 +25,11 @@ jobs:
         env:
           SIGN_KEY_DATA: ${{ secrets.SIGN_KEY }}
           KEY_STORE_PROP_DATA: ${{ secrets.KEY_STORE_PROP }}
+          SENTRY_DATA: ${{ secrets.SENTRY }}
         run: |
           echo $SIGN_KEY_DATA | base64 -di > MUEDSA.jks
           echo $KEY_STORE_PROP_DATA | base64 -di > keystore.properties
+          echo $SENTRY_DATA | base64 -di > sentry.properties
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
