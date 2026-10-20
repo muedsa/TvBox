@@ -49,6 +49,7 @@ import com.muedsa.compose.tv.useLocalRightSideDrawerController
 import com.muedsa.compose.tv.useLocalToastMsgBoxController
 import com.muedsa.compose.tv.widget.ContentBlock
 import com.muedsa.compose.tv.widget.ContentBlockType
+import com.muedsa.compose.tv.widget.FocusScaleSwitch
 import com.muedsa.compose.tv.widget.NoBackground
 import com.muedsa.compose.tv.widget.ScreenBackground
 import com.muedsa.compose.tv.widget.ScreenBackgroundType
@@ -256,6 +257,20 @@ fun MediaDetailWidget(
                             mediaDetailScreenViewModel = mediaDetailScreenViewModel,
                         )
                     }
+                } else if (mediaDetail.enableCustomDanmakuFlow || mediaDetail.enableCustomDanmakuList) {
+                    item {
+                        Text(
+                            text = "启用弹幕: ",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        FocusScaleSwitch(
+                            checked = enabledDanmakuState.value,
+                            onCheckedChange = {
+                                enabledDanmakuState.value = it
+                            }
+                        )
+                    }
                 }
 
                 // 清除视频进度
@@ -322,8 +337,8 @@ fun MediaDetailWidget(
                                         danmakuEpisodeJson = if (enabledDanmakuState.value && danmakuEpisode != null)
                                             LenientJson.encodeToString(danmakuEpisode) else null,
                                         disableEpisodeProgression = mediaDetail.disableEpisodeProgression,
-                                        enableCustomDanmakuList = mediaDetail.enableCustomDanmakuList,
-                                        enableCustomDanmakuFlow = mediaDetail.enableCustomDanmakuFlow,
+                                        enableCustomDanmakuList = enabledDanmakuState.value && mediaDetail.enableCustomDanmakuList,
+                                        enableCustomDanmakuFlow = enabledDanmakuState.value && mediaDetail.enableCustomDanmakuFlow,
                                         skipSegments = NavigationItems.encodeSkipSegments(it.skipSegments),
                                         episodeInfoJson = LenientJson.encodeToString(episode),
                                     )
