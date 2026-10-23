@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
@@ -135,6 +136,7 @@ fun CatalogPagingWidget(
                         title = mediaCard.title,
                         subtitle = mediaCard.subTitle
                     ),
+                    backgroundColor = Color(mediaCard.backgroundColor),
                     onItemFocus = {
                         backgroundState.change(
                             url = mediaCard.coverImageUrl,
